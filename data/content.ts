@@ -20,13 +20,15 @@ export const HERO = {
   ],
 };
 
+// 서브내비 라벨 — 4개 서비스 페이지 공통 문법(텍스트 라벨만). 숫자 접두어 미사용 (C2)
+// 앵커 id(ax1~ax6)는 URL 해시 호환을 위해 불변
 export const AXISNAV = [
-  { id: 'ax1', label: '01 직무역량' },
-  { id: 'ax2', label: '02 어학·글로벌' },
-  { id: 'ax3', label: '03 IT·자격' },
-  { id: 'ax4', label: '04 비즈니스·리더십' },
-  { id: 'ax5', label: '05 법정 헌터스' },
-  { id: 'ax6', label: '06 제작·파트너' },
+  { id: 'ax1', label: '직무역량' },
+  { id: 'ax2', label: '어학·글로벌' },
+  { id: 'ax3', label: 'IT·자격' },
+  { id: 'ax4', label: '비즈니스·리더십' },
+  { id: 'ax5', label: '법정 헌터스' },
+  { id: 'ax6', label: '제작·파트너' },
 ];
 
 export const AX1 = {
