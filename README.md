@@ -12,6 +12,10 @@ Next.js(App Router) + React + TypeScript + Tailwind v3.4 기반 **B안 5페이�
 | `/leadership` | P2 리더십·조직 | 마젠타 `.tint-p2` | `keess_P2_leadership_B_framework` |
 | `/hrd` | P3 HRD 통합 솔루션 (+정부지원 `#gov`) | 바이올렛 `.tint-p3` | `keess_P3_hrd_B_platform_v2.0` |
 | `/content` | P4 콘텐츠 솔루션 (+다운로드 `#download`) | 웜 `.tint-p4` | `keess_P4_content_solution_B_v2.0` |
+| `/csr` | KG그룹 사회공헌 목록 (36건, 더보기 12건 단위) | 중립 | 신규 (기획 문서 기준) |
+| `/csr/[id]` | 사회공헌 상세 (`csr-001`~`csr-036`, SSG 36개) | 중립 | 신규 (기획 문서 기준) |
+
+> 사회공헌은 **GNB에 편입하지 않습니다**. 진입점은 홈 하단 사회공헌 밴드(6건)와 공통 Footer의 `사회공헌` 링크 2곳입니다.
 
 **에러 대응 화면** (Next.js App Router 규약 파일)
 
@@ -26,6 +30,13 @@ Next.js(App Router) + React + TypeScript + Tailwind v3.4 기반 **B안 5페이�
 - **부정훈련 예방/신고 모달**: 공통 Footer에 상시 마운트 → 전 페이지 동작(기준 = `KEESS_home_C_v26`).
 - **크로스링크**: `/hrd#gov` ↔ `/content#download`.
 - **다운로드**: `public/downloads/KG에듀원_과정리스트.xlsx` (라이트 게이트 → 실제 다운로드).
+
+## 데이터 소스 — 사회공헌
+
+- **본문·메타**: `lib/csr/data.ts` 36건. kggroup.co.kr 공식 사회공헌 페이지에서 **1회성으로 수집한 정적 스냅샷**이며, 각 건의 `sourceUrl`이 원문을 가리킵니다. API·CMS 연동 없음.
+- **이미지**: `public/img/csr-{번호3자리}-{순번2자리}.{jpg,png}` 76개(카드용은 `-thumb` 접미사). 외부 핫링크 없이 전건 self-host. 1MB 초과 원본 7개는 `scripts/resize-csr-images.mjs`로 최대 폭 1600px·품질 80 재저장(파일명 불변).
+- **미노출 항목**: 날짜·조회수·검색은 화면에 내지 않습니다. `sortDate`는 정렬 전용이고, 조회수는 `/csr/[id]` 라우트의 GA4 페이지뷰로 갈음합니다(코드에 집계 로직 없음).
+- **갱신**: 콘텐츠 추가·수정은 `lib/csr/data.ts` 편집 + 이미지 배치 후 재빌드로 반영됩니다. 원문 링크는 외부 사이트 개편에 따라 끊길 수 있어 주기적 생존 점검이 필요합니다.
 
 ## 개발 · 빌드
 
@@ -52,14 +63,17 @@ npm run start    # 빌드 결과 서빙 (http://localhost:3001)
 ## 구조
 
 ```
-app/            # 라우트 + globals.css + layout(폰트·공통 Footer·ToTop)
+app/            # 라우트 + globals.css + layout(폰트·공통 Footer·ToTop) + csr/
 components/
   common/       # Nav·Footer·ReportModal·Modal·SubNav·Button·Reveal 등
   sections/     # 페이지별 섹션(home/axai/leadership/hrd/content)
+  csr/          # 사회공헌 카드·목록 그리드·본문·홈 밴드
 data/           # 카피·데이터(verbatim)
-lib/            # useReveal·useModal·types
-styles/         # components.css(공통) + 페이지별(home/axai/leadership/hrd/content).css
-public/         # fonts(Pretendard self-host)·images·downloads(xlsx)
+lib/            # useReveal·useModal·types + csr/(data·types·queries)
+scripts/        # 1회성 유지보수 스크립트(이미지 리사이즈 등, 실행 기록용 보존)
+styles/         # components.css(공통) + 페이지별(home/axai/leadership/hrd/content/csr).css
+public/         # fonts(Pretendard self-host)·images·img(사회공헌)·downloads(xlsx)
+docs/           # 기획 산출물 — 기술명세서 2종 + 일관성 개선 PRD
 ```
 
 폰트: **Pretendard Variable self-host**(`next/font/local`) 전 페이지 통일 + Gowun Batang(홈 매니페스토 한정).
@@ -141,5 +155,18 @@ public/         # fonts(Pretendard self-host)·images·downloads(xlsx)
 - **줄바꿈 품질**: 404·500 설명문을 **문장 단위로 분리 렌더**(좁은 화면에서는 문장 내부에서만 자연 줄바꿈), 카드 설명은 어구 중간 끊김이 없도록 간결한 대구형 한 줄로 정리. `word-break:keep-all` + `text-wrap:balance` 병행.
   > 에러 페이지에는 실사 이미지를 쓰지 않습니다. 복귀 속도가 최우선이고, 500은 장애 상황을 가정하므로 외부 리소스(이미지·웹폰트)를 참조하지 않는다는 원칙을 지킵니다.
 - **기획 산출물 동기화**: 이번 라운드 기준 문서를 `ref/spec/`에 반영 — `KEESS_Final_프로토타입_업데이트_기술명세서_v1.0.md`, `KEESS_에러페이지_기술명세서_v2.0.md`(구현 결과·QA 체크리스트 통과 여부까지 반영한 최신본).
+
+### 9) 사회공헌(/csr) 신설 + 페이지 간 일관성 개선
+> 기준: `docs/KEESS_사회공헌_기술명세서_최종_v2.0_260803.md` · `docs/KEESS_프로토타입_일관성개선_PRD_upgrade-01.md`(+동명 기술명세서 v1.0)
+
+- **사회공헌 라우트 신설**: `/csr` 목록(36건) + `/csr/[id]` 상세 36개 SSG(`generateStaticParams`, `dynamicParams=false`). 목록은 초기 12건 → 더보기 클릭당 +12로 점증하며, URL 파라미터를 쓰지 않아 스크롤 위치가 보존됩니다. 카드 노출 정보는 **썸네일·계열사 배지·제목·요약 4종**으로 한정했습니다.
+- **진입점**: 홈 FAQ와 `#inq` 사이에 사회공헌 밴드(6건) 배치 — 최종 CTA(상담 폼)가 페이지 마지막에 남도록 앞에 두었습니다. 공통 Footer에 `사회공헌` 링크 추가. **GNB는 변경하지 않았습니다.**
+- **상세**: 본문을 문단/이미지 블록 배열로 구조화해 렌더(`dangerouslySetInnerHTML` 미사용 → XSS·마크업 오염 차단). 출처 박스에서 원문(kggroup.co.kr)을 새 탭(`rel="noopener noreferrer"`)으로 열고, 이전글/다음글 내비를 제공합니다.
+- **카드 모션**: 카드 리프트(`translateY(-4px)`)+그림자 승격, 썸네일만 `scale(1.04)`(클리핑은 카드의 `overflow:hidden`+`var(--r)`이 담당), 제목 색 전환. 모든 hover 모션을 `:focus-visible`에 동일 적용하고 `prefers-reduced-motion`에서 transform 모션을 해제합니다. 신규 색상·토큰 0, `transition:all` 미사용.
+- **이미지 최적화**: 수집 원본 중 1MB 초과 7건(최대 11.1MB)을 최대 폭 1600px·품질 80으로 재저장 → `public/img` 총 **49.6MB → 12.65MB**. 파일명·확장자를 바꾸지 않아 `data.ts` 참조 경로는 불변이며, 재실행 기록용으로 `scripts/resize-csr-images.mjs`를 남겼습니다.
+- **메타데이터**: OG 이미지의 절대 URL 해석 기준으로 `metadataBase` 추가(`VERCEL_URL` 기반, 로컬은 dev 포트 폴백). 정본 도메인 확정 시 한 줄 교체.
+- **C1 /ax-ai 서브내비 첫 항목 추가**: 히어로 직후 콘텐츠 섹션에 `#offer`를 부여하고 서브내비 첫 항목(`AX 전환 교육`)으로 노출 → 형제 페이지(`#pain`·`#ax1` 등)와 동일 규칙. 라벨은 해당 섹션의 확정 eyebrow를 그대로 썼습니다. *(원안이던 '맨 위로 ↑' 링크 이식은 플로팅 `ToTop`이 이미 전역 존재해 채택하지 않음 — 결정 근거는 PRD 하단 「결정 기록」 참조)*
+- **C2 /content 서브내비 라벨 정규화**: `01 직무역량`~`06 제작·파트너`의 숫자 접두어 제거 → 4개 서비스 페이지 서브내비 문법 통일. 앵커 id(`#ax1`~`#ax6`)는 URL 해시 호환을 위해 유지했고, 본문 성격의 넘버링(프로세스 스텝 등)은 손대지 않았습니다.
+- **기획 산출물**: 이번 라운드 기준 문서 3종을 `docs/`에 보관(사회공헌 기술명세서 최종 v2.0 · 일관성 개선 PRD upgrade-01 · 동 기술명세서 v1.0).
 
 > 백엔드 미연동(클라이언트 상태 UI) · Design.md 토큰 준수 · 가격/결제 요소 없음.
