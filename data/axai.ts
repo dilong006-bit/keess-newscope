@@ -199,6 +199,9 @@ export const FINAL = {
 
 // 상담/가이드 모달 필드
 export const SUBNAV = [
+  // 첫 항목 = 히어로 직후 최상단 콘텐츠 섹션 (형제 페이지 #pain·#arch·#ax1과 동일 규칙, C1)
+  // 라벨은 해당 섹션의 확정 eyebrow(BENTO.eyebrow) 그대로 사용 — 신규 카피 없음
+  { id: 'offer', label: 'AX 전환 교육' },
   { id: 'scenario', label: '목표 경로' },
   { id: 'service', label: '5 Step' },
   { id: 'framework', label: 'Framework' },

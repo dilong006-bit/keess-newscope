@@ -54,7 +54,9 @@ export default function Sections() {
       <SubNav items={SUBNAV} />
 
       {/* ── OFFER (bento) ── */}
-      <section className="section">
+      {/* 히어로 직후 최상단 콘텐츠 섹션. 형제 페이지(#pain·#arch·#ax1)와 동일하게
+          서브내비 첫 항목의 앵커 대상이 되도록 id 부여 (C1) */}
+      <section className="section" id="offer">
         <div className="wrap">
           <p className="eyebrow r ax-eyebrow-tight">{BENTO.eyebrow}</p>
           <div className="ax-bento stagger">
