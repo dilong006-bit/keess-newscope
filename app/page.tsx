@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@/styles/home.css';
+import '@/styles/csr.css';
 import Nav from '@/components/common/Nav';
 import RevealInit from '@/components/common/RevealInit';
 import HeroCarousel from '@/components/sections/home/HeroCarousel';
@@ -9,6 +10,7 @@ import HomeManifesto from '@/components/sections/home/HomeManifesto';
 import HomeFaq from '@/components/sections/home/HomeFaq';
 import HomeInquiry from '@/components/sections/home/HomeInquiry';
 import HomeReferences from '@/components/sections/home/HomeReferences';
+import CsrHomeBand from '@/components/csr/CsrHomeBand';
 import { INTRO, CERTS } from '@/data/home';
 
 export const metadata: Metadata = {
@@ -62,6 +64,9 @@ export default function HomePage() {
       </section>
 
       <HomeFaq />
+
+      {/* 사회공헌 밴드 — FAQ와 #inq 사이. 최종 CTA(상담 폼)가 페이지 마지막에 남도록 앞에 배치 */}
+      <CsrHomeBand />
 
       <HomeInquiry />
     </main>

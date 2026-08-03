@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import ReportModal from './ReportModal';
 import Modal from './Modal';
 import {
@@ -104,6 +105,8 @@ export default function Footer() {
                 <a className="priv" href="#">개인정보처리방침</a>
                 <span>·</span>
                 <a href="#">이용약관</a>
+                <span>·</span>
+                <Link href="/csr">사회공헌</Link>
                 <span>·</span>
                 <button className="report-link" type="button" onClick={() => setReport({ open: true, tab: 'info' })}>부정훈련 예방 안내</button>
                 <span>·</span>
