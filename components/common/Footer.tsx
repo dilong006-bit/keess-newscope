@@ -106,7 +106,7 @@ export default function Footer() {
                 <span>·</span>
                 <a href="#">이용약관</a>
                 <span>·</span>
-                <Link href="/csr">사회공헌</Link>
+                <Link href="/csr">KG그룹 사회공헌</Link>
                 <span>·</span>
                 <button className="report-link" type="button" onClick={() => setReport({ open: true, tab: 'info' })}>부정훈련 예방 안내</button>
                 <span>·</span>

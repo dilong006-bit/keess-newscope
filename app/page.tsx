@@ -10,7 +10,8 @@ import HomeManifesto from '@/components/sections/home/HomeManifesto';
 import HomeFaq from '@/components/sections/home/HomeFaq';
 import HomeInquiry from '@/components/sections/home/HomeInquiry';
 import HomeReferences from '@/components/sections/home/HomeReferences';
-import CsrHomeBand from '@/components/csr/CsrHomeBand';
+// 8/4 홈 노출 보류, 진입은 푸터로 일원화 — 담당자 확정
+// import CsrHomeBand from '@/components/csr/CsrHomeBand';
 import { INTRO, CERTS } from '@/data/home';
 
 export const metadata: Metadata = {
@@ -66,7 +67,8 @@ export default function HomePage() {
       <HomeFaq />
 
       {/* 사회공헌 밴드 — FAQ와 #inq 사이. 최종 CTA(상담 폼)가 페이지 마지막에 남도록 앞에 배치 */}
-      <CsrHomeBand />
+      {/* 8/4 홈 노출 보류, 진입은 푸터로 일원화 — 담당자 확정. 재노출 대비해 제거하지 않고 주석 유지 */}
+      {/* <CsrHomeBand /> */}
 
       <HomeInquiry />
     </main>
