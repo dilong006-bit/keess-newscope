@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Img from '@/components/common/Img';
 import { HERO_SLIDES } from '@/data/home';
@@ -97,7 +98,7 @@ export default function HeroCarousel() {
             aria-hidden={k === i ? 'false' : 'true'}
           >
             <div className="hs-bg" />
-            <Img className="hs-img" src={s.img} eager={s.eager} />
+            {s.img && <Img className="hs-img" src={s.img} eager={s.eager} />}
             <div className="hs-scrim" />
             <div className="wrap">
               <div className="hs-content">
@@ -106,9 +107,16 @@ export default function HeroCarousel() {
                 <h1 dangerouslySetInnerHTML={{ __html: s.title }} />
                 <p className="sub" dangerouslySetInnerHTML={{ __html: s.sub }} />
                 <div className="actions">
-                  <button className="btn btn-ink" onClick={() => scrollTo(s.cta.scroll)}>
-                    {s.cta.label}
-                  </button>
+                  {/* href = 다른 라우트 이동(캠페인 슬라이드) / scroll = 같은 페이지 앵커 */}
+                  {s.cta.href ? (
+                    <Link className="btn btn-ink" href={s.cta.href}>
+                      {s.cta.label}
+                    </Link>
+                  ) : (
+                    <button className="btn btn-ink" onClick={() => scrollTo(s.cta.scroll!)}>
+                      {s.cta.label}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

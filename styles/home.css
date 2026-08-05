@@ -30,6 +30,8 @@
 .hero-slide[data-theme=new] .hs-bg{background:linear-gradient(130deg,#3a1e05,#F58220 62%,#7a3a05)}
 .hero-slide[data-theme=gov] .hs-bg{background:linear-gradient(130deg,#33270a,#B8891A 55%,#4d3608)}
 .hero-slide[data-theme=case] .hs-bg{background:linear-gradient(130deg,#280e37,#8B27A8 62%,#3a1050)}
+/* 인재키움 프리미엄 캠페인 — 사진 슬롯 없이 브랜드 퍼플 파생 톤만(기존 슬라이드 문법 상속) */
+.hero-slide[data-theme=kium] .hs-bg{background:linear-gradient(130deg,#1B0F45,#2E1A6B 58%,#5a3fb0)}
 .hs-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:.5;will-change:transform}
 @keyframes hs-kb{from{transform:scale(1.04)}to{transform:scale(1.14)}}
 .hero-slide.active .hs-img{animation:hs-kb 9s ease-out both}

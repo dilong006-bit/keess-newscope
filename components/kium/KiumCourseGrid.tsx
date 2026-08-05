@@ -1,0 +1,216 @@
+'use client';
+
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import KiumCourseCard from './KiumCourseCard';
+import KiumCoursePanel from './KiumCoursePanel';
+import { useModal } from '@/lib/useModal';
+import type { KiumCategory, KiumCourse } from '@/lib/kium/data';
+
+/** K6 — 필터 교체 out fade 120ms(FLIP 금지) */
+const OUT_MS = 120;
+/** 데스크톱 인라인 확장 ↔ 모바일 바텀시트 분기 (전략 §6) */
+const SHEET_MQ = '(max-width:767px)';
+
+type Filter = 'all' | KiumCategory;
+
+interface Props {
+  courses: KiumCourse[];
+  categories: { key: KiumCategory; label: string; count: number }[];
+}
+
+/**
+ * F7 과정 그리드 — 필터 칩 + 카드 그리드 + 상세 패널
+ *
+ * - 필터 상태는 `?cat=` 쿼리로 유지(history replace — 뒤로가기 스택 오염 없음)
+ * - 데스크톱: 클릭한 카드의 행 아래 전폭 인라인 확장(그리드 문맥 유지)
+ * - 모바일(<768px): 바텀시트(포커스 트랩·ESC·스와이프 다운 닫기·dim 40%)
+ * - 정렬 옵션·검색 없음(§1-2). 카테고리당 최소 1과정이라 0건은 방어 문구만 유지
+ */
+export default function KiumCourseGrid({ courses, categories }: Props) {
+  const [cat, setCat] = useState<Filter>('all');
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'idle' | 'leaving' | 'entering'>('idle');
+  const [cols, setCols] = useState(3);
+  const [sheet, setSheet] = useState(false);
+  const [slotOpen, setSlotOpen] = useState(false);
+  const outTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const visible = cat === 'all' ? courses : courses.filter((c) => c.category === cat);
+  const openCourse = visible.find((c) => c.id === openId) ?? null;
+
+  // ── 반응형 열 수 + 시트 분기 (인라인 패널 삽입 위치 계산에 필요) ────────
+  useEffect(() => {
+    const sheetMq = window.matchMedia(SHEET_MQ);
+    const twoMq = window.matchMedia('(max-width:1000px)');
+    const sync = () => {
+      setSheet(sheetMq.matches);
+      setCols(sheetMq.matches ? 1 : twoMq.matches ? 2 : 3);
+    };
+    sync();
+    sheetMq.addEventListener('change', sync);
+    twoMq.addEventListener('change', sync);
+    return () => {
+      sheetMq.removeEventListener('change', sync);
+      twoMq.removeEventListener('change', sync);
+    };
+  }, []);
+
+  // ── ?cat= 초기 반영 (잘못된 값 → 전체) ────────────────────────────────
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get('cat');
+    if (raw && categories.some((c) => c.key === raw)) setCat(raw as KiumCategory);
+  }, [categories]);
+
+  useEffect(() => () => clearTimeout(outTimer.current), []);
+
+  // K3 — 인라인 패널은 닫힌 상태로 마운트한 뒤 다음 프레임에 열어 height morph를 태운다
+  useEffect(() => {
+    if (!openId || sheet) {
+      setSlotOpen(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => setSlotOpen(true));
+    return () => cancelAnimationFrame(id);
+  }, [openId, sheet]);
+
+  /** 필터 교체 — out fade 120ms → in stagger */
+  const changeCat = (next: Filter) => {
+    if (next === cat) return;
+    setOpenId(null);
+    setPhase('leaving');
+    clearTimeout(outTimer.current);
+    outTimer.current = setTimeout(() => {
+      setCat(next);
+      setPhase('entering');
+      // 쿼리 동기화(공유 가능) — replace라 뒤로가기 스택을 늘리지 않는다
+      const url = new URL(window.location.href);
+      if (next === 'all') url.searchParams.delete('cat');
+      else url.searchParams.set('cat', next);
+      window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+      outTimer.current = setTimeout(() => setPhase('idle'), 300);
+    }, OUT_MS);
+  };
+
+  const closeSheet = useCallback(() => setOpenId(null), []);
+  const sheetRef = useModal(sheet && !!openCourse, closeSheet);
+
+  // 스와이프 다운 닫기 (바텀시트)
+  const dragY = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    dragY.current = e.touches[0].clientY;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (dragY.current === null) return;
+    if (e.changedTouches[0].clientY - dragY.current > 60) closeSheet();
+    dragY.current = null;
+  };
+
+  // 인라인 패널은 "열린 카드가 속한 행"의 마지막 카드 뒤에 삽입한다
+  const openIndex = openCourse ? visible.findIndex((c) => c.id === openCourse.id) : -1;
+  const insertAfter = openIndex < 0 ? -1 : Math.min(Math.floor(openIndex / cols) * cols + cols - 1, visible.length - 1);
+
+  const panelId = (id: string) => `kium-panel-${id}`;
+  const panelTitleId = (id: string) => `kium-panel-title-${id}`;
+
+  return (
+    <>
+      {/* 필터 칩 — [전체] + 6카테고리, 카운트 병기 */}
+      <div className="kium-filters" role="group" aria-label="과정 카테고리 필터">
+        <button
+          type="button"
+          className="kium-chip"
+          aria-pressed={cat === 'all'}
+          onClick={() => changeCat('all')}
+        >
+          전체 <span className="cnt">{courses.length}</span>
+        </button>
+        {categories.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            className="kium-chip"
+            aria-pressed={cat === c.key}
+            onClick={() => changeCat(c.key)}
+          >
+            {c.label} <span className="cnt">{c.count}</span>
+          </button>
+        ))}
+      </div>
+
+      <p className="kium-count" aria-live="polite">
+        {visible.length}개 과정
+      </p>
+
+      {visible.length === 0 ? (
+        <p className="kium-empty">해당 카테고리의 과정을 준비하고 있습니다.</p>
+      ) : (
+        <div className={`kium-grid${phase === 'idle' ? '' : ` ${phase}`}`}>
+          {visible.map((course, i) => (
+            <Fragment key={course.id}>
+              <div className="kium-card-wrap" style={{ animationDelay: `${(i % 9) * 0.04}s` }}>
+                <KiumCourseCard
+                  course={course}
+                  open={openCourse?.id === course.id}
+                  panelId={panelId(course.id)}
+                  onToggle={() => setOpenId(openCourse?.id === course.id ? null : course.id)}
+                />
+              </div>
+              {/* 인라인 확장(데스크톱·태블릿) — 행의 마지막 카드 뒤 전폭 슬롯 */}
+              {!sheet && i === insertAfter && openCourse && (
+                <div
+                  className={`kium-panel-slot${slotOpen ? ' open' : ''}`}
+                  id={panelId(openCourse.id)}
+                  role="region"
+                  aria-labelledby={panelTitleId(openCourse.id)}
+                >
+                  <div className="kium-panel-clip">
+                    <KiumCoursePanel course={openCourse} titleId={panelTitleId(openCourse.id)} />
+                  </div>
+                </div>
+              )}
+            </Fragment>
+          ))}
+        </div>
+      )}
+
+      {/*
+        모바일 바텀시트 — document.body로 포털한다.
+        position:fixed는 transform/filter를 가진 조상이 있으면 그 조상을 기준으로 배치되는데,
+        이 컴포넌트는 애니메이션이 걸린 탭 패널 안에 있어 시트가 뷰포트 밖으로 밀리는 문제가 있었다.
+        포털로 올려 두면 조상의 스택 컨텍스트 변화와 무관하게 항상 뷰포트 기준으로 고정된다.
+      */}
+      {sheet && createPortal(
+        <>
+          <div
+            className={`kium-sheet-dim${openCourse ? ' open' : ''}`}
+            onClick={closeSheet}
+            aria-hidden="true"
+          />
+          <div
+            className={`kium-sheet${openCourse ? ' open' : ''}`}
+            ref={sheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={openCourse ? panelTitleId(openCourse.id) : undefined}
+            aria-hidden={!openCourse}
+            id={openCourse ? panelId(openCourse.id) : undefined}
+          >
+            <div className="kium-sheet-handle" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+              <span />
+            </div>
+            <button type="button" className="kium-sheet-close" onClick={closeSheet} aria-label="닫기" data-autofocus>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+            <div className="kium-sheet-body">
+              {openCourse && <KiumCoursePanel course={openCourse} titleId={panelTitleId(openCourse.id)} />}
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+    </>
+  );
+}

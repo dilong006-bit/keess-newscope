@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { NAV_ITEMS, LOGO, type NavKey } from '@/data/nav';
+import { NAV_ITEMS, LOGO, EVENT_CHIP, type NavKey } from '@/data/nav';
+import SparkleIcon from './SparkleIcon';
 
 // 교육 상담 아이콘 (§0.5-6 · 말풍선 · 인터랙션 강화만, 구성·카피 불변)
 function ChatIcon() {
@@ -105,14 +106,27 @@ export default function Nav({ current, consultHref = '#inq', forceSolid = false 
               </Link>
             ))}
           </nav>
-          <a
-            className="btn btn-glass nav-cta"
-            href={consultHref}
-            onClick={onConsult}
-          >
-            <ChatIcon />
-            교육 상담
-          </a>
+          {/* 우측 그룹 — 기존 space-between 배치를 유지하기 위해 칩과 CTA를 한 항목으로 묶는다 */}
+          <div className="nav-right">
+            {/* 이벤트 칩 — 정식 메뉴 아님. 전 페이지 유일 캠페인 진입점이라
+                절제된 주기 모션(7s shimmer·트윙클)을 허용한다(F12′ 개정).
+                배경·텍스트·문안·크기·이동 기능은 불변, 시각 강조만 추가. */}
+            <Link className="nav-chip" href={EVENT_CHIP.href}>
+              <span className="shimmer" aria-hidden="true" />
+              <SparkleIcon />
+              {/* 신규 오픈 사실 표기 — 장식이 아니라 정보이므로 보조기술에도 노출한다 */}
+              <span className="chip-new">NEW</span>
+              {EVENT_CHIP.label}
+            </Link>
+            <a
+              className="btn btn-glass nav-cta"
+              href={consultHref}
+              onClick={onConsult}
+            >
+              <ChatIcon />
+              교육 상담
+            </a>
+          </div>
           <button
             className={`hamb${menuOpen ? ' open' : ''}`}
             id="hamb"
@@ -139,6 +153,12 @@ export default function Nav({ current, consultHref = '#inq', forceSolid = false 
             {item.label}
           </Link>
         ))}
+        {/* 모바일 메뉴 칩 — 데스크톱 칩과 같은 신호(스파클·NEW)를 쓴다. 주기 모션은 없음 */}
+        <Link className="mmenu-chip" href={EVENT_CHIP.href} onClick={() => setMenuOpen(false)}>
+          <SparkleIcon idSuffix="-m" />
+          <span className="chip-new">NEW</span>
+          {EVENT_CHIP.label}
+        </Link>
         <a className="btn btn-ink" href={consultHref} onClick={onConsult}>
           <ChatIcon />
           교육 상담

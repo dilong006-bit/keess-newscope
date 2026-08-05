@@ -2,13 +2,15 @@
 
 // ── 히어로 캐러셀 5슬라이드 (원본 535) ──
 export interface HeroSlide {
-  theme: 'brand' | 'event' | 'new' | 'gov' | 'case';
-  img: string;
+  theme: 'brand' | 'event' | 'new' | 'gov' | 'case' | 'kium';
+  /** 미지정 시 테마 그라디언트 배경만 사용(사진 슬롯 없음) */
+  img?: string;
   tag?: string;
   eyebrow: string;
   title: string; // <br> 허용
   sub: string; // <br> 허용
-  cta: { label: string; scroll: string };
+  /** scroll = 같은 페이지 앵커 / href = 다른 라우트 이동 (둘 중 하나만) */
+  cta: { label: string; scroll?: string; href?: string };
   eager?: boolean;
 }
 
@@ -21,6 +23,16 @@ export const HERO_SLIDES: HeroSlide[] = [
     sub: '조직을 먼저 진단해 무엇을 키울지 특정하고, 효과를 숫자로 증명합니다.<br>AX·AI 전환·리더십·HRD 통합·콘텐츠까지, 진단부터 결과보고까지 직접 책임집니다.',
     cta: { label: '교육 상담 신청', scroll: '#inq' },
     eager: true,
+  },
+  // 인재키움 프리미엄 캠페인 — 카피는 lib/kium/content.ts hero 확정본의 축약형(재작성 아님).
+  // 사진 슬롯 없이 테마 그라디언트만 사용하고, CTA는 스크롤이 아닌 /kium 라우팅이다.
+  {
+    theme: 'kium',
+    tag: 'EVENT · 정부지원',
+    eyebrow: '2026 중소기업 인재 키움 프리미엄 훈련',
+    title: '교육비 부담은 낮추고, 훈련비의 90~95%는 환급 받고',
+    sub: '맞춤형 교육 설계부터 복잡한 환급 절차까지, KG에듀원이 함께합니다.',
+    cta: { label: '자세히 보기', href: '/kium' },
   },
   {
     theme: 'event',
@@ -287,14 +299,23 @@ export const INQ = {
     { value: 'lte1000', label: '~ 1000명' },
     { value: 'gt1000', label: '~ 1000명 이상' },
   ],
-  // 관심 영역(선택·다중) — 5칩. value는 A안과 동일 유지, 4번째 라벨만 '콘텐츠 제작·도입'으로 변경
+  // 관심 영역(선택·다중) — 6칩. value는 A안과 동일 유지, 4번째 라벨만 '콘텐츠 제작·도입'으로 변경
+  // 6번째 '정부 지원'은 /kium(인재키움프리미엄) 도입에 따른 추가 (기술명세서 최종 v2.0 §4)
   interests: [
     { value: 'ax-ai', label: 'AX·AI 전환' },
     { value: 'leadership', label: '리더십·조직' },
     { value: 'hrd', label: 'HRD 통합 솔루션' },
     { value: 'content', label: '콘텐츠 제작·도입' },
     { value: 'compliance', label: '법정 필수' },
+    { value: 'gov', label: '정부 지원' },
   ],
+  // '정부 지원' 선택 시에만 노출되는 세부 분야 칩 (v3.0 §2-1 지정 라벨 — 임의 변경 금지).
+  // 값 = 라벨 그대로. 제출 시 별도 필드를 만들지 않고 관심 영역 'gov' 값에 병합한다.
+  interestSubs: {
+    parent: 'gov',
+    parentLabel: '정부 지원',
+    options: ['인재키움', '아카이브', 'AI기초', '내일배움카드'],
+  },
   success: {
     title: '상담 신청이 접수되었습니다.',
     msg: '담당자가 영업일 기준 1일 내 회신드립니다.',

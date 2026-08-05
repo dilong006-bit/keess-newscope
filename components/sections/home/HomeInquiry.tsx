@@ -33,6 +33,25 @@ export interface InquiryPayload {
   agreeMarketingEmail: boolean;
   agreeMarketingSms: boolean;
   agreeMarketingTel: boolean;
+  /** 유입 경로 태깅(예: /kium 경유 = 'kium'). 화면에 노출되지 않는 비수집 메타 필드 */
+  lead_source?: string;
+}
+
+interface HomeInquiryProps {
+  /**
+   * 관심 영역 칩 초기 선택값(사용자가 해제 가능). 홈에서는 지정하지 않아 기존 동작 그대로다.
+   * ※ 폼의 필드·동의 구조는 변경하지 않는다 — 기존 칩 중 무엇을 켜고 시작할지만 정한다.
+   */
+  presetInterests?: string[];
+  /**
+   * '정부 지원' 세부 분야 칩의 초기 선택값(사용자가 해제 가능).
+   * 부모 칩이 함께 선택돼 있지 않으면 노출되지 않는다.
+   */
+  presetInterestSubs?: string[];
+  /** 제출 페이로드에 실을 유입 경로 값(UI 미노출) */
+  leadSource?: string;
+  /** 지정 시 해당 CustomEvent를 구독해 '문의 내용'만 프리필한다(사용자 편집 가능) */
+  prefillEventName?: string;
 }
 
 /** 백엔드 없음(CLAUDE.md §0-6) — 추후 사내 API·메일 서비스 엔드포인트를 여기에 연결한다. */
@@ -40,14 +59,36 @@ function submitInquiry(payload: InquiryPayload) {
   return Promise.resolve(payload);
 }
 
-export default function HomeInquiry() {
+/** presetInterests → 칩 선택 상태. 미지정(홈)이면 빈 객체 = 기존 동작 */
+function initInterests(preset?: string[]): Record<string, boolean> {
+  return Object.fromEntries((preset ?? []).map((k) => [k, true]));
+}
+
+/** 세부 분야를 가진 부모 칩 value ('gov') */
+const SUB_PARENT = INQ.interestSubs.parent;
+
+/**
+ * '정부 지원' 관심 영역 값 병합 — 신규 name 필드를 만들지 않기 위한 표기 규칙.
+ * 세부 미선택: 'gov'(기존 값 그대로) / 선택: '정부 지원(인재키움·아카이브)'
+ */
+function mergeGovInterest(value: string, selectedSubs: string[]) {
+  return selectedSubs.length ? `${INQ.interestSubs.parentLabel}(${selectedSubs.join('·')})` : value;
+}
+
+export default function HomeInquiry({
+  presetInterests,
+  presetInterestSubs,
+  leadSource,
+  prefillEventName,
+}: HomeInquiryProps = {}) {
   const [v, setV] = useState({
     company: '', name: '', phone: '', position: '',
     emailLocal: '', emailDomain: '', companySize: '', trainees: '', message: '',
   });
   const [customDomain, setCustomDomain] = useState(false);
   const [errs, setErrs] = useState<Record<string, boolean>>({});
-  const [interests, setInterests] = useState<Record<string, boolean>>({});
+  const [interests, setInterests] = useState<Record<string, boolean>>(() => initInterests(presetInterests));
+  const [subs, setSubs] = useState<Record<string, boolean>>(() => initInterests(presetInterestSubs));
   const [consent, setConsent] = useState(false);
   const [mkt, setMkt] = useState({ email: false, sms: false, tel: false });
   const [consentErr, setConsentErr] = useState(false);
@@ -89,7 +130,9 @@ export default function HomeInquiry() {
     clearTimeout(phoneHintTimer.current);
     setV({ company: '', name: '', phone: '', position: '', emailLocal: '', emailDomain: '', companySize: '', trainees: '', message: '' });
     setCustomDomain(false);
-    setInterests({});
+    // 초기화 후에도 진입 경로 프리셀렉트는 유지(홈은 preset 미지정이라 기존과 동일하게 빈 상태)
+    setInterests(initInterests(presetInterests));
+    setSubs(initInterests(presetInterestSubs));
     setConsent(false);
     setMkt({ email: false, sms: false, tel: false });
     setErrs({});
@@ -125,6 +168,25 @@ export default function HomeInquiry() {
     } else setPhoneHint(false);
   };
   useEffect(() => () => clearTimeout(phoneHintTimer.current), []);
+
+  /**
+   * 과정 패널 CTA → '문의 내용' 프리필 ([관심 과정: ...]).
+   * 값만 넣을 뿐 필드·검증·동의 구조는 그대로이며, 사용자가 자유롭게 편집·삭제할 수 있다.
+   * 재클릭 시 앞선 토큰만 교체해 중복 누적을 막는다.
+   */
+  useEffect(() => {
+    if (!prefillEventName) return;
+    const onPrefill = (e: Event) => {
+      const text = (e as CustomEvent<{ text?: string }>).detail?.text;
+      if (!text) return;
+      setV((s) => {
+        const rest = s.message.replace(/^\[관심 과정: [^\]]*\]\s*/, '');
+        return { ...s, message: (text + rest).slice(0, INQ_MAX.message) };
+      });
+    };
+    window.addEventListener(prefillEventName, onPrefill);
+    return () => window.removeEventListener(prefillEventName, onPrefill);
+  }, [prefillEventName]);
 
   const email = `${v.emailLocal.trim()}@${v.emailDomain.trim()}`;
 
@@ -195,7 +257,11 @@ export default function HomeInquiry() {
       email,
       companySize: v.companySize,
       expectedTrainees: v.trainees,
-      interests: INQ.interests.filter((o) => interests[o.value]).map((o) => o.value),
+      // 관심 영역 — '정부 지원'은 세부 분야가 선택된 경우 값 자체에 병합해 싣는다.
+      // 새 name 필드를 만들지 않으므로 폼 수집 항목 수는 그대로다(신규 수집 0).
+      interests: INQ.interests
+        .filter((o) => interests[o.value])
+        .map((o) => (o.value === SUB_PARENT ? mergeGovInterest(o.value, subLabels) : o.value)),
       message: v.message.trim(),
       attachment: file,
       agreePrivacy: true,
@@ -203,10 +269,23 @@ export default function HomeInquiry() {
       agreeMarketingEmail: mkt.email,
       agreeMarketingSms: mkt.sms,
       agreeMarketingTel: mkt.tel,
+      // 유입 경로 태깅 — 폼에 입력 UI가 없는 비노출 메타(GA4·GTM 코드 삽입 아님)
+      ...(leadSource ? { lead_source: leadSource } : {}),
     };
     submitInquiry(payload);
     setDone(true);
   }
+
+  // 세부 분야 — 부모 칩이 켜져 있을 때만 노출/집계. 부모를 끄면 선택값도 초기화한다.
+  const govOn = !!interests[SUB_PARENT];
+  const subLabels = govOn ? INQ.interestSubs.options.filter((o) => subs[o]) : [];
+  const toggleInterest = (value: string) => {
+    setInterests((s) => {
+      const next = { ...s, [value]: !s[value] };
+      if (value === SUB_PARENT && !next[value]) setSubs({});
+      return next;
+    });
+  };
 
   const fld = (k: string) => `field${errs[k] ? ' invalid' : ''}`;
   const half = { flex: '1 1 160px', width: 'auto', minWidth: 0 } as const;
@@ -313,11 +392,29 @@ export default function HomeInquiry() {
                         key={o.value}
                         className={`mchip${interests[o.value] ? ' on' : ''}`}
                         aria-pressed={!!interests[o.value]}
-                        onClick={() => setInterests((s) => ({ ...s, [o.value]: !s[o.value] }))}
+                        onClick={() => toggleInterest(o.value)}
                       >
                         {o.label}
                       </button>
                     ))}
+                    {/* '정부 지원' 세부 분야 — 부모 칩 선택 시 우측 여백에 노출(모바일은 다음 행으로 개행).
+                        새 수집 항목이 아니라 관심 영역 분류의 세분화이며, 제출 시 부모 값에 병합된다. */}
+                    {govOn && (
+                      <span className="mchip-subs" role="group" aria-label={`${INQ.interestSubs.parentLabel} 세부 분야`}>
+                        {INQ.interestSubs.options.map((o, i) => (
+                          <button
+                            type="button"
+                            key={o}
+                            className={`mchip mchip-sub${subs[o] ? ' on' : ''}`}
+                            style={{ animationDelay: `${i * 90}ms` }}
+                            aria-pressed={!!subs[o]}
+                            onClick={() => setSubs((s) => ({ ...s, [o]: !s[o] }))}
+                          >
+                            {o}
+                          </button>
+                        ))}
+                      </span>
+                    )}
                   </div>
                 </div>
 

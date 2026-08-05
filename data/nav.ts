@@ -18,3 +18,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 // 홈 로고 = 홈(/) (Design.md §0.5-2)
 export const LOGO = { label: 'KEESS', href: '/' };
+
+// GNB 우측 이벤트 칩 — 정식 메뉴 아님(기술명세서 최종 v2.0 §6-8: GNB 정식 메뉴 추가 금지).
+// NAV_ITEMS와 분리해 두어 aria-current 대상·모바일 메뉴 구성에서 제외된다.
+export const EVENT_CHIP = { label: '인재키움 프리미엄', href: '/kium' };

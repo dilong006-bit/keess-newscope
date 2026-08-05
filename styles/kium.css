@@ -1,0 +1,576 @@
+/* =========================================================================
+   인재키움프리미엄(/kium) — 히어로 · 탭 · 사업소개 · 과정안내
+   ★ 신규 토큰 0. 색·라운드·그림자·이징은 globals.css :root 토큰만 사용.
+     페이지 강조색은 KG 브랜드 퍼플 var(--p1)(#2E1A6B) 단일,
+     정부지원 배지는 기존 var(--gov) 의미 고정 그대로.
+   ★ 썸네일 메시 변수(--mesh-*)는 이 파일 스코프 한정(.kium-thumb) — 전역 토큰 오염 없음.
+     값은 기술명세서 v1.0 §4-1 원문 그대로.
+   ★ transition 속성은 개별 지정(all 금지). 전 hover = focus-visible 동일.
+   ★ 모션은 v1.0 §5 K1~K6 — 300ms 전환 · 90ms stagger · 기존 easing만.
+   ========================================================================= */
+
+/* ── 페이지 셸 (히어로 있는 페이지 → nav 오프셋 없음) ──────────────────── */
+/* [수정 0] 그레인 텍스처 — feTurbulence 인라인 data-URI(외부 요청 0, seed 고정 = 결정적 렌더).
+   전역 :root 대신 .kium-page 스코프에 둔다 — kium.css는 다른 라우트로도 따라붙으므로
+   전역 토큰 오염을 막기 위함(값·기법은 지시서 원문 그대로). */
+.kium-page{background:var(--bg);
+  --kium-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* 그레인 오버레이 공통 — 항상 최상층, 포인터 통과 */
+.kium-grain{position:absolute;inset:0;pointer-events:none;
+  background-image:var(--kium-grain);background-repeat:repeat}
+
+/* 스크린리더 전용 텍스트(새 창 고지 등) — styles/csr.css의 .sr-only와 동일 규칙 */
+.kium-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* =========================================================================
+   F1 히어로
+   ========================================================================= */
+.kium-hero{position:relative;overflow:hidden;padding:150px 0 64px;background:#fff}
+@media(max-width:720px){.kium-hero{padding:116px 0 52px}}
+.kium-hero>.wrap{position:relative;z-index:1}
+.kium-hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:44px;align-items:center}
+@media(max-width:880px){.kium-hero-grid{grid-template-columns:1fr;gap:30px}}
+
+/* ── [수정 1] 배경 3층: ①정적 메시 블롭(폴백·항상 렌더) → WebGL 캔버스 → ③그레인 ── */
+.kium-hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+/* ① 폴백 레이어 — WebGL이 없어도 히어로가 성립하는 기본 표면. 브랜드 퍼플·저채도 시안. */
+.kium-blob{position:absolute;border-radius:50%;filter:blur(110px);opacity:.5}
+.kium-blob.b1{width:46vw;height:46vw;max-width:620px;max-height:620px;right:-6vw;top:-12vw;
+  background:radial-gradient(circle,#2E1A6B 0%,rgba(46,26,107,0) 70%)}
+.kium-blob.b2{width:34vw;height:34vw;max-width:460px;max-height:460px;right:14vw;bottom:-14vw;
+  background:radial-gradient(circle,#0891B2 0%,rgba(8,145,178,0) 70%);opacity:.28}
+@media(max-width:880px){.kium-blob{filter:blur(80px)}.kium-blob.b1{right:-24vw;top:-20vw}
+  .kium-blob.b2{right:-10vw;bottom:auto;top:12vw}}
+/* ② WebGL 캔버스 — 라이선스 키가 있을 때만 마운트(§보고 참조). 폴백 위에 덧입힌다. */
+.kium-hero-neat{position:absolute;inset:0;width:100%;height:100%;opacity:.9}
+/* ③ 그레인 */
+.kium-hero-bg .kium-grain{opacity:1}
+
+/* ── 아이브로 칩 ── */
+.kium-eyebrow-chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface);
+  border:1px solid var(--line);border-radius:999px;padding:7px 15px;
+  font-size:12.5px;font-weight:700;letter-spacing:-.01em;color:var(--p1);word-break:keep-all}
+.kium-eyebrow-chip svg{flex:none}
+
+.kium-hero h1{margin-top:18px;font-size:clamp(28px,4.2vw,48px);font-weight:800;color:var(--ink);
+  letter-spacing:-.02em;line-height:1.3;word-break:keep-all;max-width:20ch}
+/* 확정 카피의 주인공 = "90~95%" — 1.35em 디스플레이 강조 + 자간 -.03em + tabular-nums */
+.kium-hero h1 .kium-rate{color:var(--p1);letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  font-size:1.35em;line-height:1;white-space:nowrap}
+/* 본문 잉크 컬러 — muted 회색이 washed로 보이던 문제 해소(저장소 본문 톤 #3a3a42) */
+.kium-hero-sub{margin-top:22px;color:#3a3a42;font-size:clamp(15px,1.7vw,17px);
+  line-height:1.75;max-width:52ch;word-break:keep-all}
+.kium-hero-sub span{display:block}
+.kium-hero-sub span+span{margin-top:6px}
+
+/* 주관기관 텍스트 표기 */
+.kium-agencies{margin-top:24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kium-agencies .lab{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+.kium-agencies .org{display:inline-flex;align-items:center;border:1px solid var(--line);
+  background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;color:#3a3a42}
+
+.kium-hero-cta{margin-top:32px;display:flex;gap:10px;flex-wrap:wrap}
+.kium-hero-cta .btn-ink{min-height:44px}
+.kium-btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:15px 26px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;color:var(--ink);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
+.kium-btn-ghost:hover,.kium-btn-ghost:focus-visible{transform:translateY(-2px);
+  box-shadow:var(--shadow-1);border-color:#c9ccd3}
+
+/* ── 중층: KiumThumb 카드 스택 3장 (hero-art.webp 미존재 시) ── */
+.kium-hero-art{position:relative;display:flex;justify-content:center;align-items:center;
+  min-height:330px}
+@media(max-width:880px){.kium-hero-art{min-height:250px}}
+.kium-hero-stack{position:relative;width:min(100%,330px);aspect-ratio:4/3}
+.kium-stack-card{position:absolute;inset:0;border-radius:16px;overflow:hidden;
+  box-shadow:var(--shadow-2);border:1px solid rgba(255,255,255,.14);
+  transition:transform .4s var(--ease-out)}
+.kium-stack-card:nth-child(1){transform:rotate(-6deg) translate(-13%,4%) scale(.94)}
+.kium-stack-card:nth-child(2){transform:rotate(0deg) translate(0,0)}
+.kium-stack-card:nth-child(3){transform:rotate(6deg) translate(13%,-4%) scale(.94);z-index:1}
+/* 겹친 뒤쪽 카드의 텍스트는 앞 카드에 잘려 깨진 글자로 읽히므로 표면만 남긴다.
+   맨 앞 카드만 과정명을 노출하고, 나머지는 카테고리 표면색으로 구분된다. */
+.kium-stack-card:not(:nth-child(3)) .kium-thumb-title,
+.kium-stack-card:not(:nth-child(3)) .kium-thumb-cat{display:none}
+/* 호버 시 간격만 살짝 펼침(그라디언트 변화 없음) */
+.kium-hero-stack:hover .kium-stack-card:nth-child(1){transform:rotate(-9deg) translate(-19%,5%) scale(.94)}
+.kium-hero-stack:hover .kium-stack-card:nth-child(3){transform:rotate(9deg) translate(19%,-5%) scale(.94)}
+/* 아트웍 슬롯(옵션 트랙 B) — public/kium/hero-art.webp 존재 시 */
+.kium-hero-artwork{width:min(100%,420px);aspect-ratio:4/3;border-radius:18px;overflow:hidden;
+  box-shadow:var(--shadow-2)}
+.kium-hero-artwork img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ── 히어로 하단 verified 혜택 스탯 ── */
+.kium-hero-stats{margin-top:48px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+  padding-top:28px;border-top:1px solid var(--line)}
+@media(max-width:820px){.kium-hero-stats{grid-template-columns:1fr;gap:16px}}
+.kium-stat .k{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+.kium-stat .v{margin-top:6px;font-size:clamp(14.5px,1.6vw,16px);font-weight:700;color:var(--ink);
+  line-height:1.5;word-break:keep-all;font-variant-numeric:tabular-nums}
+.kium-stat-src{margin-top:16px;font-size:12px;color:var(--muted)}
+/* [수정 3] 신청절차 상단 혜택 스탯 밴드 — 히어로와 동일 데이터, 밴드 형태만 다르다 */
+.kium-stat-band{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px 24px}
+@media(max-width:820px){.kium-stat-band{grid-template-columns:1fr;gap:16px}}
+.kium-stat-band+.kium-stat-src{margin-top:10px}
+
+/* =========================================================================
+   F2 탭 바 — K1(인디케이터 translateX morph 300ms / 패널 out 120ms → in 300ms)
+   ========================================================================= */
+.kium-tabbar{position:sticky;top:72px;z-index:40;background:rgba(255,255,255,.86);
+  backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line)}
+.kium-tablist{position:relative;display:flex;gap:4px;height:54px;align-items:stretch}
+.kium-tab{position:relative;display:inline-flex;align-items:center;gap:8px;padding:0 20px;
+  min-height:44px;border:none;background:none;font-family:inherit;font-size:15px;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:color .3s var(--ease)}
+.kium-tab:hover,.kium-tab:focus-visible{color:var(--ink)}
+.kium-tab[aria-selected="true"]{color:var(--p1)}
+/* 인디케이터 — 즉시 교체 금지, 좌표·폭 morph */
+.kium-tab-ind{position:absolute;left:0;bottom:0;height:2.5px;background:var(--p1);border-radius:2px;
+  transform:translateX(var(--ind-x,0));width:var(--ind-w,0);
+  transition:transform .3s var(--ease-out),width .3s var(--ease-out)}
+/* fill-mode를 쓰지 않는다: `both`로 끝나면 애니메이션 종료 후에도 transform이 항등 행렬로
+   남아 이 요소가 position:fixed 자손(바텀시트)의 컨테이닝 블록이 되어 버린다.
+   fill 없이도 마운트 즉시 재생되므로 보이는 결과는 동일하다. */
+.kium-panel{animation:kium-panel-in .3s var(--ease-out)}
+@keyframes kium-panel-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* 탭 패널의 첫 헤딩은 전환 시 포커스를 받되 아웃라인만 표시(레이아웃 이동 없음) */
+.kium-panel [tabindex="-1"]:focus{outline:none}
+
+/* =========================================================================
+   공통 섹션 리듬
+   ========================================================================= */
+/* [수정 7] 섹션 상하 여백 96px(모바일 64px) + 배경 교차(white ↔ var(--bg) #FAFAFB).
+   지시서의 #fafafc 대신 기존 토큰 var(--bg)를 쓴다 — 육안 동일값이며 신규 색 추가를 피한다. */
+.kium-sec{padding:96px 0;background:#fff}
+.kium-sec.alt{background:var(--bg)}
+.kium-sec+.kium-sec{border-top:1px solid var(--line)}
+@media(max-width:720px){.kium-sec{padding:64px 0}}
+.kium-sec-title{font-size:clamp(21px,2.6vw,29px);font-weight:800;letter-spacing:-.02em;
+  line-height:1.3;margin-top:11px;word-break:keep-all}
+.kium-sec-sub{margin-top:13px;color:var(--muted);font-size:clamp(14px,1.6vw,16px);
+  line-height:1.7;max-width:56ch;word-break:keep-all}
+.kium-caption{margin-top:18px;font-size:12.5px;color:var(--muted);line-height:1.65;word-break:keep-all}
+
+/* =========================================================================
+   F3 지원개요표 — 2열 정의표
+   ========================================================================= */
+.kium-overview{margin-top:26px;border:1px solid var(--line);border-radius:var(--r);
+  background:#fff;overflow:hidden;box-shadow:var(--shadow-1)}
+.kium-overview dl{display:grid;grid-template-columns:170px 1fr}
+@media(max-width:560px){.kium-overview dl{grid-template-columns:1fr}}
+.kium-overview dt{padding:16px 20px;font-size:13px;font-weight:600;color:var(--muted);
+  background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center}
+.kium-overview dd{padding:16px 20px;font-size:15px;font-weight:600;color:var(--ink);
+  border-bottom:1px solid var(--line);line-height:1.6;word-break:keep-all}
+@media(max-width:560px){.kium-overview dt{padding-bottom:8px;border-bottom:none;background:#fff}
+  .kium-overview dd{padding-top:0}}
+.kium-overview dl>:nth-last-child(-n+2){border-bottom:none}
+/* 값 강조 1건 — 지원율(퍼플). 숫자는 tabular-nums */
+.kium-overview .kium-hl{color:var(--p1);font-weight:800;font-variant-numeric:tabular-nums}
+.kium-overview .kium-dd-note{display:block;margin-top:6px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.kium-inline-link{display:inline-flex;align-items:center;gap:5px;min-height:44px;
+  font-size:13.5px;font-weight:700;color:var(--p1);background:none;border:none;padding:0;
+  font-family:inherit;cursor:pointer;transition:color .3s var(--ease)}
+.kium-inline-link:hover,.kium-inline-link:focus-visible{text-decoration:underline;text-underline-offset:3px}
+
+/* C1 삽입 슬롯(지원율 금액 환산 다이어그램) — 사업 확인 후 1행 추가로 확장 가능 */
+.kium-overview-slot{display:none}
+
+/* =========================================================================
+   F4 자격확인 3경로
+   ========================================================================= */
+.kium-elig-grid{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.kium-elig-grid{grid-template-columns:1fr;gap:10px}}
+.kium-elig{background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow-1);overflow:hidden;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+@media(min-width:901px){.kium-elig:hover,.kium-elig:focus-within{transform:translateY(-3px);box-shadow:var(--shadow-2)}}
+.kium-elig-head{display:flex;align-items:center;gap:9px;width:100%;padding:20px;
+  background:none;border:none;font-family:inherit;text-align:left;min-height:44px;cursor:default}
+/* [수정 2] 카드별 lucide 아이콘 */
+.kium-elig-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:10px;background:color-mix(in srgb,var(--p1) 8%,#fff);color:var(--p1)}
+.kium-elig-no{flex:none;font-size:11.5px;font-weight:800;color:var(--muted);
+  font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.kium-elig-t{flex:1;font-size:15.5px;font-weight:700;color:var(--ink);line-height:1.45;word-break:keep-all}
+.kium-elig-chev{flex:none;display:none;color:var(--muted);transition:transform .3s var(--ease)}
+.kium-elig-body{padding:0 20px 20px}
+.kium-elig-sub{font-size:12px;font-weight:800;letter-spacing:.01em;color:var(--p1);
+  padding-bottom:4px}
+.kium-elig-steps{list-style:none;display:flex;flex-direction:column}
+.kium-elig-steps li{position:relative;display:flex;gap:10px;padding:11px 0 11px 0;
+  font-size:13.5px;line-height:1.6;color:#3a3a42;word-break:keep-all}
+/* 스텝 번호 배지 + 연결 화살표(진행 방향 표시) */
+.kium-elig-steps li+li::before{content:"";position:absolute;left:9px;top:-5px;width:1px;height:10px;
+  background:var(--line)}
+.kium-elig-steps li .n{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:19px;height:19px;border-radius:50%;background:var(--surface);
+  font-size:10px;font-weight:800;color:var(--p1);
+  font-variant-numeric:tabular-nums;margin-top:1px}
+.kium-elig-steps li .t{flex:1;display:flex;align-items:flex-start;gap:5px}
+/* 결과 문구 강조 — 기존 저장소 성공 톤(#2F6F5B / #E7F3EE) 재사용, 신규 색 아님 */
+.kium-elig-steps li.is-result .t{color:#2F6F5B;font-weight:700}
+.kium-elig-steps li.is-result .n{background:#E7F3EE;color:#2F6F5B}
+.kium-elig-steps li.is-result .ok{flex:none;margin-top:3px}
+/* .kium-elig-note — [수정 16]으로 03 카드 푸터 렌더가 제거되어 현재 사용처 없음.
+   해당 안내는 섹션 캡션(.kium-caption)으로 통합됐다. 복원 대비해 규칙만 남겨 둔다. */
+.kium-elig-note{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:12.5px;line-height:1.65;color:var(--muted);word-break:keep-all}
+.kium-elig-link{margin-top:14px;display:inline-flex;align-items:center;gap:7px;min-height:44px;
+  padding:11px 17px;border:1px solid var(--line);background:#fff;border-radius:999px;
+  font-size:13.5px;font-weight:700;color:var(--p1);
+  transition:background-color .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
+.kium-elig-link:hover,.kium-elig-link:focus-visible{background-color:var(--surface);box-shadow:var(--shadow-1)}
+.kium-elig-link svg{flex:none}
+
+/* 모바일 아코디언 3단(기본 첫 항목 펼침) */
+@media(max-width:900px){
+  .kium-elig-head{cursor:pointer}
+  .kium-elig-chev{display:block}
+  .kium-elig[data-open="true"] .kium-elig-chev{transform:rotate(180deg)}
+  .kium-elig-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease-out)}
+  .kium-elig[data-open="true"] .kium-elig-wrap{grid-template-rows:1fr}
+  .kium-elig-wrap>div{overflow:hidden}
+}
+
+/* =========================================================================
+   F5 신청절차 4스텝 — 퍼플 심도 4단(기존 퍼플 파생 · 신규 색 아님) · K5 stagger 90ms
+   ========================================================================= */
+.kium-steps{position:relative;margin-top:30px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.kium-steps{grid-template-columns:1fr;gap:0;padding-left:44px}}
+/* [수정 3] 진행선 — 퍼플 20%→100% 그라디언트. 스텝 카드 뒤(넘버 서클 중심 높이)를 가로지른다 */
+.kium-steps::after{content:"";position:absolute;left:calc(12.5% + 19px);right:calc(12.5% + 19px);
+  top:41px;height:2px;border-radius:2px;z-index:0;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--p1) 20%,#fff),var(--p1))}
+@media(max-width:900px){.kium-steps::after{display:none}}
+.kium-step{position:relative;z-index:1;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r);padding:22px 20px;box-shadow:var(--shadow-1)}
+/* 심도 4단 — color-mix로 var(--p1) 20/45/70/100% (기존 저장소 관례) */
+.kium-step{--depth:var(--p1)}
+.kium-step[data-i="0"]{--depth:color-mix(in srgb,var(--p1) 20%,#fff)}
+.kium-step[data-i="1"]{--depth:color-mix(in srgb,var(--p1) 45%,#fff)}
+.kium-step[data-i="2"]{--depth:color-mix(in srgb,var(--p1) 70%,#fff)}
+.kium-step[data-i="3"]{--depth:var(--p1)}
+.kium-step-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+/* 넘버 서클 = 채움형(진행감). 1단계는 배경이 옅어 글자를 퍼플로 유지 */
+.kium-step-no{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;
+  border-radius:50%;background:var(--depth);color:#fff;
+  font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.kium-step[data-i="0"] .kium-step-no,.kium-step[data-i="1"] .kium-step-no{color:var(--p1)}
+.kium-step-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:9px;background:var(--surface);color:var(--depth)}
+.kium-step[data-i="0"] .kium-step-ic,.kium-step[data-i="1"] .kium-step-ic{color:var(--p1)}
+.kium-step-t{margin-top:14px;font-size:16px;font-weight:700;color:var(--ink);
+  line-height:1.4;word-break:keep-all}
+.kium-step-rows{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.kium-step-row{display:flex;gap:9px;align-items:flex-start}
+.kium-step-tag{flex:none;display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;
+  font-size:11.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap;margin-top:1px}
+/* 두 주체 대비 — 기업=뉴트럴, KG에듀원=퍼플 틴트 */
+.kium-step-tag.corp{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
+.kium-step-tag.kg{background:color-mix(in srgb,var(--p1) 12%,#fff);color:var(--p1);
+  border:1px solid color-mix(in srgb,var(--p1) 22%,#fff)}
+.kium-step-row p{font-size:13px;line-height:1.6;color:#3a3a42;word-break:keep-all}
+
+/* K5 — 좌→우 진입 stagger 90ms (기존 .stagger 규칙 재사용, 지연만 스텝 인덱스 기반) */
+.kium-steps.stagger>*{transition-delay:calc(var(--i,0) * 90ms)}
+
+/* 모바일 세로 타임라인 */
+@media(max-width:900px){
+  /* 세로 타임라인 — 좌측 연결선도 퍼플 심도 진행 그라디언트로 */
+  .kium-steps::before{content:"";position:absolute;left:19px;top:26px;bottom:26px;width:2px;
+    border-radius:2px;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--p1) 20%,#fff),var(--p1))}
+  .kium-step{border:none;box-shadow:none;background:none;padding:0 0 26px}
+  .kium-step-head{position:absolute;left:-44px;top:0;width:38px}
+  .kium-step-ic{display:none}
+}
+
+/* =========================================================================
+   KiumCautions (신설) — 유의사항 3종
+   ========================================================================= */
+.kium-cautions{margin-top:22px;background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;padding:18px 20px}
+.kium-cautions-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;
+  color:var(--ink);letter-spacing:.01em}
+.kium-cautions-h svg{flex:none;color:var(--p1)}
+.kium-cautions ul{list-style:none;margin-top:11px;display:flex;flex-direction:column;gap:8px}
+.kium-cautions li{position:relative;padding-left:15px;font-size:12.5px;line-height:1.7;
+  color:var(--muted);word-break:keep-all}
+.kium-cautions li::before{content:"";position:absolute;left:3px;top:9px;width:4px;height:4px;
+  border-radius:50%;background:#9aa0a8}
+@media(min-width:721px){.kium-cautions li{font-size:13px}}
+
+/* =========================================================================
+   F6 FAQ — 기존 아코디언(.faq-*, styles/home.css) 재사용.
+   [수정 5] /kium 스코프에서만 답변 폭·리듬·열림 인디케이터를 조정한다(홈 FAQ 무영향).
+   ========================================================================= */
+.kium-faq .faq-item{position:relative}
+/* 열림 항목 좌측 2px 퍼플 인디케이터 */
+.kium-faq .faq-item.open::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--p1);z-index:1}
+/* 답변 폭 제한 제거 — 컨테이너 풀폭 */
+.kium-faq .faq-a-inner{padding:0 24px 22px 66px}
+.kium-faq .faq-a-inner p{max-width:none;font-size:15px;line-height:1.7;color:#3a3a42}
+@media(max-width:560px){.kium-faq .faq-a-inner{padding-left:24px}}
+.kium-faq-foot{margin-top:26px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.kium-faq-foot .t{font-size:14.5px;color:var(--muted);font-weight:600}
+
+/* =========================================================================
+   F7 필터 칩 + 카드 그리드
+   ========================================================================= */
+.kium-filters{margin-top:24px;display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:640px){
+  .kium-filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;
+    -ms-overflow-style:none;scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);
+    mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  .kium-filters::-webkit-scrollbar{display:none}
+}
+.kium-chip{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:44px;
+  padding:10px 16px;border:1px solid var(--line);background:#fff;border-radius:999px;
+  font-family:inherit;font-size:13.5px;font-weight:600;color:#3a3a42;cursor:pointer;white-space:nowrap;
+  transition:color .3s var(--ease),background-color .3s var(--ease),border-color .3s var(--ease)}
+.kium-chip:hover,.kium-chip:focus-visible{border-color:#c9ccd3;color:var(--ink)}
+.kium-chip[aria-pressed="true"]{background-color:var(--p1);border-color:var(--p1);color:#fff}
+.kium-chip .cnt{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
+.kium-chip[aria-pressed="true"] .cnt{color:rgba(255,255,255,.72)}
+
+.kium-grid{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+@media(max-width:1000px){.kium-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767px){.kium-grid{grid-template-columns:1fr}}
+.kium-count{margin-top:20px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.kium-empty{margin-top:22px;padding:44px 24px;text-align:center;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);font-size:14.5px;color:var(--muted)}
+
+/* K6 — 필터 교체: out fade 120ms → in stagger(FLIP 금지) */
+.kium-grid.leaving{opacity:0;transition:opacity .12s var(--ease)}
+.kium-grid.entering{opacity:1;transition:opacity .12s var(--ease)}
+@keyframes kium-card-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.kium-grid.entering>.kium-card-wrap{animation:kium-card-in .3s var(--ease-out) both}
+
+/* =========================================================================
+   F7/F8 카드 — K2 hover translateY(-4px) + 그림자 승격
+   ========================================================================= */
+.kium-card{position:relative;display:flex;flex-direction:column;width:100%;text-align:left;background:#fff;
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-1);
+  font-family:inherit;padding:0;cursor:pointer;min-height:44px;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
+.kium-card:hover,.kium-card:focus-visible{transform:translateY(-4px);box-shadow:var(--shadow-2)}
+.kium-card:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+/* 열린 카드 = 현재 위치 표지(top-stripe 2px) */
+.kium-card[aria-expanded="true"]{border-color:transparent;box-shadow:var(--shadow-2)}
+.kium-card[aria-expanded="true"]::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:var(--p1);z-index:2}
+.kium-card-wrap{position:relative;display:flex}
+.kium-card-body{display:flex;flex-direction:column;gap:8px;padding:16px 18px 18px}
+.kium-card-labels{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.kium-lab{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;
+  font-size:11.5px;font-weight:700;letter-spacing:.01em}
+.kium-lab.cat{background:color-mix(in srgb,var(--p1) 8%,#fff);color:var(--p1)}
+/* [수정 4] 카테고리 컬러 dot — 해당 카테고리 --mesh-a. 색은 보조 신호이고 라벨 텍스트가 정보를 든다 */
+.kium-lab .kium-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--dot,var(--p1))}
+.kium-lab.cat[data-cat="onboarding"]{--dot:#2563EB}
+.kium-lab.cat[data-cat="roleup"]{--dot:#7C3AED}
+.kium-lab.cat[data-cat="leadership"]{--dot:#3730A3}
+.kium-lab.cat[data-cat="executive"]{--dot:#172554}
+.kium-lab.cat[data-cat="ai"]{--dot:#0891B2}
+.kium-lab.cat[data-cat="common"]{--dot:#52525B}
+.kium-lab.sub{background:var(--surface);color:var(--muted)}
+/* [수정 12] .kium-card-title 규칙 제거 — 본문 과정명 행이 사라졌다.
+   summary는 2줄까지 허용해 본문 밀도를 유지한다. */
+.kium-card-summary{font-size:13px;line-height:1.6;color:var(--muted);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all}
+.kium-card-meta{margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding-top:12px;border-top:1px solid var(--line)}
+.kium-meta-t{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.kium-meta-t b{font-weight:700;color:#3a3a42}
+.kium-badge{display:inline-flex;align-items:center;gap:5px;border-radius:12px;padding:4px 9px;
+  font-size:11px;font-weight:800;letter-spacing:.01em}
+/* AI융합형 — 신규 색 금지: surface + 퍼플 텍스트 + hairline (정보는 라벨 텍스트가 든다) */
+.kium-badge.ai{background:var(--surface);border:1px solid var(--line);color:var(--p1)}
+/* 정부지원 환급 — 기존 정부지원 옐로우 의미 고정 그대로 */
+.kium-badge.gov{background:color-mix(in srgb,var(--gov) 20%,#fff);color:#8A6314}
+
+/* =========================================================================
+   F8 썸네일 — 기술명세서 v1.0 §4-1 토큰 원문. 이미지 태그 없음.
+   호버 시 그라디언트 변화 금지(가독성 원칙) — 카드 공통 lift만.
+   ========================================================================= */
+/* [수정 4] 보조색 채도·커버리지 상향 (1휴 변주 원칙 유지) */
+.kium-thumb{position:relative;aspect-ratio:4/3;overflow:hidden;
+  --mesh-base:#2E1A6B;--mesh-dark:#1B0F45;
+  background:
+    radial-gradient(120% 90% at 85% 12%, var(--mesh-b) 0%, transparent 70%),
+    radial-gradient(110% 100% at 68% 78%, var(--mesh-a) 0%, transparent 85%),
+    linear-gradient(150deg, var(--mesh-base) 0%, var(--mesh-dark) 100%)}
+.kium-thumb[data-cat="onboarding"]{--mesh-a:#2563EB;--mesh-b:#60A5FA}
+.kium-thumb[data-cat="roleup"]{--mesh-a:#7C3AED;--mesh-b:#C4B5FD}
+.kium-thumb[data-cat="leadership"]{--mesh-a:#3730A3;--mesh-b:#818CF8}
+.kium-thumb[data-cat="executive"]{--mesh-a:#172554;--mesh-b:#D4A72C}
+.kium-thumb[data-cat="ai"]{--mesh-a:#0891B2;--mesh-b:#67E8F9}
+.kium-thumb[data-cat="common"]{--mesh-a:#52525B;--mesh-b:#D4D4D8}
+/* 텍스트 스크림 — 하단 40% 1겹.
+   커버리지 상향 후 ai 카테고리가 .35에서 AA 미달(4.70 → 마진 부족)이라 지시서 지침대로 .45로 상향.
+   값 변경 시 scripts/check-contrast.mjs의 SCRIM_ALPHA 기본값도 함께 맞출 것. */
+.kium-thumb::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;
+  background:linear-gradient(transparent,rgba(20,10,50,.45));pointer-events:none}
+/* 그레인 오버레이 — 스크림과 텍스트 사이 레이어 */
+.kium-thumb .kium-grain{opacity:.5;z-index:1}
+.kium-thumb-cat{position:absolute;left:14px;top:12px;z-index:2;font-size:12px;font-weight:600;
+  color:rgba(255,255,255,.85);letter-spacing:.02em}
+/* [수정 12] 과정명 — 텍스트 자체가 썸네일이므로 카드폭의 6.6% 스케일(22px/700).
+   좌하단 앵커·스크림·그레인·최암부 레이어 구조는 그대로. 최대 2줄. */
+.kium-thumb-title{position:absolute;left:14px;right:14px;bottom:12px;z-index:2;
+  font-size:22px;font-weight:700;color:#fff;line-height:1.3;
+  letter-spacing:-.01em;word-break:keep-all;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:640px){.kium-thumb-title{font-size:20px}}
+
+/* =========================================================================
+   F9 상세 패널 — 데스크톱 인라인 확장(K3 grid-rows morph) / 모바일 바텀시트(K4)
+   ========================================================================= */
+.kium-panel-slot{grid-column:1 / -1;display:grid;grid-template-rows:0fr;
+  transition:grid-template-rows .3s var(--ease-out)}
+.kium-panel-slot.open{grid-template-rows:1fr}
+.kium-panel-slot>.kium-panel-clip{overflow:hidden;min-height:0}
+.kium-detail{background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow-1);padding:26px 28px 28px;margin-top:2px}
+@media(max-width:560px){.kium-detail{padding:22px 20px 24px}}
+/* ① 헤더 */
+.kium-detail-head .kium-lab{margin-bottom:9px}
+/* .kium-detail-caption — [수정 14]로 공식 신청명 캡션 렌더가 제거되어 현재 사용처 없음.
+   FAQ·각주로 복원할 때 다시 쓰도록 규칙만 남겨 둔다. */
+.kium-detail-caption{margin-top:7px;font-size:12px;color:var(--muted);line-height:1.6;word-break:keep-all}
+.kium-detail-title{font-size:clamp(18px,2.2vw,23px);font-weight:800;
+  letter-spacing:-.02em;line-height:1.35;word-break:keep-all}
+
+/* ② 슬로건 밴드 — 개요서 하단 네이비 배너의 웹 번안(최상단 승격) */
+.kium-slogan-band{margin-top:18px;border-radius:14px;padding:18px 22px;color:#fff;
+  font-size:clamp(14.5px,1.7vw,17px);font-weight:700;line-height:1.6;letter-spacing:-.01em;
+  word-break:keep-all;background:linear-gradient(120deg,#1B0F45 0%,#2E1A6B 55%,#5a3fb0 100%)}
+
+/* ③ 메타 pill 4종 — 퍼플 틴트. 단가 항목 없음 */
+.kium-meta-pills{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.kium-pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;
+  padding:8px 15px;font-size:12.5px;color:#3a3a42;line-height:1.4;
+  background:color-mix(in srgb,var(--p1) 6%,#fff);
+  border:1px solid color-mix(in srgb,var(--p1) 16%,#fff)}
+.kium-pill b{font-weight:700;color:var(--p1);font-size:11.5px;letter-spacing:.01em}
+.kium-pill .num{font-variant-numeric:tabular-nums}
+
+.kium-detail-h{margin-top:24px;font-size:13px;font-weight:800;color:var(--ink);letter-spacing:.01em}
+
+/* ④ 과정목표 — 인용 블록(좌측 퍼플 보더 + 배경 틴트) */
+.kium-goals-quote{margin-top:10px;border-left:3px solid var(--p1);border-radius:0 12px 12px 0;
+  background:color-mix(in srgb,var(--p1) 4%,#fff);padding:16px 18px}
+.kium-goals{list-style:none;display:flex;flex-direction:column;gap:7px}
+.kium-goals li{position:relative;padding-left:16px;font-size:13.5px;line-height:1.65;
+  color:#3a3a42;word-break:keep-all}
+.kium-goals li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;
+  border-radius:50%;background:var(--p1)}
+
+/* ⑤ 특장점 3스텝 — 01 채움 / 02·03 아웃라인 + 화살표 (개요서 도식 번안) */
+.kium-hl-steps{list-style:none;margin-top:11px;display:grid;
+  grid-template-columns:repeat(3,1fr);gap:0;align-items:stretch}
+@media(max-width:640px){.kium-hl-steps{grid-template-columns:1fr}}
+.kium-hl-step{position:relative;display:flex;align-items:stretch;padding-right:22px}
+.kium-hl-step:last-child{padding-right:0}
+@media(max-width:640px){.kium-hl-step{padding-right:0;padding-bottom:26px}
+  .kium-hl-step:last-child{padding-bottom:0}}
+.kium-hl-card{flex:1;border-radius:14px;padding:16px 18px;border:1px solid var(--line);
+  background:#fff}
+.kium-hl-step[data-first="true"] .kium-hl-card{background:var(--p1);border-color:var(--p1)}
+.kium-hl-no{font-size:11.5px;font-weight:800;color:var(--p1);font-variant-numeric:tabular-nums}
+.kium-hl-t{margin-top:5px;font-size:14px;font-weight:700;color:var(--ink);line-height:1.4;word-break:keep-all}
+.kium-hl-d{margin-top:6px;font-size:12.5px;color:var(--muted);line-height:1.6;word-break:keep-all}
+.kium-hl-step[data-first="true"] .kium-hl-no{color:rgba(255,255,255,.72)}
+.kium-hl-step[data-first="true"] .kium-hl-t{color:#fff}
+.kium-hl-step[data-first="true"] .kium-hl-d{color:rgba(255,255,255,.84)}
+.kium-hl-arrow{position:absolute;right:2px;top:50%;transform:translateY(-50%);
+  color:#c9ccd3;flex:none}
+@media(max-width:640px){.kium-hl-arrow{right:auto;left:50%;top:auto;bottom:4px;
+  transform:translateX(-50%) rotate(90deg)}}
+
+.kium-mod-wrap{margin-top:11px;overflow-x:auto}
+.kium-modules{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;min-width:420px}
+/* [수정 13] 셀 좌우 패딩 16px, 첫 열 left·끝 열 right 20px (모바일 12px). 상하는 현행 유지 */
+.kium-modules th,.kium-modules td{padding:10px 16px;font-size:13px;text-align:left;
+  border-bottom:1px solid var(--line);line-height:1.55;word-break:keep-all}
+.kium-modules th:first-child,.kium-modules td:first-child{padding-left:20px}
+.kium-modules th:last-child,.kium-modules td:last-child{padding-right:20px}
+@media(max-width:560px){
+  .kium-modules th,.kium-modules td{padding-left:12px;padding-right:12px}
+  .kium-modules th:first-child,.kium-modules td:first-child{padding-left:12px}
+  .kium-modules th:last-child,.kium-modules td:last-child{padding-right:12px}
+}
+.kium-modules thead th{background:var(--surface);font-weight:700;color:var(--ink);font-size:12.5px}
+/* zebra 행 */
+.kium-modules tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 55%,#fff)}
+.kium-modules td.hrs,.kium-modules th.hrs{text-align:right;white-space:nowrap;
+  font-variant-numeric:tabular-nums;width:96px}
+.kium-modules tbody td:first-child{font-weight:600;color:#33333c;width:32%}
+/* [수정 13] 합계 행 — 퍼플 틴트(기존 토큰 파생) + 700 + 본문 대비 +1px + 상단 보더 2px */
+.kium-modules tfoot td{background:color-mix(in srgb,var(--p1) 7%,#fff);
+  font-weight:700;font-size:14px;color:var(--p1);
+  border-top:2px solid color-mix(in srgb,var(--p1) 26%,#fff);border-bottom:none}
+.kium-modules tbody tr:last-child td{border-bottom:none}
+
+.kium-detail-cta{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap}
+.kium-detail-cta .btn-ink{min-height:44px;padding:14px 26px;font-size:15px}
+
+/* 바텀시트 (<768px) — K4 translateY 100%→0 300ms + dim fade */
+.kium-sheet-dim{position:fixed;inset:0;z-index:110;background:rgba(20,20,26,.4);
+  opacity:0;visibility:hidden;transition:opacity .3s var(--ease),visibility .3s}
+.kium-sheet-dim.open{opacity:1;visibility:visible}
+.kium-sheet{position:fixed;left:0;right:0;bottom:0;z-index:111;background:#fff;
+  border-radius:22px 22px 0 0;max-height:88vh;display:flex;flex-direction:column;
+  box-shadow:var(--shadow-3);transform:translateY(100%);
+  transition:transform .3s var(--ease-out)}
+.kium-sheet.open{transform:none}
+.kium-sheet-handle{flex:none;display:flex;align-items:center;justify-content:center;
+  padding:10px 0 4px;touch-action:none;cursor:grab}
+.kium-sheet-handle span{width:42px;height:4px;border-radius:2px;background:var(--line)}
+.kium-sheet-close{position:absolute;top:12px;right:14px;z-index:2;display:flex;align-items:center;
+  justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;color:var(--muted);padding:0;cursor:pointer;
+  transition:background-color .3s var(--ease),color .3s var(--ease)}
+.kium-sheet-close:hover,.kium-sheet-close:focus-visible{background-color:var(--ink);color:#fff}
+.kium-sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 0 calc(20px + env(safe-area-inset-bottom))}
+.kium-sheet .kium-detail{border:none;box-shadow:none;border-radius:0;margin-top:0;padding-top:8px}
+
+/* K3 내부 콘텐츠 stagger 90ms */
+@keyframes kium-detail-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.kium-detail>*{animation:kium-detail-in .3s var(--ease-out) both}
+.kium-detail>:nth-child(1){animation-delay:0ms}
+.kium-detail>:nth-child(2){animation-delay:90ms}
+.kium-detail>:nth-child(3){animation-delay:.18s}
+.kium-detail>:nth-child(n+4){animation-delay:.27s}
+
+/* =========================================================================
+   CTA 밴드
+   ========================================================================= */
+.kium-cta-band{background:var(--surface);padding-top:64px}
+.kium-cta-band .inq{padding-top:0}
+
+/* =========================================================================
+   Nav 이벤트 칩은 전 페이지 상시 노출 → styles/components.css에 위치
+   ========================================================================= */
+
+/* =========================================================================
+   모션 저감 — transform 기반 모션 전부 제거(색·불투명도 전환만 유지)
+   ========================================================================= */
+@media(prefers-reduced-motion:reduce){
+  .kium-btn-ghost:hover,.kium-btn-ghost:focus-visible,
+  .kium-elig:hover,.kium-elig:focus-within,
+  .kium-card:hover,.kium-card:focus-visible{transform:none}
+  .kium-panel,.kium-detail>*,.kium-grid.entering>.kium-card-wrap{animation:none}
+  .kium-tab-ind{transition:width .3s var(--ease-out)}
+  /* 시트는 열림/닫힘 상태 자체가 transform이므로 전환만 제거한다(상태는 유지) */
+  .kium-sheet{transition:none}
+  .kium-elig-chev{transition:none}
+}
