@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ReportModal from './ReportModal';
 import Modal from './Modal';
+import PrivacyModal from './PrivacyModal';
 import {
   FAMILY_SITES,
   SNS,
@@ -37,6 +38,7 @@ export default function Footer() {
     tab: 'info',
   });
   const [ismsOpen, setIsmsOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const famRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -102,9 +104,9 @@ export default function Footer() {
                 ))}
               </dl>
               <div className="foot-policy">
-                <a className="priv" href="#">개인정보처리방침</a>
-                <span>·</span>
-                <a href="#">이용약관</a>
+                {/* 이용약관은 페이지 미제작 확정(8/6)으로 구분점과 함께 삭제 — 구분점 2개 연속 금지 */}
+                <button className="report-link priv" type="button" aria-haspopup="dialog"
+                        onClick={() => setPrivacyOpen(true)}>개인정보처리방침</button>
                 <span>·</span>
                 <Link href="/csr">KG그룹 사회공헌</Link>
                 <span>·</span>
@@ -125,6 +127,9 @@ export default function Footer() {
       </footer>
 
       <ReportModal open={report.open} initialTab={report.tab} onClose={() => setReport((r) => ({ ...r, open: false }))} />
+
+      {/* 개인정보처리방침 모달 — 문구는 data/privacy.ts 단일 소스 */}
+      <PrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
 
       {/* ISMS 인증서 모달 — 공통 Modal(포커스 트랩·ESC·오버레이 클릭·배경 스크롤 잠금·포커스 복귀 내장) */}
       <Modal open={ismsOpen} onClose={() => setIsmsOpen(false)} labelledBy="isms-cert-title" title="정보보호 관리체계(ISMS) 인증서" maxWidth={460}>
