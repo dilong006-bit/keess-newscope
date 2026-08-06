@@ -396,27 +396,20 @@
 .priv-doc{display:flex;flex-direction:column}
 
 /* I2: 목차 퀵점프 칩바 */
-.priv-toc{position:sticky;top:-24px;z-index:3;display:flex;gap:6px;overflow-x:auto;
+.priv-toc{position:sticky;top:-24px;z-index:3;display:flex;gap:5px;overflow-x:auto;
   padding:12px 0;margin:-24px 0 14px;background:#fff;border-bottom:1px solid var(--line);
   scrollbar-width:none;-ms-overflow-style:none}
 .priv-toc::-webkit-scrollbar{display:none}
-/* 선택 시 '제N조'로 펼쳐진다 — 숫자만 나열될 때의 맥락 부재를 해소.
-   접두/접미 글자는 max-width로 접었다 펴 폭 변화를 부드럽게 만든다. */
-.priv-toc-chip{flex:none;min-width:30px;height:30px;padding:0;border-radius:999px;
+/* 전 버튼에 '제N조' 라벨을 노출하므로 원형이 아닌 알약형 — 좌우 패딩으로 잘림·줄바꿈을 막는다 */
+.priv-toc-chip{flex:none;height:30px;padding:0 10px;border-radius:999px;
   border:1px solid var(--line);background:#fff;color:var(--muted);
-  font-size:12.5px;font-weight:700;line-height:1;white-space:nowrap;cursor:pointer;
+  font-size:12px;font-weight:700;line-height:1;white-space:nowrap;cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;
-  transition:background .22s var(--ease),color .22s var(--ease),
-             border-color .22s var(--ease),padding .26s var(--ease)}
-.priv-toc-affix{display:inline-block;max-width:0;overflow:hidden;opacity:0;
-  transition:max-width .26s var(--ease),opacity .18s var(--ease)}
+  transition:background .22s var(--ease),color .22s var(--ease),border-color .22s var(--ease)}
 .priv-toc-chip:hover{border-color:var(--p1);color:var(--p1)}
 .priv-toc-chip:focus-visible{outline:2px solid var(--p1);outline-offset:2px}
-.priv-toc-chip.on{padding:0 12px;background:var(--p1);border-color:var(--p1);color:#fff}
-.priv-toc-chip.on .priv-toc-affix{max-width:1.4em;opacity:1}
-@media(prefers-reduced-motion:reduce){
-  .priv-toc-chip,.priv-toc-affix{transition:none}
-}
+.priv-toc-chip.on{background:var(--p1);border-color:var(--p1);color:#fff}
+@media(prefers-reduced-motion:reduce){.priv-toc-chip{transition:none}}
 
 /* 마지막 조항도 상단까지 스크롤되도록 채우는 꼬리 여백(높이는 JS 실측) */
 .priv-tail{flex:none}

@@ -188,7 +188,7 @@ export default function PrivacyModal({ open, onClose }: { open: boolean; onClose
   return (
     <Modal open={open} onClose={onClose} labelledBy="privacy-modal-title" title={PRIVACY_TITLE} maxWidth={720}>
       <div ref={rootRef} className="priv-doc">
-        {/* 목차 — 선택된 칩만 '제N조'로 펼쳐져 숫자 나열에 맥락을 준다 */}
+        {/* 목차 — 숫자만으로는 어떤 조인지 인지하기 어려워 전 버튼에 '제N조' 라벨을 노출한다 */}
         <div className="priv-toc" role="group" aria-label="조항 목차">
           {PRIVACY_SECTIONS.map((s, idx) => (
             <button
@@ -199,9 +199,7 @@ export default function PrivacyModal({ open, onClose }: { open: boolean; onClose
               aria-current={active === s.id ? 'true' : undefined}
               onClick={() => jump(s.id)}
             >
-              <span className="priv-toc-affix" aria-hidden="true">제</span>
-              <span className="priv-toc-n">{idx + 1}</span>
-              <span className="priv-toc-affix" aria-hidden="true">조</span>
+              제{idx + 1}조
             </button>
           ))}
         </div>
