@@ -136,7 +136,9 @@
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
   mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
 .ref-row{overflow:hidden}
-.ref-track{display:inline-flex;gap:12px;width:max-content;animation:ref-marquee 52s linear infinite;will-change:transform}
+/* duration: 고객사 55개사 반영으로 트랙 폭이 5524→6438px(1.165배) 늘어 52s 고정 시 체감 속도가
+   53.1→61.9px/s로 빨라진다. 기존 저속 톤을 유지하도록 값만 상향(52s → 61s). 선택자·키프레임 불변. */
+.ref-track{display:inline-flex;gap:12px;width:max-content;animation:ref-marquee 61s linear infinite;will-change:transform}
 .ref-row.rev .ref-track{animation-direction:reverse}
 .ref-roll:hover .ref-track{animation-play-state:paused}
 @keyframes ref-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
