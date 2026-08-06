@@ -142,6 +142,14 @@
 @keyframes mchip-sub-in{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
 .mchip-sub{animation:mchip-sub-in .3s var(--ease) both}
 @media(prefers-reduced-motion:reduce){.mchip-sub{animation:none}}
+/* 하위(세부 분야) 칩 선택 상태 — 부모(.mchip.on)와 동일 톤의 라이트 틴트로 위계 구분.
+   신규 토큰 0: --p1 파생 color-mix만 사용 (선례: .nav-chip:hover의 color-mix 패턴) */
+.mchip-sub.on{
+  background:color-mix(in srgb,var(--p1) 10%,#fff);
+  color:var(--p1);
+  border-color:color-mix(in srgb,var(--p1) 45%,#fff);
+  font-weight:600;
+}
 .filebox{border:1.5px dashed #cfd4da;border-radius:12px;padding:18px;text-align:center;font-size:13.5px;color:var(--muted);cursor:pointer;transition:border-color .25s var(--ease);display:block}
 .filebox:hover{border-color:var(--p1)}.filebox.has{border-style:solid;border-color:var(--p1);color:var(--ink)}
 .filebox.over{border-color:var(--p1);background:color-mix(in srgb,var(--p1) 5%,#fff)}
