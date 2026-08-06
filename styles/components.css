@@ -397,12 +397,42 @@
 
 /* I2: 목차 퀵점프 칩바 */
 .priv-toc{position:sticky;top:-24px;z-index:3;display:flex;gap:6px;overflow-x:auto;
-  padding:10px 0 12px;margin:-24px 0 14px;background:#fff;border-bottom:1px solid var(--line)}
-.priv-toc-chip{flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);
-  background:#fff;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,border-color .2s}
+  padding:12px 0;margin:-24px 0 14px;background:#fff;border-bottom:1px solid var(--line);
+  scrollbar-width:none;-ms-overflow-style:none}
+.priv-toc::-webkit-scrollbar{display:none}
+/* 선택 시 '제N조'로 펼쳐진다 — 숫자만 나열될 때의 맥락 부재를 해소.
+   접두/접미 글자는 max-width로 접었다 펴 폭 변화를 부드럽게 만든다. */
+.priv-toc-chip{flex:none;min-width:30px;height:30px;padding:0;border-radius:999px;
+  border:1px solid var(--line);background:#fff;color:var(--muted);
+  font-size:12.5px;font-weight:700;line-height:1;white-space:nowrap;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:background .22s var(--ease),color .22s var(--ease),
+             border-color .22s var(--ease),padding .26s var(--ease)}
+.priv-toc-affix{display:inline-block;max-width:0;overflow:hidden;opacity:0;
+  transition:max-width .26s var(--ease),opacity .18s var(--ease)}
 .priv-toc-chip:hover{border-color:var(--p1);color:var(--p1)}
-.priv-toc-chip.on{background:var(--p1);border-color:var(--p1);color:#fff}
+.priv-toc-chip:focus-visible{outline:2px solid var(--p1);outline-offset:2px}
+.priv-toc-chip.on{padding:0 12px;background:var(--p1);border-color:var(--p1);color:#fff}
+.priv-toc-chip.on .priv-toc-affix{max-width:1.4em;opacity:1}
+@media(prefers-reduced-motion:reduce){
+  .priv-toc-chip,.priv-toc-affix{transition:none}
+}
+
+/* 마지막 조항도 상단까지 스크롤되도록 채우는 꼬리 여백(높이는 JS 실측) */
+.priv-tail{flex:none}
+
+/* 모달 본문 스크롤바 — 둥근 모서리(22px)에 네이티브 스크롤바가 잘려 깨져 보이던 문제.
+   처리방침 모달에만 적용(:has)해 ReportModal·ISMS 모달 렌더는 건드리지 않는다. */
+.pv-body:has(.priv-doc){scrollbar-width:thin;
+  scrollbar-color:color-mix(in srgb,var(--muted) 32%,#fff) transparent}
+.pv-body:has(.priv-doc)::-webkit-scrollbar{width:12px}
+.pv-body:has(.priv-doc)::-webkit-scrollbar-track{background:transparent}
+.pv-body:has(.priv-doc)::-webkit-scrollbar-button{display:none;height:0;width:0}
+.pv-body:has(.priv-doc)::-webkit-scrollbar-thumb{
+  background:color-mix(in srgb,var(--muted) 32%,#fff);
+  border:4px solid transparent;background-clip:content-box;border-radius:999px}
+.pv-body:has(.priv-doc)::-webkit-scrollbar-thumb:hover{
+  background:color-mix(in srgb,var(--muted) 55%,#fff);background-clip:content-box}
 
 /* I3: 조항 번호 배지 */
 .priv-num{flex:none;width:26px;height:26px;border-radius:50%;margin-right:9px;

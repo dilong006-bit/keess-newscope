@@ -3,7 +3,7 @@
 // 문구는 임의 수정 금지. 【 】 표기는 게시 전 확정 대상이며 검토 단계에서는 그대로 렌더한다.
 //
 // 원본 말미의 "[작성 근거 대조 — 게시 전 삭제할 내부 메모]" 섹션은 전사 대상이 아니다.
-// 제8조만 예외적으로 data/footer.ts COMPANY_INFO 기기재 값을 반영한다(담당 부서는 【 】 유지).
+// 제8조만 예외적으로 data/footer.ts COMPANY_INFO 기기재 값을 반영하고, '담당 부서' 행은 삭제했다(2026-08-06).
 
 export interface PrivacyBlock {
   type: 'p' | 'table' | 'list' | 'note';   // note = ※ 보충 문구
@@ -162,12 +162,11 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         // 전사 규칙 3항 — footer COMPANY_INFO('개인정보책임: 임근성 · privacy_eduone@kggroup.co.kr')와 정합.
-        // 담당 부서만 【 】 유지(정보보호팀 확인 회신 시 이 값만 교체).
+        // '담당 부서' 행은 사업 판단으로 삭제(2026-08-06) — 원본 md에는 남아 있으므로 대조 시 유의.
         type: 'table',
         columns: ['구분', '내용'],
         rows: [
           ['개인정보 보호책임자', '임근성'],
-          ['담당 부서', '【부서명 — 정보보호팀 확인 후 기입】'],
           ['연락처', 'privacy_eduone@kggroup.co.kr'],
         ],
       },

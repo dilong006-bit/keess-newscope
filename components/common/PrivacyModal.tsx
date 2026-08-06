@@ -77,8 +77,16 @@ function Block({ b }: { b: PrivacyBlock }) {
 
 export default function PrivacyModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const spacerRef = useRef<HTMLDivElement>(null);
+  const fitRef = useRef<() => void>();
   const [active, setActive] = useState(PRIVACY_SECTIONS[0].id);
   const [scrolled, setScrolled] = useState(false);
+
+  /** sticky 목차 바가 가리는 높이 — 이만큼 더 내려야 점프한 조항의 제목이 바 아래로 드러난다. */
+  const stickyOffset = () => {
+    const toc = rootRef.current?.querySelector('.priv-toc') as HTMLElement | null;
+    return (toc?.offsetHeight ?? 0) + 8;
+  };
 
   // 열릴 때 본문 스크롤 최상단 초기화 (ReportModal의 bodyRef.scrollTop = 0 패턴).
   // 공통 Modal은 무변경 대상이라 스크롤 컨테이너(.pv-body)를 자식에서 찾아 초기화한다.
@@ -95,6 +103,35 @@ export default function PrivacyModal({ open, onClose }: { open: boolean; onClose
     if (!body) return;
     setActive(PRIVACY_SECTIONS[0].id);
     setScrolled(false);
+
+    /**
+     * 문서 끝 여백을 실측해 채운다.
+     * 이게 없으면 마지막 조항들이 스크롤 최대치에 걸려 화면 상단까지 올라오지 못하고,
+     * 그 결과 제9·10조 칩은 눌러도 활성화되지 않아 고장난 것처럼 보인다.
+     * 필요한 만큼만(= 뷰포트 높이 - 꼬리 높이) 주므로 과잉 여백이 생기지 않는다.
+     */
+    const fit = () => {
+      const sp = spacerRef.current;
+      const last = document.getElementById(PRIVACY_SECTIONS[PRIVACY_SECTIONS.length - 1].id);
+      if (!sp || !last) return;
+      const cur = sp.offsetHeight;
+      const lastTop = last.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop;
+      const tail = body.scrollHeight - cur - lastTop;   // 스페이서를 뺀 꼬리 높이
+      // 최대 스크롤이 '마지막 조항 제목이 목차 바 바로 아래' 지점과 맞아떨어지는 최소값.
+      // (더 주면 문서 끝이 필요 이상으로 비고, 덜 주면 마지막 조항이 상단에 닿지 못한다)
+      const need = Math.max(0, body.clientHeight - tail - stickyOffset() + 4);
+      if (Math.abs(need - cur) > 2) sp.style.height = `${need}px`;
+    };
+    fitRef.current = fit;
+    // 폰트 로드 등으로 레이아웃이 나중에 바뀌면 한 번 잰 값은 모자라게 된다.
+    // ResizeObserver로 변화를 계속 따라가되, 위의 2px 가드가 스스로 수렴시켜 루프를 막는다.
+    fit();
+    const raf = requestAnimationFrame(fit);
+    const timer = setTimeout(fit, 250);   // 폰트 스왑 직후 한 번 더 확정
+    const ro = new ResizeObserver(() => fit());
+    ro.observe(rootRef.current!);
+    window.addEventListener('resize', fit);
+
     const onScroll = () => setScrolled(body.scrollTop > 320);
     body.addEventListener('scroll', onScroll, { passive: true });
 
@@ -113,33 +150,45 @@ export default function PrivacyModal({ open, onClose }: { open: boolean; onClose
       const el = document.getElementById(s.id);
       if (el) io.observe(el);
     });
-    return () => { body.removeEventListener('scroll', onScroll); io.disconnect(); };
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+      ro.disconnect();
+      window.removeEventListener('resize', fit);
+      body.removeEventListener('scroll', onScroll);
+      io.disconnect();
+    };
   }, [open]);
 
   const jump = (id: string) => {
     const body = rootRef.current?.closest('.pv-body') as HTMLElement | null;
     const el = document.getElementById(id);
     if (!body || !el) return;
+    // 이동 직전 꼬리 여백을 재확정한다 — 폰트 로드 등으로 레이아웃이 늦게 바뀌어도
+    // 마지막 조항이 상단에 닿지 못하는 일이 없도록(ResizeObserver 알림에 의존하지 않음).
+    fitRef.current?.();
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // offsetTop은 offsetParent(.pv-overlay) 기준이라 스크롤 컨테이너(.pv-body)와 원점이 122px 어긋난다.
     // 화면 좌표 차이로 계산해야 대상 조항이 정확히 상단에 걸린다.
     const delta = el.getBoundingClientRect().top - body.getBoundingClientRect().top;
-    body.scrollTo({ top: body.scrollTop + delta - 8, behavior: reduce ? 'auto' : 'smooth' });
+    body.scrollTo({ top: body.scrollTop + delta - stickyOffset(), behavior: reduce ? 'auto' : 'smooth' });
   };
+
+  // 활성 칩이 목차 바 밖으로 밀려 잘리지 않도록 가로 스크롤을 맞춘다(모바일에서 특히 필요).
+  useEffect(() => {
+    const toc = rootRef.current?.querySelector('.priv-toc') as HTMLElement | null;
+    const chip = toc?.querySelector('.priv-toc-chip.on') as HTMLElement | null;
+    if (!toc || !chip) return;
+    const left = chip.offsetLeft;
+    const right = left + chip.offsetWidth;
+    if (left < toc.scrollLeft) toc.scrollLeft = left - 12;
+    else if (right > toc.scrollLeft + toc.clientWidth) toc.scrollLeft = right - toc.clientWidth + 12;
+  }, [active]);
 
   return (
     <Modal open={open} onClose={onClose} labelledBy="privacy-modal-title" title={PRIVACY_TITLE} maxWidth={720}>
       <div ref={rootRef} className="priv-doc">
-        <button
-          type="button"
-          className={`priv-totop${scrolled ? ' show' : ''}`}
-          aria-label="문서 맨 위로"
-          tabIndex={scrolled ? 0 : -1}
-          onClick={() => jump(PRIVACY_SECTIONS[0].id)}
-        >
-          ↑
-        </button>
-
+        {/* 목차 — 선택된 칩만 '제N조'로 펼쳐져 숫자 나열에 맥락을 준다 */}
         <div className="priv-toc" role="group" aria-label="조항 목차">
           {PRIVACY_SECTIONS.map((s, idx) => (
             <button
@@ -150,7 +199,9 @@ export default function PrivacyModal({ open, onClose }: { open: boolean; onClose
               aria-current={active === s.id ? 'true' : undefined}
               onClick={() => jump(s.id)}
             >
-              {idx + 1}
+              <span className="priv-toc-affix" aria-hidden="true">제</span>
+              <span className="priv-toc-n">{idx + 1}</span>
+              <span className="priv-toc-affix" aria-hidden="true">조</span>
             </button>
           ))}
         </div>
@@ -165,6 +216,20 @@ export default function PrivacyModal({ open, onClose }: { open: boolean; onClose
             {s.blocks.map((b, i) => <Block key={i} b={b} />)}
           </section>
         ))}
+
+        {/* 마지막 조항도 화면 상단까지 올라올 수 있도록 실측해 채우는 여백(높이는 JS가 지정) */}
+        <div ref={spacerRef} className="priv-tail" aria-hidden="true" />
+
+        {/* FAB는 마지막 자식 — 첫 자식이면 흐름 공간을 차지해 목차가 38px 밀려난다 */}
+        <button
+          type="button"
+          className={`priv-totop${scrolled ? ' show' : ''}`}
+          aria-label="문서 맨 위로"
+          tabIndex={scrolled ? 0 : -1}
+          onClick={() => jump(PRIVACY_SECTIONS[0].id)}
+        >
+          ↑
+        </button>
       </div>
     </Modal>
   );
