@@ -391,3 +391,65 @@
 .subnav a{flex:none;font-size:13.5px;font-weight:600;color:var(--muted);padding:8px 14px;border-radius:999px;transition:color .2s var(--ease),background .2s var(--ease)}
 .subnav a:hover{color:var(--ink)}
 .subnav a.on{color:var(--ink);background:var(--surface)}
+
+/* ===== 개인정보처리방침 모달 전용 (.priv-doc 스코프 — 기존 .pv-* 규칙 무변경) ===== */
+.priv-doc{display:flex;flex-direction:column}
+
+/* I2: 목차 퀵점프 칩바 */
+.priv-toc{position:sticky;top:-24px;z-index:3;display:flex;gap:6px;overflow-x:auto;
+  padding:10px 0 12px;margin:-24px 0 14px;background:#fff;border-bottom:1px solid var(--line)}
+.priv-toc-chip{flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,border-color .2s}
+.priv-toc-chip:hover{border-color:var(--p1);color:var(--p1)}
+.priv-toc-chip.on{background:var(--p1);border-color:var(--p1);color:#fff}
+
+/* I3: 조항 번호 배지 */
+.priv-num{flex:none;width:26px;height:26px;border-radius:50%;margin-right:9px;
+  background:color-mix(in srgb,var(--p1) 10%,#fff);color:var(--p1);
+  font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+
+/* I8: 조항 간 구분선 */
+.priv-article{border-top:1px solid var(--line);padding-top:6px}
+
+/* I4: 필수/선택 배지 */
+.priv-items{display:flex;flex-direction:column;gap:5px}
+.priv-item{display:flex;gap:7px;align-items:flex-start}
+.priv-tag{flex:none;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;line-height:1.5}
+.priv-tag.req{background:color-mix(in srgb,var(--ink) 8%,#fff);color:var(--ink)}
+.priv-tag.opt{background:var(--surface);color:var(--muted)}
+
+/* I5: 【 】 하이라이트 (기존 .pv-badge.s1 배색 재사용 — 신규 색상 0) */
+.priv-bracket{background:#FBF0D8;color:#8A6314;padding:1px 6px;border-radius:6px;
+  font-weight:700;font-style:normal}
+
+/* I1: 표 컬럼 재분배 (3열 이상에서만, 스코프 오버라이드로 .pv-table 원 규칙 무영향) */
+.priv-doc .pv-table.priv-table--wide td:first-child{width:26%;font-weight:600;color:#33333c}
+
+/* I6: 모바일 카드형 전환 (<=640px) */
+@media(max-width:640px){
+  .priv-doc .pv-table.priv-table--wide{border:none}
+  .priv-doc .pv-table.priv-table--wide thead{display:none}
+  .priv-doc .pv-table.priv-table--wide,
+  .priv-doc .pv-table.priv-table--wide tbody,
+  .priv-doc .pv-table.priv-table--wide tr,
+  .priv-doc .pv-table.priv-table--wide td{display:block;width:auto}
+  /* 위 td 규칙보다 :first-child 폭 지정(26%)의 특이성이 높아 카드 모드에서도 첫 칸이 좁아진다 → 동일 특이성으로 해제 */
+  .priv-doc .pv-table.priv-table--wide td:first-child{width:auto}
+  .priv-doc .pv-table.priv-table--wide tr{border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin-bottom:10px}
+  .priv-doc .pv-table.priv-table--wide td{border-bottom:none;padding:6px 0}
+  .priv-doc .pv-table.priv-table--wide td:before{content:attr(data-label);display:block;
+    font-size:11px;font-weight:800;color:var(--p1);margin-bottom:3px}
+}
+
+/* I7: 스크롤-투-톱 미니 FAB (모달 내부 스코프 — 전역 .to-top과 별개) */
+.priv-totop{position:sticky;bottom:14px;align-self:flex-end;z-index:4;
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;color:var(--muted);box-shadow:var(--shadow-2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  opacity:0;pointer-events:none;transform:translateY(6px);
+  transition:opacity .25s var(--ease),transform .25s var(--ease)}
+.priv-totop.show{opacity:1;pointer-events:auto;transform:none}
+.priv-totop:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media(prefers-reduced-motion:reduce){.priv-totop{transition:none}}
