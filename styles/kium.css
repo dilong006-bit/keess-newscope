@@ -153,6 +153,9 @@
 .kium-sec-sub{margin-top:13px;color:var(--muted);font-size:clamp(14px,1.6vw,16px);
   line-height:1.7;max-width:56ch;word-break:keep-all}
 .kium-caption{margin-top:18px;font-size:12.5px;color:var(--muted);line-height:1.65;word-break:keep-all}
+/* 자격확인 하단 제외 고지 — 카드 3장보다 뒤로 물러나도록 톤 완화.
+   --muted 파생(신규 색 토큰 없음). 85%가 .kium-sec.alt 배경(#FAFAFB)에서 AA를 지키는 최연한 값(4.69:1). */
+.kium-caption.soft{color:color-mix(in srgb,var(--muted) 85%,#fff)}
 
 /* =========================================================================
    F3 지원개요표 — 2열 정의표

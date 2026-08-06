@@ -143,7 +143,7 @@ export default function KiumEligibility() {
       </div>
 
       {/* 제한도 정직하게 — 제외 대상 고지 */}
-      <p className="kium-caption">{exclusion}</p>
+      <p className="kium-caption soft">{exclusion}</p>
     </>
   );
 }

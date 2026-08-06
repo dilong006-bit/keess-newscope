@@ -77,7 +77,7 @@ export default function KiumPage() {
       <section className="kium-sec alt" id="kium-faq">
         <div className="wrap">
           <p className="eyebrow r">자주 묻는 질문</p>
-          <h2 className="kium-sec-title r">궁금한 점을 먼저 확인해 보세요.</h2>
+          <h2 className="kium-sec-title r">{KIUM_CONTENT.sectionLeads.faq}</h2>
           <div className="kium-faq r">
             <KiumFaq />
           </div>
@@ -98,7 +98,7 @@ export default function KiumPage() {
       <div className="wrap">
         <p className="eyebrow r">과정안내</p>
         <h2 className="kium-sec-title r" tabIndex={-1} data-panel-heading>
-          성장 단계에 맞춰 {courses.length}개 과정을 운영합니다.
+          {KIUM_CONTENT.sectionLeads.courses}
         </h2>
         <KiumCourseGrid courses={courses} categories={categories} />
       </div>
