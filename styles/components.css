@@ -168,7 +168,9 @@
 .mkt-item{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:#3a3a42;cursor:pointer}
 .mkt-item input{flex:none;width:16px;height:16px;accent-color:var(--p1);cursor:pointer}
 .consent-text{max-height:0;overflow:hidden;transition:max-height .4s var(--ease)}
-.consent-text .ct-inner{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:4px 0 8px;font-size:12.5px;color:var(--muted);line-height:1.7;max-height:210px;overflow-y:auto}
+/* max-height: 동의 전문 전체가 잘리지 않도록 상향(G2-11 반영 원칙 5). 실측 최장 전문(모바일 375px
+   기준 617px)을 수용하며, overflow-y는 더 좁은 화면을 위한 안전장치로 유지한다. */
+.consent-text .ct-inner{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:4px 0 8px;font-size:12.5px;color:var(--muted);line-height:1.7;max-height:640px;overflow-y:auto}
 .consent-text .ct-inner p{margin-bottom:9px}
 .consent-text .ct-inner p:last-child{margin-bottom:0}
 .consent-text .ct-inner b{color:#3a3a42}

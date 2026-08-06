@@ -33,6 +33,8 @@ function fmtReceivedAt(r: ReportRecord) {
 
 // 비밀번호 인증 전 '내용' 자리에 노출되는 안내 문구
 const CONTENT_LOCKED_MSG = '비밀번호 확인 후 내용을 확인하실 수 있습니다.';
+/** 전문 아코디언 펼침 상한(px) — 교체된 전문이 잘리지 않도록 상향(§G2-11) */
+const CONSENT_TEXT_MAXH = 700;
 // 전화 자동 하이픈은 lib/utils의 fmtPhone(정본)을 공유한다 — 상담 폼과 단일 기준.
 
 // ── 아이콘 ────────────────────────────────────────────────────────────────
@@ -159,10 +161,11 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
     } else setLkPhoneHint(false);
   };
 
-  // ── 신고 접수 (필수 5개: 성함·전화번호·비밀번호·제목·내용) ──
+  // ── 신고 접수 (필수 6개: 성함·전화번호·비밀번호·이메일·제목·내용) ──
+  // 이메일은 처리결과 안내 채널이므로 필수(정보보호팀 회신 조건부 지침 + 사업 결정 · G2-11).
   function submitReport() {
-    const LBL: Record<string, string> = { name: '성함', phone: '전화번호', pw: '비밀번호', title: '제목', content: '내용' };
-    const reqs: (keyof typeof emptyForm)[] = ['name', 'phone', 'pw', 'title', 'content'];
+    const LBL: Record<string, string> = { name: '성함', phone: '전화번호', pw: '비밀번호', email: '이메일', title: '제목', content: '내용' };
+    const reqs: (keyof typeof emptyForm)[] = ['name', 'phone', 'pw', 'email', 'title', 'content'];
     const next: Record<string, boolean> = {};
     const miss: string[] = [];
     let ok = true;
@@ -171,13 +174,14 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
       next[id] = bad;
       if (bad) { ok = false; miss.push(LBL[id]); }
     });
-    // 이메일: 값 있을 때만 형식검증
+    // 이메일: 빈값은 위 필수 검증에서 이미 차단된다. 값이 있을 때만 형식을 추가 검증한다
+    // (여기서 next.email 을 되돌리면 필수 미입력 표기가 지워지므로 false 대입 금지).
     const email = (form.email || '').trim();
-    if (email) {
-      const eok = EMAIL_RE.test(email);
-      next.email = !eok;
-      if (!eok) { ok = false; miss.push('이메일 형식'); }
-    } else next.email = false;
+    if (email && !EMAIL_RE.test(email)) {
+      next.email = true;
+      ok = false;
+      miss.push('이메일 형식');
+    }
     // 비번확인: 값 있을 때만 일치검증
     if (form.pw2 && form.pw !== form.pw2) {
       next.pw2 = true;
@@ -318,6 +322,8 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
             {!done ? (
               <>
                 <div className="pv-toplink"><button type="button" className="pv-link" onClick={() => setTab('lookup')}><IcSearch />이미 신고하셨나요? 신고 조회하기</button></div>
+                {/* 법령 근거 안내 — 정보보호팀 회신(G2-11) 제공 원문 그대로. 기존 안내 박스 스타일 재사용 */}
+                <p className="pv-warn"><span><b>[부정훈련 신고 안내]</b> 본 신고 채널은 「국민 평생 직업능력 개발법」 및 「직업능력개발훈련 모니터링 및 지도·감독에 관한 규정」 제14조(위반사항 조치 등)에 의거하여, 훈련기관의 부정수급 및 부정행위를 예방하고 공정한 훈련 환경을 조성하기 위해 운영됩니다.</span></p>
                 <p className="pv-lead">KG에듀원은 부정·부실훈련을 줄이고 올바른 훈련문화를 만들기 위해 노력합니다. 아래로 신고 내용을 남겨 주시면 접수·처리되며, 입력하신 정보는 비공개로 처리됩니다.</p>
 
                 <div id="pv-report-form">
@@ -332,7 +338,7 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
                       <div className={fld('pw2')}><label>비밀번호 확인</label><input id="pv-pw2" aria-label="비밀번호 확인" type="password" value={form.pw2} onChange={upd('pw2')} /><span className="err">비밀번호가 일치하지 않습니다.</span></div>
                     </div>
                     <div className="pv-frow">
-                      <div className={fld('email')}><label>이메일</label><input id="pv-email" aria-label="이메일" type="email" placeholder="name@company.com" value={form.email} onChange={upd('email')} /><span className="err">필수 항목을 확인해 주세요.</span></div>
+                      <div className={fld('email')}><label>이메일 <span className="req">*</span></label><input id="pv-email" aria-label="이메일" type="email" placeholder="name@company.com" value={form.email} onChange={upd('email')} /><span className="err">필수 항목을 확인해 주세요.</span></div>
                       <div className="field"><label>신고자 신분</label><div className="sel"><select id="pv-role" aria-label="신고자 신분" value={form.role} onChange={upd('role')}><option value="">선택</option><option>훈련생</option><option>훈련강사</option><option>훈련기관 관계자</option><option>기업 관계자</option><option>기타</option></select></div></div>
                     </div>
                   </div>
@@ -358,12 +364,12 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
                       <label className="consent-main"><input type="checkbox" id="pv-agree1" checked={agree1} onChange={(e) => setAgree1(e.target.checked)} /><span><b className="c-tag req-tag">필수</b> 개인정보 수집·이용 안내</span></label>
                       <button type="button" className="consent-view" onClick={() => setConsentOpen((s) => ({ ...s, p1: !s.p1 }))}>{consentOpen.p1 ? '접기' : '전문 보기'}</button>
                     </div>
-                    <div className="consent-text" style={{ maxHeight: consentOpen.p1 ? 260 : 0 }}><div className="ct-inner"><p><b>개인정보 수집·이용 안내 (필수)</b></p><p>부정훈련 신고센터를 통해 신고 접수 시 아래와 같이 개인정보를 수집·이용합니다.</p><p><b>수집 항목</b><br />(필수) 신고자의 성명, 휴대폰번호, 이메일, 신고자 신분</p><p><b>수집·이용 목적</b><br />신고의 접수·처리 등 소관 업무 수행</p><p><b>보유·이용 기간</b><br />신고 접수와 관련해 수집한 개인정보는 10년간 기록·보존되며, 기간 경과 시 관련 법령에 따라 파기합니다.</p></div></div>
+                    <div className="consent-text" style={{ maxHeight: consentOpen.p1 ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>개인정보 수집·이용 안내 (필수)</b></p><p>부정훈련 신고센터를 통해 신고 접수 시 아래와 같이 개인정보를 수집·이용합니다.</p><p><b>수집 항목</b><br />(필수) 신고자의 성명, 휴대폰번호, 이메일, 접수 비밀번호, 신고 제목, 신고 내용<br />(선택) 신고자 신분, 비밀번호 확인, 훈련 구분, 훈련 과정명, 훈련 기관, 신고 대상</p><p><b>수집·이용 목적</b><br />신고의 접수·처리 등 소관 업무 수행</p><p><b>보유·이용 기간</b><br />신고 접수와 관련해 수집한 개인정보는 10년간 기록·보존되며, 기간 경과 시 관련 법령에 따라 파기합니다.</p></div></div>
                     <div className={`consent${errs.__c2 && !agree2 ? ' invalid' : ''}`} id="pv-c2-wrap">
                       <label className="consent-main"><input type="checkbox" id="pv-agree2" checked={agree2} onChange={(e) => setAgree2(e.target.checked)} /><span><b className="c-tag req-tag">필수</b> 개인정보 제3자 제공</span></label>
                       <button type="button" className="consent-view" onClick={() => setConsentOpen((s) => ({ ...s, p2: !s.p2 }))}>{consentOpen.p2 ? '접기' : '전문 보기'}</button>
                     </div>
-                    <div className="consent-text" style={{ maxHeight: consentOpen.p2 ? 260 : 0 }}><div className="ct-inner"><p><b>개인정보의 제3자 제공 (필수)</b></p><p><b>제공받는 기관</b><br />훈련기관 주소 기준 관할 고용복지플러스센터, 고용노동부</p><p><b>제공 목적</b><br />부정훈련 신고사항 검토 및 지도점검 등 훈련품질관리 업무</p><p><b>제공 항목</b><br />신고자의 성명, 휴대폰번호, 신고자 신분</p><p><b>보유·이용 기간</b><br />관련 법령에 따라 10년간 기록·보존되며, 기간 경과 시 파기합니다.</p></div></div>
+                    <div className="consent-text" style={{ maxHeight: consentOpen.p2 ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>개인정보의 제3자 제공 (필수)</b></p><p><b>제공받는 기관</b><br />훈련기관 주소 기준 관할 고용복지플러스센터, 고용노동부</p><p><b>제공 목적</b><br />부정훈련 신고사항 검토 및 지도점검 등 훈련품질관리 업무</p><p><b>제공 항목</b><br />신고자의 성명, 휴대폰번호, 신고자 신분</p><p><b>보유·이용 기간</b><br />관련 법령에 따라 10년간 기록·보존되며, 기간 경과 시 파기합니다.</p></div></div>
                   </div>
                   <button className="btn btn-ink" id="pv-submit" type="button" style={{ width: '100%', marginTop: 20 }} onClick={submitReport}>신고 접수</button>
                 </div>

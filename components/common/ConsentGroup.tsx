@@ -30,12 +30,26 @@ interface ConsentGroupProps {
   onOptionalChange?: (v: boolean) => void;
 }
 
+/**
+ * 펼침 시 아코디언 상한(px). 전문이 잘리지 않도록 최장 전문(모바일 375px 실측 617px)보다
+ * 크게 잡는다. 실제 높이는 내용에 따라 결정되며 이 값은 전개 애니메이션의 상한일 뿐이다.
+ */
+const CONSENT_TEXT_MAXH = 700;
+
+/**
+ * 전문 도입부 법적 근거 기본 문장(필수 동의 = 「개인정보 보호법」 제15조).
+ * 선택 동의처럼 근거가 다른 절은 ConsentClause.legalBasis 로 개별 지정한다.
+ * ※ 이 문장은 정보보호팀 승인 문구이므로 변경 금지.
+ */
+const DEFAULT_LEGAL_BASIS =
+  'KG에듀원 KEESS는 「개인정보 보호법」 제15조에 의거하여 아래와 같이 개인정보를 수집·이용하고자 하오니, 이에 동의하여 주시기를 부탁드립니다.';
+
 function ClauseText({ c, open }: { c: ConsentClause; open: boolean }) {
   return (
-    <div className="consent-text" style={{ maxHeight: open ? 240 : 0 }}>
+    <div className="consent-text" style={{ maxHeight: open ? CONSENT_TEXT_MAXH : 0 }}>
       <div className="ct-inner">
         <p><b>{c.title}</b></p>
-        <p>KG에듀원 KEESS는 「개인정보 보호법」 제15조에 의거하여 아래와 같이 개인정보를 수집·이용하고자 하오니, 이에 동의하여 주시기를 부탁드립니다.</p>
+        <p>{c.legalBasis ?? DEFAULT_LEGAL_BASIS}</p>
         <p><b>1. 수집·이용 목적</b><br />{c.purpose}</p>
         <p><b>2. 수집 항목</b><br />{c.items}</p>
         <p><b>3. 보유 및 이용 기간</b><br />{c.period}</p>

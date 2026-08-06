@@ -9,6 +9,14 @@ const MAX = 10 * 1024 * 1024;
 const FILE_PLACEHOLDER = '파일을 선택하거나 끌어다 놓으세요';
 /** 접수 완료 후 입력 폼으로 자동 복귀까지의 대기 시간(ms) */
 const AUTO_RETURN_MS = 5000;
+/**
+ * 첨부파일 민감정보 유의 문구(정보보호팀 승인 문구 · G2-11). 전문 2항 말미와 첨부파일 필드
+ * 헬퍼에 동일 문구로 노출한다 — 전문을 열지 않아도 인지 가능하도록.
+ */
+const FILE_PRIVACY_NOTE =
+  '※ 첨부파일에는 개인정보(주민등록번호, 계좌정보 등 민감정보 포함)가 담기지 않도록 유의하여 주시기 바랍니다.';
+/** 전문 아코디언 펼침 상한(px) — 교체된 전문이 잘리지 않도록 상향(§G2-11) */
+const CONSENT_TEXT_MAXH = 700;
 
 /** 상태 key → 입력 element id (제출 실패 시 첫 미충족 필드로 포커스 이동) */
 const FIELD_ID: Record<string, string> = {
@@ -439,6 +447,7 @@ export default function HomeInquiry({
                   >{fileName}</label>
                   <input id="f-file" ref={fileInputRef} name="attachment" type="file" style={{ display: 'none' }} accept=".zip,.pdf,.hwp,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif" onChange={(e) => takeFile(e.target.files?.[0])} />
                   <div className="filehint">zip·pdf·hwp·ppt·pptx·doc·docx·xls·xlsx·jpg·png·gif / 최대 10MB</div>
+                  <div className="filehint">{FILE_PRIVACY_NOTE}</div>
                   {fileErr && <span className="err" style={{ display: 'block' }} aria-live="polite">{fileErr}</span>}
                 </div>
 
@@ -451,7 +460,7 @@ export default function HomeInquiry({
                     <button type="button" className="consent-view" onClick={() => setConsentOpen((s) => ({ ...s, priv: !s.priv }))}>{consentOpen.priv ? '접기' : '전문 보기'}</button>
                   </div>
                   {consentErr && <span className="err" style={{ display: 'block', marginTop: 0 }} aria-live="polite">개인정보 수집·이용에 동의해 주세요.</span>}
-                  <div className="consent-text" style={{ maxHeight: consentOpen.priv ? 240 : 0 }}><div className="ct-inner"><p><b>개인정보 수집·이용 동의 (필수)</b></p><p>KG에듀원 KEESS 서비스를 제공하기 위해 필요한 필수 정보를 아래와 같이 수집·이용하고자 하오니, 이에 동의하여 주시기를 부탁드립니다.</p><p><b>1. 수집·이용 목적</b><br />상담신청 및 안내: KEESS 직원 교육 상담신청 서비스의 상담·안내를 위한 자료 활용</p><p><b>2. 수집 항목</b><br />(필수) 이름, 전화번호, 이메일</p><p><b>3. 보유 및 이용 기간</b><br />법령에 따른 보유·이용 기간 또는 동의받은 기간 내에서 처리·보유합니다. 수집·보유 근거: 정보주체의 동의 / 보유·이용기간: 동의일로부터 1년간(보유목적 달성) 또는 삭제 요청 시 지체 없이 파기.</p><p><b>4. 동의 거부 권리</b><br />동의를 거부할 권리가 있습니다. 다만 거부 시 상담 서비스 이용이 제한될 수 있습니다.</p></div></div>
+                  <div className="consent-text" style={{ maxHeight: consentOpen.priv ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>개인정보 수집·이용 동의 (필수)</b></p><p>KG에듀원 KEESS 서비스를 제공하기 위해 필요한 필수 정보를 아래와 같이 수집·이용하고자 하오니, 이에 동의하여 주시기를 부탁드립니다.</p><p><b>1. 수집·이용 목적</b><br />상담신청 및 안내: KEESS 직원 교육 상담신청 서비스의 상담·안내를 위한 자료 활용</p><p><b>2. 수집 항목</b><br />(필수) 담당자명, 회사·기관명, 직급/직책, 연락처, 이메일<br />(선택) 회사 규모(임직원 수), 예상 교육인원, 관심 영역, 문의 내용, 첨부파일</p><p>{FILE_PRIVACY_NOTE}</p><p><b>3. 보유 및 이용 기간</b><br />법령에 따른 보유·이용 기간 또는 동의받은 기간 내에서 처리·보유합니다. 수집·보유 근거: 정보주체의 동의 / 보유·이용기간: 동의일로부터 1년간(보유목적 달성) 또는 삭제 요청 시 지체 없이 파기.</p><p><b>4. 동의 거부 권리</b><br />동의를 거부할 권리가 있습니다. 다만 거부 시 상담 서비스 이용이 제한될 수 있습니다.</p></div></div>
 
                   {/* 12 마케팅 정보 수신 동의 (선택) — 부모 + 3채널 */}
                   <div className="consent">
@@ -464,7 +473,7 @@ export default function HomeInquiry({
                     <label className="mkt-item"><input type="checkbox" name="agreeMarketingSms" checked={mkt.sms} onChange={() => toggleMkt('sms')} /><span>SMS(문자)</span></label>
                     <label className="mkt-item"><input type="checkbox" name="agreeMarketingTel" checked={mkt.tel} onChange={() => toggleMkt('tel')} /><span>전화(TM)</span></label>
                   </div>
-                  <div className="consent-text" style={{ maxHeight: consentOpen.mkt ? 240 : 0 }}><div className="ct-inner"><p><b>마케팅 정보 수신 동의 (선택)</b></p><p>KG에듀원 KEESS는 「개인정보 보호법」 제22조에 의거하여 마케팅 목적의 개인정보 수집·이용에 대해 별도 동의를 받습니다. 동의를 거부하셔도 서비스 이용이 가능하며, 일부 서비스·혜택 제공이 제한될 수 있습니다.</p><p><b>수집·이용 목적</b><br />모바일 상품권(기프티콘) MMS 발송</p><p><b>수집 항목</b><br />이름, 전화번호, 이메일</p><p><b>보유 및 이용 기간</b><br />모바일 상품권(기프티콘) 수령 완료 시까지</p><p>상기 이외의 마케팅 목적으로 수집·이용 시 별도 동의를 받습니다.</p></div></div>
+                  <div className="consent-text" style={{ maxHeight: consentOpen.mkt ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>마케팅 정보 수신 동의 (선택)</b></p><p>KG에듀원 KEESS는 「개인정보 보호법」 제22조에 의거하여 마케팅 목적의 개인정보 수집·이용에 대해 별도 동의를 받습니다. 동의를 거부하셔도 서비스 이용이 가능하며, 일부 서비스·혜택 제공이 제한될 수 있습니다.</p><p><b>수집·이용 목적</b><br />① 이메일·SMS(문자)·전화(TM)를 통한 EDM·이벤트 등 마케팅 정보 발송<br />② 모바일 상품권(기프티콘) MMS 발송</p><p><b>수집 항목</b><br />이름, 전화번호, 이메일</p><p><b>보유 및 이용 기간</b><br />① EDM·이벤트 마케팅: 동의일로부터 1년간 (또는 삭제 요청 시 지체 없이 파기)<br />② 모바일 상품권(기프티콘): 상품권 수령 완료 시까지</p><p>상기 이외의 마케팅 목적으로 수집·이용 시 별도 동의를 받습니다.</p></div></div>
                 </div>
                 <button className="btn submit" onClick={submit}>상담 신청</button>
               </div>
