@@ -12,6 +12,8 @@ export type KiumCourse = {
   summary: string; slogan: string; goals: string[]
   highlights: { no: string; title: string; desc: string }[]
   modules: { area: string; content: string; hours: number }[]
+  /** 썸네일 이미지 자산 경로. 값이 있으면 이미지 모드, 없으면(undefined) 텍스트 모드로 렌더링된다. */
+  thumbSrc?: string
 }
 
 export const KIUM_CATEGORY_META: Record<KiumCategory, { label: string; order: number }> = {

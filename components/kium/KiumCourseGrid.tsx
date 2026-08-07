@@ -9,6 +9,10 @@ import type { KiumCategory, KiumCourse } from '@/lib/kium/data';
 
 /** K6 — 필터 교체 out fade 120ms(FLIP 금지) */
 const OUT_MS = 120;
+/** K3 — 인라인 패널 grid-rows morph 시간(.kium-panel-slot transition .3s)과 맞춘다 */
+const PANEL_MS = 300;
+/** 패널 상단이 이 높이만큼 이미 드러나 있으면 "보인다"로 보고 스크롤하지 않는다(헤더·타이틀 노출 기준) */
+const PANEL_REVEAL_PX = 160;
 /** 데스크톱 인라인 확장 ↔ 모바일 바텀시트 분기 (전략 §6) */
 const SHEET_MQ = '(max-width:767px)';
 
@@ -64,14 +68,33 @@ export default function KiumCourseGrid({ courses, categories }: Props) {
 
   useEffect(() => () => clearTimeout(outTimer.current), []);
 
-  // K3 — 인라인 패널은 닫힌 상태로 마운트한 뒤 다음 프레임에 열어 height morph를 태운다
+  // K3 — 인라인 패널은 닫힌 상태로 마운트한 뒤 다음 프레임에 열어 height morph를 태운다.
+  // 이어서 패널을 뷰포트 안으로 끌어와, 화면 밖에서 열려 놓치는 경우를 없앤다.
+  //
+  // 스크롤은 morph가 끝난 뒤에 건다. 확장 전 패널은 grid-template-rows:0fr이라 높이가 0이고,
+  // 0px 요소에 block:'nearest'를 걸면 뷰포트 하단 경계에 맞추는 데 그쳐 패널이 그대로
+  // 화면 밖에서 펼쳐진다. 실제 높이를 가진 뒤에 계산해야 'nearest'가 패널 상단을 잡아 준다.
+  // 모바일 바텀시트(sheet)는 이 분기를 타지 않는다.
   useEffect(() => {
     if (!openId || sheet) {
       setSlotOpen(false);
       return;
     }
-    const id = requestAnimationFrame(() => setSlotOpen(true));
-    return () => cancelAnimationFrame(id);
+    const raf = requestAnimationFrame(() => setSlotOpen(true));
+    const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const timer = setTimeout(() => {
+      const panel = document.getElementById(`kium-panel-${openId}`);
+      if (!panel) return;
+      // 펼친 패널은 뷰포트보다 길 수 있고, 그러면 block:'nearest'가 항상 상단 정렬로 떨어진다.
+      // 이미 충분히 보이는데도 화면이 튀지 않도록 노출 정도를 직접 판정한다.
+      const { top } = panel.getBoundingClientRect();
+      if (top >= 0 && top <= window.innerHeight - PANEL_REVEAL_PX) return;
+      panel.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'nearest' });
+    }, PANEL_MS);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
   }, [openId, sheet]);
 
   /** 필터 교체 — out fade 120ms → in stagger */

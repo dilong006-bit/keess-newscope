@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronDown } from 'lucide-react';
 import KiumThumb from './KiumThumb';
 import { KIUM_CATEGORY_META, type KiumCourse } from '@/lib/kium/data';
 
@@ -29,7 +30,11 @@ export default function KiumCourseCard({
       aria-controls={panelId}
       onClick={onToggle}
     >
-      <KiumThumb category={course.category} title={course.titleMarketing} />
+      <KiumThumb
+        category={course.category}
+        title={course.titleMarketing}
+        thumbSrc={course.thumbSrc}
+      />
 
       <span className="kium-card-body">
         <span className="kium-card-labels">
@@ -42,9 +47,11 @@ export default function KiumCourseCard({
         </span>
 
         {/*
-          [수정 12] 본문 과정명 행 제거 — 과정명은 썸네일 텍스트가 담당한다(중복 노출 제거).
-          썸네일 이미지 자산 도입 시(이미지 모드): 배경 텍스트 제거 + 본문 타이틀 복원.
+          [수정 12] 본문 과정명 행은 텍스트 모드에서 제거 — 과정명을 썸네일 텍스트가 담당한다(중복 노출 제거).
+          이미지 모드(thumbSrc 있음)에서는 썸네일이 과정명을 더 이상 노출하지 않으므로 본문에 복원한다.
         */}
+        {course.thumbSrc && <span className="kium-card-title">{course.titleMarketing}</span>}
+
         <span className="kium-card-summary">{course.summary}</span>
 
         <span className="kium-card-meta">
@@ -57,6 +64,8 @@ export default function KiumCourseCard({
           {course.type === 'AI융합형' && <span className="kium-badge ai">AI융합형</span>}
           {/* 정부지원 환급 배지 — 단가(원) 미노출을 갈음하는 B2B 환급 구조 표기 */}
           <span className="kium-badge gov">정부지원 환급</span>
+          {/* 펼침 방향 인디케이터 — .kium-elig-chev(KiumEligibility)와 동일 패턴 재사용 */}
+          <ChevronDown className="kium-card-chev" size={16} aria-hidden="true" />
         </span>
       </span>
     </button>
