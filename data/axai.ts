@@ -60,7 +60,7 @@ export const SCEN: Record<string, { k: string; t: string; p: string; chips: stri
 export const STEP5 = {
   eyebrow: 'KG에듀원 AX Transformation Service',
   title: '진단부터 성과까지, End-to-End 5 Step',
-  sub: '단계마다 명확한 산출물이 남습니다. 교육이 아니라 전환 프로젝트입니다.',
+  sub: '조직의 AX 수준을 진단하고, 맞춤형 설계부터 현업 실행·성과 측정까지 단계별로 연결합니다.',
   steps: [
     { k: 'STEP 1', n: '1', title: 'AI·데이터 활용 수준 진단', items: ['조직 AX 수준 진단', '직무별 AI 활용도 진단', '데이터 활용 성숙도 진단', 'AX 역량 Gap 분석'], deliver: ['AX 역량 진단 리포트', '조직별 우선 육성 과제'] },
     { k: 'STEP 2', n: '2', title: '기업 맞춤형 AX 역량 설계', items: ['직군별 AX 역량 정의', 'AI 활용 업무 분석', '직무별 AX Skill Map 설계', '교육 로드맵 설계'], deliver: ['AX Skill Framework', '직무별 학습 로드맵'] },
