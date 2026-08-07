@@ -1,6 +1,7 @@
 'use client';
 
 import { EMAIL_RE, INQ_MAX, fmtPhone, hasNonPhoneChar } from '@/lib/utils';
+import { readInterestParam } from '@/lib/inquiryPreset';
 import { useEffect, useRef, useState } from 'react';
 import { INQ } from '@/data/home';
 
@@ -114,6 +115,22 @@ export default function HomeInquiry({
   const phoneHintTimer = useRef<ReturnType<typeof setTimeout>>();
   const returnTimer = useRef<ReturnType<typeof setTimeout>>();
   const firstFieldRef = useRef<HTMLInputElement>(null);
+  /** 쿼리(?interest=)로 들어온 관심 영역 프리셀렉트 — 접수 후 복귀 시에도 같은 값으로 되돌린다 */
+  const urlPreset = useRef<string[]>([]);
+
+  /**
+   * 진입 출처 기반 '관심 영역' 사전 선택.
+   * 최초 마운트에서 1회만 읽는 기본값이며(강제 고정 아님), 이후 사용자가 자유롭게 해제·추가할 수 있다.
+   * 서버 렌더에는 반영하지 않고 마운트 후 세팅해 hydration 불일치를 피한다.
+   * presetInterests prop(/kium 등 명시 지정)이 있으면 그쪽을 우선한다.
+   */
+  useEffect(() => {
+    if (presetInterests) return;
+    const picked = readInterestParam(INQ.interests.map((o) => o.value));
+    if (!picked.length) return;
+    urlPreset.current = picked;
+    setInterests(initInterests(picked));
+  }, [presetInterests]);
 
   // 마케팅 부모 ↔ 3채널 양방향 동기화
   const mktAll = mkt.email && mkt.sms && mkt.tel;
@@ -138,8 +155,8 @@ export default function HomeInquiry({
     clearTimeout(phoneHintTimer.current);
     setV({ company: '', name: '', phone: '', position: '', emailLocal: '', emailDomain: '', companySize: '', trainees: '', message: '' });
     setCustomDomain(false);
-    // 초기화 후에도 진입 경로 프리셀렉트는 유지(홈은 preset 미지정이라 기존과 동일하게 빈 상태)
-    setInterests(initInterests(presetInterests));
+    // 초기화 후에도 진입 경로 프리셀렉트는 유지(prop 우선, 없으면 쿼리 기반, 둘 다 없으면 빈 상태)
+    setInterests(initInterests(presetInterests ?? urlPreset.current));
     setSubs(initInterests(presetInterestSubs));
     setConsent(false);
     setMkt({ email: false, sms: false, tel: false });

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import CountNum from '@/components/common/CountNum';
 import SubNav from '@/components/common/SubNav';
 import Img from '@/components/common/Img';
+import { inquiryHref } from '@/lib/inquiryPreset';
 import {
   HERO, BENTO, SCENARIO, SCEN, STEP5, FRAMEWORK, FW, LV_CLASS,
   JOBS, JOBLV, STAGE_NAMES, STAGE_MIX, JOBPOS, WHY, GAP, COURSES, FINAL, SUBNAV,
@@ -13,6 +14,13 @@ import {
 const Arrow = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 );
+
+/**
+ * P1은 자체 문의 폼이 없어 상담 CTA가 모두 홈 폼(/#inq)으로 간다.
+ * 이 페이지를 거쳐 왔다는 컨텍스트를 넘겨 '관심 영역'의 AX·AI 전환 칩을 사전 선택시킨다.
+ * (GNB '교육 상담'은 서비스 컨텍스트가 없으므로 파라미터 없이 /#inq 그대로 둔다)
+ */
+const INQ_HREF = inquiryHref('ax-ai');
 const BENTO_ICONS: Record<string, React.ReactNode> = {
   search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>,
   bar: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18" /><rect x="7" y="10" width="3" height="7" /><rect x="13" y="6" width="3" height="11" /></svg>,
@@ -37,7 +45,7 @@ export default function Sections() {
               <h1><span className="dim">{HERO.h1Lead}</span> <span className="hl">{HERO.h1Emph}</span></h1>
               <p className="sub">{HERO.sub}</p>
               <div className="act">
-                <Link className="btn btn-ink" href="/#inq">{HERO.cta} <Arrow /></Link>
+                <Link className="btn btn-ink" href={INQ_HREF}>{HERO.cta} <Arrow /></Link>
               </div>
               <div className="ax-strip">{HERO.strip.map((s) => <span key={s}>{s}</span>)}</div>
             </div>
@@ -154,7 +162,7 @@ export default function Sections() {
             <h2>{FINAL.title}</h2>
             <p>{FINAL.sub}</p>
             <div className="act">
-              <Link className="btn btn-ink" href="/#inq">{FINAL.cta} <Arrow /></Link>
+              <Link className="btn btn-ink" href={INQ_HREF}>{FINAL.cta} <Arrow /></Link>
             </div>
           </div>
         </div>
@@ -201,7 +209,7 @@ function Scenario() {
               <h3>{s.t}</h3>
               <p>{s.p}</p>
               <div className="pchips">{s.chips.map((c) => <span key={c}>{c}</span>)}</div>
-              <div className="pcta"><Link className="btn" href="/#inq">{s.cta} <Arrow /></Link></div>
+              <div className="pcta"><Link className="btn" href={INQ_HREF}>{s.cta} <Arrow /></Link></div>
             </div>
           </div>
         </div>
