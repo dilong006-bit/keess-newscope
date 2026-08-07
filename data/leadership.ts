@@ -33,7 +33,7 @@ export const PAIN = {
 export const JOURNEY = {
   eyebrow: '교육체계 · 한눈에',
   title: '성장단계마다, 필요한 리더십을 설계합니다',
-  lead: '신입부터 최고경영진까지, 역할 변화에 따라 요구되는 핵심역량을 6단계 성장 로드맵으로 체계화했습니다.',
+  lead: '성장할수록 역할과 책임은 달라집니다. 신입부터 최고경영진까지, 각 단계에 필요한 리더십 역량을 체계적으로 연결합니다.',
   stages: [
     { jn: 'STAGE 1', js: '신입', jr: 'Entry' },
     { jn: 'STAGE 2', js: '주니어', jr: 'Junior' },
