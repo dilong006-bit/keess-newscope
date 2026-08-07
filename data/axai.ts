@@ -73,7 +73,7 @@ export const STEP5 = {
 export const FRAMEWORK = {
   eyebrow: 'KG에듀원 AX Framework',
   title: 'AI 활용부터 혁신 리딩까지, 5단계 역량 체계',
-  sub: '생산성 향상·직무 적용·업무 자동화·조직 혁신으로 확장하도록 설계된 AX 역량 모델입니다.\n단계마다 길러야 할 역량 영역이 다릅니다.',
+  sub: '개인의 AI 활용 역량을 생산성 향상에서 직무 적용·업무 자동화, 나아가 조직 혁신을 이끄는 수준까지 단계적으로 고도화합니다.',
   dxTitle: '이런 고민이라면, 이 단계부터 시작하세요',
   dxChips: [
     { dx: 1, text: '내 직무에 AI가 필요한지 모르겠어요' },
