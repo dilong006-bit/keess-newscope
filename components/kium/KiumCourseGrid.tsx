@@ -13,6 +13,21 @@ const OUT_MS = 120;
 const PANEL_MS = 300;
 /** 패널 상단이 이 높이만큼 이미 드러나 있으면 "보인다"로 보고 스크롤하지 않는다(헤더·타이틀 노출 기준) */
 const PANEL_REVEAL_PX = 160;
+/** 스티키 바 하단과 패널 상단 사이 숨 쉴 여백 — 과정명이 바에 붙어 보이지 않게 한다 */
+const PANEL_GAP_PX = 16;
+
+/**
+ * 스티키 크롬(전역 .nav + .kium-tabbar)의 고정 시 하단 y좌표.
+ *
+ * html{scroll-padding-top:35px}는 nav 하나만 있는 페이지 기준이라 이 페이지에서는 92px 모자란다.
+ * 그대로 두면 패널 상단이 바 아래로 파고들어 과정명(.kium-detail-title)이 가려진다.
+ * 탭바의 sticky top(=nav 높이)과 실제 높이를 읽어 계산하므로 바 높이가 바뀌어도 따라간다.
+ */
+function stickyBottom() {
+  const bar = document.querySelector('.kium-tabbar');
+  if (!bar) return 0;
+  return parseFloat(getComputedStyle(bar).top || '0') + bar.getBoundingClientRect().height;
+}
 /** 데스크톱 인라인 확장 ↔ 모바일 바텀시트 분기 (전략 §6) */
 const SHEET_MQ = '(max-width:767px)';
 
@@ -72,8 +87,7 @@ export default function KiumCourseGrid({ courses, categories }: Props) {
   // 이어서 패널을 뷰포트 안으로 끌어와, 화면 밖에서 열려 놓치는 경우를 없앤다.
   //
   // 스크롤은 morph가 끝난 뒤에 건다. 확장 전 패널은 grid-template-rows:0fr이라 높이가 0이고,
-  // 0px 요소에 block:'nearest'를 걸면 뷰포트 하단 경계에 맞추는 데 그쳐 패널이 그대로
-  // 화면 밖에서 펼쳐진다. 실제 높이를 가진 뒤에 계산해야 'nearest'가 패널 상단을 잡아 준다.
+  // 0px 요소를 기준으로 계산하면 패널이 그대로 화면 밖에서 펼쳐진다.
   // 모바일 바텀시트(sheet)는 이 분기를 타지 않는다.
   useEffect(() => {
     if (!openId || sheet) {
@@ -85,11 +99,13 @@ export default function KiumCourseGrid({ courses, categories }: Props) {
     const timer = setTimeout(() => {
       const panel = document.getElementById(`kium-panel-${openId}`);
       if (!panel) return;
-      // 펼친 패널은 뷰포트보다 길 수 있고, 그러면 block:'nearest'가 항상 상단 정렬로 떨어진다.
-      // 이미 충분히 보이는데도 화면이 튀지 않도록 노출 정도를 직접 판정한다.
+      const chrome = stickyBottom();
       const { top } = panel.getBoundingClientRect();
-      if (top >= 0 && top <= window.innerHeight - PANEL_REVEAL_PX) return;
-      panel.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'nearest' });
+      // 스티키 바 아래로 이미 충분히 드러나 있으면 화면을 흔들지 않는다.
+      // 기준선이 0이 아니라 chrome인 것이 핵심 — 바에 가려진 패널은 "보이는" 게 아니다.
+      if (top >= chrome && top <= window.innerHeight - PANEL_REVEAL_PX) return;
+      // 패널 상단을 스티키 바 바로 아래에 세워 과정명이 첫 시선에 걸리게 한다.
+      window.scrollBy({ top: top - chrome - PANEL_GAP_PX, behavior: rm ? 'auto' : 'smooth' });
     }, PANEL_MS);
     return () => {
       cancelAnimationFrame(raf);
