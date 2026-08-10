@@ -254,7 +254,8 @@ function Framework() {
             ))}
           </div>
         </div>
-        <div className="stair r" id="stair" ref={stairRef} role="tablist" aria-label="AX 단계 선택">
+        {/* overflow-x:auto로 가로 스크롤을 의도한 컨테이너 — 모바일 계측(C2) 예외 표식 */}
+        <div className="stair r" id="stair" ref={stairRef} role="tablist" aria-label="AX 단계 선택" data-hscroll>
           {FRAMEWORK.stages.map((st) => (
             <button
               key={st.stage}

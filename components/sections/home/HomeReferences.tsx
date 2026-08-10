@@ -22,7 +22,8 @@ export default function HomeReferences() {
 
       <div className="ref-roll r" role="group" aria-label="고객사 레퍼런스">
         {rows.map((row, ri) => (
-          <div className={`ref-row${ri % 2 === 1 ? ' rev' : ''}`} key={ri}>
+          // 무한 루프 마퀴 — 트랙이 뷰포트보다 넓은 것이 설계 의도다(모바일 계측 C2/C5 예외 표식)
+          <div className={`ref-row${ri % 2 === 1 ? ' rev' : ''}`} key={ri} data-hscroll>
             <div className="ref-track">
               {[...row, ...row].map((name, i) => {
                 const dup = i >= row.length;

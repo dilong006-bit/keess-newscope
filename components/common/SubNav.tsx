@@ -37,7 +37,8 @@ export default function SubNav({ items }: { items: SubNavItem[] }) {
 
   return (
     <div className="subnav">
-      <div className="wrap subnav-in">
+      {/* overflow-x:auto로 가로 스크롤을 의도한 섹션 내비 — 모바일 계측(C2) 예외 표식 */}
+      <div className="wrap subnav-in" data-hscroll>
         {items.map((it) => (
           <a
             key={it.id}

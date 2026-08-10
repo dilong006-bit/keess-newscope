@@ -39,6 +39,24 @@ body{
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer}
 
+/* =========================================================================
+   모바일 공통 안전장치 (모바일대응 고도화 기술명세서 v1.0 §5 말미)
+
+   한글은 word-break:keep-all에서 컨테이너가 어절 폭보다 좁아지면 글자 단위로 쪼개져
+   세로로 흐른다. 그리드·플렉스 아이템의 min-width:auto(=min-content 하한)가 남아 있으면
+   컬럼이 뷰포트보다 넓게 버티며 페이지 가로 넘침을 만들고, 반대로 하한만 풀면 텍스트가
+   넘친다. 둘을 함께 다뤄야 한다.
+
+   ※ 명세서 원문의 `.grid > *`, `.flex > *`는 유틸리티 클래스 전제라 이 저장소에는 존재하지
+      않는다. 실제 그리드·플렉스 컨테이너 클래스에 대응시켜 같은 효과를 낸다(패턴은 동일).
+   ========================================================================= */
+:where(.inq-grid,.frow,.ax-bento,.bento,.pgrid,.stats-grid,.cert-grid)>*{min-width:0}
+/* 무공백 긴 문자열(확장자 나열 등)이 min-content 하한을 만들어 컬럼 수축을 막는 것을 끊는다 */
+:where(p,h1,h2,h3,h4,li,td,.filehint){overflow-wrap:anywhere}
+/* 미디어 기본 반응형 — height는 건드리지 않는다(아이콘 svg의 명시 높이를 auto로 바꾸면
+   데스크톱 렌더가 달라진다. 이번 건은 모바일 대응이고 데스크톱 무변경이 상위 제약이다) */
+img,video,canvas,iframe{max-width:100%}
+
 /* 공통 컨테이너·섹션 리듬 (Design.md §3-3·§4) */
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
 .section{padding:120px 0}

@@ -178,7 +178,8 @@ export default function Sections() {
             ))}
           </div>
           <div className="substep">{AX5.diffSub}</div>
-          <div className="difftable">
+          {/* overflow-x:auto로 가로 스크롤을 의도한 3열 비교표 — 모바일 계측(C2) 예외 표식 */}
+          <div className="difftable" data-hscroll>
             <table><thead><tr>{AX5.diffHead.map((h) => <th key={h}>{h}</th>)}</tr></thead>
               <tbody>{AX5.diff.map((r) => <tr key={r[0]}><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td></tr>)}</tbody></table>
           </div>
