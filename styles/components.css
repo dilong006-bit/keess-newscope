@@ -93,9 +93,14 @@
 @media(max-width:940px){.nav .menu,.nav .nav-cta,.nav .nav-right{display:none}.hamb{display:flex}}
 /* 모바일 메뉴 내 이벤트 칩 — 목록 링크(.mmenu a)와 구분되는 pill */
 .mmenu-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;
-  margin-top:22px;padding:0 18px;border-radius:999px;background:var(--p1);color:#fff;
+  margin-top:22px;border-radius:999px;background:var(--p1);color:#fff;
   font-size:15px;font-weight:700;border-bottom:none}
-.mmenu a.mmenu-chip{border-bottom:none;font-size:15px;min-height:44px}
+/* 가로 패딩은 반드시 이 규칙에서 지정한다 — .mmenu a{padding:8px 0}이 특이도(0,1,1)·후순위로
+   .mmenu-chip(0,1,0)의 가로 패딩을 덮어 0이 되고, pill 라운드가 콘텐츠를 잠식해
+   스파클 아이콘과 마지막 글자가 칩 경계에 닿았다. 세로 8px은 기존 .mmenu a 값 그대로 승계.
+   가로 22px = pill 실효 반경(높이 44px의 절반). 반경보다 좁으면 라운드가 파고든 만큼
+   실여백이 깎여 아이콘 모서리가 다시 붙어 보인다(16px일 때 실여백 14.49px). */
+.mmenu a.mmenu-chip{border-bottom:none;font-size:15px;min-height:44px;padding:8px 22px}
 .mmenu-chip .spark{flex:none;width:16px;height:16px;display:block}
 .mmenu-chip .chip-new{flex:none;font-size:9px;font-weight:800;letter-spacing:.06em;color:#C4B5FD}
 
