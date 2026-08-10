@@ -29,6 +29,8 @@ export const KIUM_COURSES: KiumCourse[] =
 [
   {
     "id": "kium-01",
+    // [샘플] 디자인 참조용 Unsplash 썸네일 — 실제 자산 입고 시 교체, 미입고 시 오픈 전 이 줄 삭제
+    "thumbSrc": "/images/kium/kium-01.sample.jpg",
     "category": "onboarding",
     "subCategory": "신입사원",
     "titleMarketing": "신입사원 On-Syncing 온보딩 과정",
@@ -101,6 +103,8 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-02",
+    // [샘플] 디자인 참조용 Unsplash 썸네일 — 실제 자산 입고 시 교체, 미입고 시 오픈 전 이 줄 삭제
+    "thumbSrc": "/images/kium/kium-02.sample.jpg",
     "category": "onboarding",
     "subCategory": "신입사원",
     "titleMarketing": "경력 신입사원 On-Performing 온보딩 과정",
@@ -172,6 +176,8 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-03",
+    // [샘플] 디자인 참조용 Unsplash 썸네일 — 실제 자산 입고 시 교체, 미입고 시 오픈 전 이 줄 삭제
+    "thumbSrc": "/images/kium/kium-03.sample.jpg",
     "category": "onboarding",
     "subCategory": "신입사원",
     "titleMarketing": "On-Powering 리텐션 과정",
