@@ -91,6 +91,37 @@
   .nav-chip:hover,.nav-chip:focus-visible{transform:none}
 }
 @media(max-width:940px){.nav .menu,.nav .nav-cta,.nav .nav-right{display:none}.hamb{display:flex}}
+
+/* ── hero-shell — 모바일에서 헤더를 레이아웃 흐름에 참여시킨다 (P1·P2) ────
+   [겹침의 진짜 원인]
+   .nav는 position:fixed라 흐름 공간을 0으로 점유한다. 그래서 히어로의 좌표계는
+   헤더의 존재를 전혀 모르고, 헤더 아래 56~72px는 "히어로가 자유롭게 쓸 수 있는 영역"이
+   되어 버린다. 그 위에 히어로가 min-height + 세로 중앙정렬이면, 콘텐츠가 뷰포트보다
+   높아지는 순간 초과분이 위아래로 균등하게 넘쳐 배지가 y≈0까지 밀려 올라가고
+   로고와 정면으로 겹친다. padding-top·z-index·margin은 이 좌표계 자체를 바꾸지 못한다.
+
+   [처방] 헤더를 position:sticky로 바꿔 흐름 공간을 실제로 차지하게 만든다.
+   그러면 히어로 박스의 top은 정의상 '헤더의 bottom'이므로, 히어로가 아무리 길어져도
+   그 안의 어떤 콘텐츠도 헤더 아래로 파고들 수 없다 — 겹침이 기하학적으로 불가능해진다.
+
+   [shell을 페이지 래퍼(.tint-p1/.tint-p2)에 두는 이유]
+   sticky는 컨테이닝 블록을 벗어나면 해제된다. 명세서처럼 헤더+히어로만 감싸면
+   히어로를 다 지나는 순간 헤더가 화면에서 사라져 '전 페이지 고정 헤더'가 깨진다.
+   따라서 shell = 페이지 래퍼. overflow는 걸지 않는다(sticky가 죽는다).
+   ※ ≤880px = 히어로 그리드가 1열로 접히는 기존 브레이크포인트. 데스크톱 무변경. */
+.hero-shell{--nav-h:0px}                                    /* 데스크톱: fixed → 흐름 점유 0 */
+@media(max-width:880px){
+  .hero-shell{
+    --nav-h:calc(56px + env(safe-area-inset-top));
+    /* 헤더 로고와 히어로 콘텐츠가 같은 좌측 축을 읽도록 거터를 단일 변수로 묶는다.
+       값(24px)은 전역 --gut 그대로 — 노치 단말의 safe-area만 추가로 존중한다. */
+    --gut:max(24px,env(safe-area-inset-left) + 24px)}
+  .hero-shell .nav{position:sticky;top:0;left:auto;right:auto;
+    padding-top:env(safe-area-inset-top)}
+  .hero-shell .nav-in{height:56px}
+  /* 헤더가 흐름을 차지하므로 서브내비의 sticky 기준선도 같은 변수에서 파생시킨다 */
+  .hero-shell .subnav{top:var(--nav-h)}
+}
 /* 모바일 메뉴 내 이벤트 칩 — 목록 링크(.mmenu a)와 구분되는 pill */
 .mmenu-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;
   margin-top:22px;border-radius:999px;background:var(--p1);color:#fff;

@@ -28,13 +28,24 @@ export default function Nav({ current, consultHref = '#inq', forceSolid = false 
   const [solid, setSolid] = useState(false);
   const isSolid = solid || forceSolid;
   const [menuOpen, setMenuOpen] = useState(false);
+  /**
+   * 8px만 스크롤해도 켜지는 상태 플래그.
+   * solid(=히어로를 다 지난 뒤 흰 배경)와 별개로, 히어로 구간을 지나는 동안에도
+   * 헤더가 콘텐츠와 섞이지 않게 배경을 깔 수 있는 훅을 열어 둔다.
+   * 이 클래스만으로는 어떤 스타일도 붙지 않는다 — 현재 P1·P2 모바일에서만
+   * (styles/axai.css · styles/leadership.css) 유리판 배경을 입힌다.
+   */
+  const [scrolled, setScrolled] = useState(false);
   const thresholdRef = useRef(40);
 
   // 스크롤 solid 전환 (원본 859: hero 높이 기준, hero 없으면 40px)
   useEffect(() => {
     const hero = document.getElementById('hero');
     thresholdRef.current = hero ? hero.offsetHeight - 90 : 40;
-    const onScroll = () => setSolid(window.scrollY > thresholdRef.current);
+    const onScroll = () => {
+      setSolid(window.scrollY > thresholdRef.current);
+      setScrolled(window.scrollY > 8);
+    };
     const onResize = () => {
       const h = document.getElementById('hero');
       thresholdRef.current = h ? h.offsetHeight - 90 : 40;
@@ -90,9 +101,11 @@ export default function Nav({ current, consultHref = '#inq', forceSolid = false 
 
   return (
     <>
-      <header className={`nav${isSolid ? ' solid' : ''}${menuOpen ? ' menu-open' : ''}`} id="nav">
+      <header className={`nav${isSolid ? ' solid' : ''}${scrolled ? ' scrolled' : ''}${menuOpen ? ' menu-open' : ''}`} id="nav">
         <div className="wrap nav-in">
-          <Link className="logo" href={LOGO.href} onClick={onLogo} aria-label="KEESS 홈">
+          {/* data-probe — tests/hero-collision.spec.ts가 로고/배지 겹침을 상시 감시하는 앵커.
+              임시 속성이 아니므로 제거하지 말 것. */}
+          <Link className="logo" data-probe="logo" href={LOGO.href} onClick={onLogo} aria-label="KEESS 홈">
             {LOGO.label}
           </Link>
           <nav className="menu" aria-label="주요 메뉴">

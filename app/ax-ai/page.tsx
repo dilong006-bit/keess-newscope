@@ -13,7 +13,9 @@ export const metadata: Metadata = {
 export default function AxAiPage() {
   // P1은 자체 문의 폼이 없다 — 모든 상담 CTA는 홈 신청 폼(/#inq)으로 일원화 (기술명세서 §C-1)
   return (
-    <div className="tint-p1">
+    // hero-shell — 모바일에서 헤더(sticky)와 히어로를 한 흐름에 담는 껍데기.
+    // 사유·구조는 styles/components.css의 .hero-shell 블록 주석 참조.
+    <div className="tint-p1 hero-shell">
       <Nav current="ax-ai" consultHref="/#inq" />
       <RevealInit />
       <Sections />

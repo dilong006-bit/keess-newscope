@@ -24,14 +24,20 @@ export default function Sections() {
   return (
     <main id="main" tabIndex={-1}>
       {/* ── HERO ── */}
-      <section className="ld-hero" id="hero">
+      <section className="ld-hero" id="hero" data-probe="hero">
+        {/* 배경 베이스 레이어 — 사유는 /ax-ai 히어로의 동일 레이어 주석 참조 */}
+        <div className="hero-base" aria-hidden="true" />
         <Img className="hero-img" src={HERO.img} eager />
         <div className="hero-scrim" />
         <div className="wrap">
           <div className="ld-hero-grid">
             <div>
-              <span className="ld-tag"><span className="d" />{HERO.tag}</span>
-              <h1>{HERO.h1Lead}<br /><span className="hl">{HERO.h1Emph}</span></h1>
+              {/* data-probe — tests/hero-collision.spec.ts 상시 감시 앵커(제거 금지) */}
+              <span className="ld-tag" data-probe="hero-badge"><span className="d" />{HERO.tag}</span>
+              {/* <br> 앞의 공백은 데스크톱에서 줄 끝에 붙어 사라지고(렌더 무변경),
+                  모바일에서 br을 display:none 하면 어절 사이 공백으로 살아난다.
+                  공백 없이 br만 지우면 "리더는우연히"로 붙는다. */}
+              <h1>{HERO.h1Lead}{' '}<br /><span className="hl">{HERO.h1Emph}</span></h1>
               <p className="sub">{HERO.sub}</p>
               <div className="act">
                 <button className="btn btn-ink" onClick={openInq}>{HERO.ctaPrimary}</button>

@@ -21,6 +21,8 @@ const Arrow = () => (
  * (GNB '교육 상담'은 서비스 컨텍스트가 없으므로 파라미터 없이 /#inq 그대로 둔다)
  */
 const INQ_HREF = inquiryHref('ax-ai');
+/** 히어로 secondary CTA가 쓰는 기존 섹션 내비 항목(신규 카피 없음) — data/axai.ts SUBNAV */
+const FW_NAV = SUBNAV.find((s) => s.id === 'framework') ?? SUBNAV[0];
 const BENTO_ICONS: Record<string, React.ReactNode> = {
   search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>,
   bar: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18" /><rect x="7" y="10" width="3" height="7" /><rect x="13" y="6" width="3" height="11" /></svg>,
@@ -35,17 +37,27 @@ export default function Sections() {
   return (
     <main id="main" tabIndex={-1}>
       {/* ── HERO (다크 톤 정합) ── */}
-      <section className="ax-hero" id="hero">
+      <section className="ax-hero" id="hero" data-probe="hero">
+        {/* 배경 베이스 레이어 — 섹션 자체 배경과 같은 그라데이션(신규 값 아님).
+            모바일에서 헤더가 흐름을 차지해 히어로 박스가 헤더 아래에서 시작하므로,
+            사진·스크림과 함께 이 레이어만 헤더 높이만큼 위로 흘려 배경을 이어 붙인다.
+            (박스가 아니라 배경만 올라가므로 콘텐츠 겹침은 여전히 불가능) */}
+        <div className="hero-base" aria-hidden="true" />
         <Img className="hero-img" src={HERO.img} eager />
         <div className="hero-scrim" />
         <div className="wrap">
           <div className="ax-hero-grid">
             <div className="ax-hero-copy">
-              <span className="ax-tag"><span className="d" />{HERO.tag}</span>
+              {/* data-probe — tests/hero-collision.spec.ts 상시 감시 앵커(제거 금지) */}
+              <span className="ax-tag" data-probe="hero-badge"><span className="d" />{HERO.tag}</span>
               <h1><span className="dim">{HERO.h1Lead}</span> <span className="hl">{HERO.h1Emph}</span></h1>
               <p className="sub">{HERO.sub}</p>
               <div className="act">
                 <Link className="btn btn-ink" href={INQ_HREF}>{HERO.cta} <Arrow /></Link>
+                {/* 모바일 전용 secondary CTA — P2 히어로(2버튼)와 문법을 맞춘다.
+                    라벨은 신규 창작이 아니라 SUBNAV의 #framework 항목 문자열을 그대로 쓰고
+                    같은 앵커로 보낸다. 데스크톱(≥881px)에서는 CSS로 숨겨 렌더 무회귀. */}
+                <a className="btn btn-glass ax-cta-sec" href={`#${FW_NAV.id}`}>{FW_NAV.label}</a>
               </div>
               <div className="ax-strip">{HERO.strip.map((s) => <span key={s}>{s}</span>)}</div>
             </div>

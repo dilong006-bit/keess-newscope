@@ -41,6 +41,11 @@ yarn-error.log*
 # CSR 수집 원본 기록 — 저장소 산출물 아님(별도 보관, 로컬 참조용)
 /.local/
 
+# 계측·회귀 테스트 산출물(스크린샷·리포트) — 재생성 가능하므로 커밋 대상 아님
+/audit/
+/test-results/
+/playwright-report/
+
 # redundant 16MB data copies — canonical copy is public/downloads/
 /KG에듀원_과정리스트.xlsx
 ref/prototype/KG에듀원_과정리스트.xlsx

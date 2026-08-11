@@ -9,12 +9,22 @@
 /* ── 히어로 (홈 톤 정합 다크 --p1 그라데이션) ─────────────────────────── */
 .ax-hero{position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;color:#fff;
   background:linear-gradient(150deg,color-mix(in srgb,#000 42%,var(--p1)),var(--p1) 60%,color-mix(in srgb,#000 58%,var(--p1)))}
-.ax-hero::before{content:"";position:absolute;inset:0;z-index:0;opacity:.5;
+/* 배경 레이어 사다리 — 아래에서 위로: base → 라디얼 → 사진 → 스크림 → 콘텐츠.
+   base는 섹션 자체 배경과 동일한 그라데이션을 별도 레이어로 복제한 것이다(신규 값 아님).
+   섹션 배경은 border-box를 벗어날 수 없어 모바일에서 헤더 뒤까지 이어 붙일 수 없기 때문에,
+   위로 흘릴 수 있는 실제 레이어가 필요하다. --nav-h는 데스크톱에서 0px이므로 무영향. */
+.ax-hero .hero-base{position:absolute;inset:0;z-index:0;
+  top:calc(-1 * var(--nav-h,0px));
+  background:linear-gradient(150deg,color-mix(in srgb,#000 42%,var(--p1)),var(--p1) 60%,color-mix(in srgb,#000 58%,var(--p1)))}
+.ax-hero::before{content:"";position:absolute;inset:0;z-index:1;opacity:.5;
+  top:calc(-1 * var(--nav-h,0px));
   background:radial-gradient(60% 60% at 78% 18%,color-mix(in srgb,var(--p1) 55%,#fff) 0%,transparent 60%)}
 /* 실사 배경(P2/P3와 통일된 처리): 필러 톤 스크림 아래 저채도 텍스처 */
-.ax-hero .hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.24}
-.ax-hero .hero-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(105deg,rgba(16,10,30,.78),rgba(16,10,30,.5) 62%,rgba(16,10,30,.46))}
-.ax-hero .wrap{position:relative;z-index:2;width:100%}
+.ax-hero .hero-img{position:absolute;inset:0;width:100%;object-fit:cover;z-index:1;opacity:.24;
+  top:calc(-1 * var(--nav-h,0px));height:calc(100% + var(--nav-h,0px))}
+.ax-hero .hero-scrim{position:absolute;inset:0;z-index:2;background:linear-gradient(105deg,rgba(16,10,30,.78),rgba(16,10,30,.5) 62%,rgba(16,10,30,.46));
+  top:calc(-1 * var(--nav-h,0px))}
+.ax-hero .wrap{position:relative;z-index:3;width:100%}
 .ax-hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center}
 @media(max-width:880px){.ax-hero-grid{grid-template-columns:1fr;gap:34px}}
 .ax-tag{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#fff;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 15px;margin-bottom:22px}
@@ -42,6 +52,122 @@
 .ax-vlabel .t{font-size:14px;font-weight:700}
 .ax-vlabel .s{font-size:11.5px;color:rgba(255,255,255,.6);margin-top:4px}
 .ax-scrolldown{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;color:rgba(255,255,255,.7);font-size:11px;letter-spacing:.18em}
+
+/* =========================================================================
+   모바일 히어로 상단 (P1P2 모바일히어로상단 개선 기술명세서 v1.0)
+   ≤880px = .ax-hero-grid가 1열로 접히는 기존 브레이크포인트. 데스크톱(≥881px) 무변경.
+
+   [D-01 로고 겹침의 실제 원인 · 구조 처방]
+   .ax-hero는 min-height + align-items:center였고 헤더는 position:fixed(흐름 점유 0)였다.
+   히어로의 좌표계가 헤더를 모르는 상태에서 콘텐츠가 뷰포트보다 높아지면, 중앙 정렬이
+   초과분을 위아래로 균등하게 넘겨 배지를 y≈0까지 밀어 올리고 로고와 겹쳤다.
+   padding-top·z-index·margin은 이 좌표계를 바꾸지 못한다.
+   → 헤더를 sticky로 흐름에 참여시켜(styles/components.css .hero-shell) 히어로 박스의 top이
+     헤더의 bottom이 되게 하고, 여기서는 중앙 정렬만 해제한다.
+     헤더 높이를 패딩으로 되갚지 않는다 — 흐름이 이미 반영하고 있다.
+   ========================================================================= */
+@media(max-width:880px){
+  .ax-hero{flex-direction:column;justify-content:flex-start;align-items:stretch;
+    min-height:calc(100svh - var(--nav-h,0px));height:auto;
+    padding-top:24px;padding-bottom:0;
+    /* 배경 레이어가 헤더 뒤로 흘러야 하므로 클리핑을 풀어 준다.
+       (shell·히어로 어디에도 overflow를 걸지 않는다 — sticky가 죽는다) */
+    overflow:visible}
+  /* 수직 리듬을 margin으로 정확히 통제하기 위해 카피 묶음을 flex column으로 */
+  .ax-hero-copy{display:flex;flex-direction:column;align-items:flex-start}
+
+  /* 아이브로 배지 — 스펙 통일(§F-02) */
+  .ax-tag{height:28px;padding:0 12px;gap:6px;margin-bottom:0;
+    font-size:12px;font-weight:700;color:#fff;white-space:nowrap;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);
+    backdrop-filter:blur(12px)}
+  .ax-tag .d{width:5px;height:5px;background:rgba(255,255,255,.85)}
+
+  /* 타이포·수직 리듬(§F-04) — 배지 24 H1 14 서브 28 CTA 20 칩 */
+  .ax-hero h1{margin-top:24px;font-size:clamp(25px,8.2vw,34px);line-height:1.22;
+    letter-spacing:-.03em;max-width:none;text-wrap:balance}
+  .ax-hero .sub{margin-top:14px;font-size:clamp(13.5px,3.8vw,15px);font-weight:400;
+    line-height:1.62;color:rgba(255,255,255,.86);max-width:none}
+  .ax-hero .act{margin-top:28px;width:100%;
+    display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ax-hero-grid{gap:32px}
+
+  /* CTA 문법 통일(§F-05) — primary는 면+그림자, secondary는 선+투명으로 색 외 구분 */
+  .ax-hero .act .btn{height:52px;padding:0 16px;font-size:15px;font-weight:700;border-radius:999px}
+  .ax-hero .act .btn-ink{background:#fff;color:var(--p1);
+    box-shadow:0 2px 4px rgba(0,0,0,.06),0 8px 20px rgba(0,0,0,.10)}
+  .ax-hero .act .btn-glass{background:transparent;border:1.5px solid rgba(255,255,255,.45);
+    color:#fff;backdrop-filter:blur(8px);box-shadow:none}
+
+  /* 칩 2열 축 고정(§F-06) — flex-wrap의 ragged 2열을 그리드로 대체 */
+  .ax-strip{margin-top:20px;width:100%;display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;
+    font-size:12.5px;font-weight:600;color:rgba(255,255,255,.9)}
+  .ax-strip span::before{width:4px;height:4px;background:rgba(255,255,255,.55)}
+
+  /* Proof Card(§F-07) — 공통 껍데기 + 스탯 균등 2타일(계단식 배치 폐기) */
+  .ax-visual{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;
+    min-height:0;padding:20px;border-radius:20px;
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);
+    backdrop-filter:blur(16px);
+    box-shadow:0 2px 4px rgba(0,0,0,.06),0 8px 20px rgba(0,0,0,.10)}
+  .ax-visual .pat{display:none}
+  .ax-float{position:static;background:none;box-shadow:none;padding:0;border-radius:0;color:#fff}
+  .ax-float .fv{font-size:32px;font-weight:800;color:#fff}
+  .ax-float .fl{font-size:12px;font-weight:500;color:rgba(255,255,255,.7);margin-top:4px}
+  .ax-vlabel{grid-column:1/-1;margin-top:4px;padding-top:16px;
+    border-top:1px solid rgba(255,255,255,.14)}
+  .ax-vlabel .t{font-size:13px;font-weight:600}
+  .ax-vlabel .s{font-size:11.5px;color:rgba(255,255,255,.7);word-break:keep-all}
+}
+/* 세로가 짧은 단말(360x640 등) — 컴팩트 갭. 없으면 히어로가 넘친다(§F-04) */
+@media(max-width:880px) and (max-height:700px){
+  .ax-hero{padding-top:16px}
+  .ax-hero h1{margin-top:16px}
+  .ax-hero .sub{margin-top:12px}
+  .ax-hero .act{margin-top:20px}
+  .ax-strip{margin-top:14px}
+  .ax-hero-grid{gap:20px}
+}
+/* 라벨이 2줄로 접히는 초소형 폭에서는 CTA를 세로 스택으로(§F-05) */
+@media(max-width:360px){.ax-hero .act{grid-template-columns:1fr}}
+/* secondary CTA는 모바일 전용 — 데스크톱 렌더 무회귀 */
+@media(min-width:881px){.ax-cta-sec{display:none}}
+
+/* 진입 stagger(§F-10) — 배지→H1→서브→CTA→칩→카드 50ms 간격 */
+@media(max-width:880px){
+  @keyframes ax-hero-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .ax-hero-copy>*,.ax-hero .ax-visual{animation:ax-hero-in .24s cubic-bezier(.2,0,0,1) both}
+  .ax-hero .ax-tag{animation-delay:0ms}
+  .ax-hero h1{animation-delay:50ms}
+  .ax-hero .sub{animation-delay:100ms}
+  .ax-hero .act{animation-delay:150ms}
+  .ax-hero .ax-strip{animation-delay:200ms}
+  .ax-hero .ax-visual{animation-delay:250ms}
+}
+@media(max-width:880px) and (prefers-reduced-motion:reduce){
+  @keyframes ax-hero-in{from{opacity:0}to{opacity:1}}
+}
+/* 스크롤 중 헤더 영역 분리(§F-01)
+   .nav.solid는 히어로를 다 지난 뒤(hero높이-90)에야 켜진다. 그 전까지 헤더가 완전 투명이라
+   히어로를 스크롤하는 내내 H1·서브카피·CTA가 로고 밑을 그대로 통과해 겹쳐 보였다.
+   8px만 넘어가면 유리판을 깔아 헤더와 콘텐츠의 영역을 분리한다.
+   :not(.solid) — 히어로를 지난 뒤에는 기존 흰 배경(.nav.solid)에 자리를 넘긴다.
+   .tint-p1 스코프 + ≤880px이라 다른 페이지·데스크톱에는 매칭되지 않는다. */
+@media(max-width:880px){
+  .tint-p1 .nav.scrolled:not(.solid){
+    background:rgba(16,10,30,.55);
+    backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid rgba(255,255,255,.12);
+    transition:background .24s cubic-bezier(.2,0,0,1),border-color .24s cubic-bezier(.2,0,0,1)}
+}
+@media(max-width:880px) and (prefers-reduced-motion:reduce){
+  .tint-p1 .nav.scrolled:not(.solid){transition:none}
+}
+
+/* 포커스 링 이중 링(§F-11) — 사진 위 어떤 배경에서도 보이게 */
+.ax-hero a:focus-visible,.ax-hero button:focus-visible{
+  outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 4px rgba(0,0,0,.5)}
 
 /* ── Bento (offer) ───────────────────────────────────────────────────── */
 .ax-bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}

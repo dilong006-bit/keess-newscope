@@ -13,7 +13,8 @@ export const metadata: Metadata = {
 
 export default function LeadershipPage() {
   return (
-    <div className="tint-p2">
+    // hero-shell — 사유·구조는 styles/components.css의 .hero-shell 블록 주석 참조.
+    <div className="tint-p2 hero-shell">
       <Nav current="leadership" consultHref="#inq" />
       <RevealInit />
       <LdModalProvider>
