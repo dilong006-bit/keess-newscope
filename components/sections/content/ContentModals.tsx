@@ -5,7 +5,7 @@ import { createContext, useContext, useState } from 'react';
 import Modal from '@/components/common/Modal';
 import ConsentGroup from '@/components/common/ConsentGroup';
 import { CONSENT_TEXTS, DOWNLOAD_OPTIN_BANNER } from '@/data/consent';
-import { CONSULT_MODAL, DOWNLOAD_MODAL, DOWNLOAD } from '@/data/content';
+import { CONSULT_MODAL, DOWNLOAD_MODAL, DOWNLOAD, downloadFileName } from '@/data/content';
 
 interface Ctx { openConsult: (axis?: string) => void; openDownload: () => void }
 const ModalCtx = createContext<Ctx>({ openConsult: () => {}, openDownload: () => {} });
@@ -24,7 +24,9 @@ const IcChat = () => (
 function triggerDL() {
   const a = document.createElement('a');
   a.href = DOWNLOAD.fileHref;
-  a.download = 'KG에듀원_과정리스트.xlsx';
+  // 저장 파일명에 기준월을 실어 보낸다 — 화면에서 뺀 시점 표기가 사는 곳(DF-021-B).
+  // 파일명 하드코딩 금지: DOWNLOAD.basisMonth 하나만 고치면 여기까지 따라온다.
+  a.download = downloadFileName;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -99,7 +101,7 @@ function DownloadBody() {
       <div className="ic">✓</div>
       <h3>{DOWNLOAD_MODAL.okTitle}</h3>
       <p className="lead" style={{ margin: '0 auto 14px' }}>{DOWNLOAD_MODAL.okMsg}</p>
-      <a className="btn btn-ink" href={DOWNLOAD.fileHref} download style={{ display: 'inline-flex' }}>{DOWNLOAD_MODAL.okBtn}</a>
+      <a className="btn btn-ink" href={DOWNLOAD.fileHref} download={downloadFileName} style={{ display: 'inline-flex' }}>{DOWNLOAD_MODAL.okBtn}</a>
     </div>
   );
   const fld = (k: string) => `field${errs[k] ? ' invalid' : ''}`;
