@@ -1,6 +1,14 @@
 // KEESS 인재키움프리미엄 — 과정 데이터 (KIUM_COURSES)
 // 생성: 2026-08-05 · 소스: HRDK 신청원본 xlsx(시트2·3, 260804) + 과정개요서(260731)
 // 규칙: 본 파일의 수치·문안은 소스 문서 외 수정 금지(기술명세서 최종 v2.0 6장)
+//
+// [modules 출처 전환 · 260811] 교육구성 표(modules)의 출처를 신청서 XLSX 시트3
+// (교과목/단원(과제명)/편성시간)에서 **과정개요서 PDF의 「교육구성」 표**(영역/주요 학습내용/시간)로
+// 교체했다. 근거: ref/kium/spec/KEESS_kium_교육구성_개요서전환_기술명세서_v1.0_260811.md
+//   · 19개 과정 전건 · 88행 → 86행 (#1·#2·#3 각 −1행, #11 +1행, 나머지 15건 동일)
+//   · 과정별 시간 합계는 공식 훈련시간(14/7/6H)과 19건 전건 일치 — 변동 없음
+//   · 교체 전 XLSX 유래 modules 원본은 ref/kium/build/data.ts에 그대로 보존돼 있다(대조·롤백용).
+//     그래서 이 파일에 죽은 상수로 중복 보관하지 않는다.
 
 export type KiumCategory = 'onboarding'|'roleup'|'leadership'|'executive'|'ai'|'common'
 
@@ -70,33 +78,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "조직이해",
-        "content": "조직문화 이해와 온보딩",
+        "area": "조직 이해",
+        "content": "조직 가치 및 비전 내재화, 경영 시뮬레이션",
         "hours": 2
       },
       {
-        "area": "업무역량",
-        "content": "직무 기초역량 배우기 - 문서작성 및 보고",
+        "area": "업무 역량",
+        "content": "기획·보고서 작성, 비즈니스 매너, OA/프레젠테이션",
         "hours": 3
       },
       {
-        "area": "관계역량",
-        "content": "효율적인 커뮤니케이션 역량 쌓기",
-        "hours": 2
+        "area": "관계 형성",
+        "content": "소통/감정 리터러시, 커뮤니케이션",
+        "hours": 3
       },
       {
-        "area": "팀빌딩",
-        "content": "팀워크 및 소속감 강화 활동",
-        "hours": 2
-      },
-      {
-        "area": "자기관리",
-        "content": "자기주도적 성장 및 리더십 역량",
-        "hours": 2
+        "area": "자기 관리",
+        "content": "셀프 리더십, 강점 발견, 스트레스 관리",
+        "hours": 3
       },
       {
         "area": "AI 역량",
-        "content": "생성형 AI 이해 및 업무 적용 역량",
+        "content": "AI 리터러시, AI 실무 및 활용 실습",
         "hours": 3
       }
     ]
@@ -143,33 +146,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "자기이해",
-        "content": "자기 역할 및 강점 파악",
+        "area": "자기 이해",
+        "content": "자기 진단(강점 및 역량), 기대 역할 인식",
         "hours": 2
       },
       {
-        "area": "조직적응",
-        "content": "업무 역할 정의 및 프로세스 이해",
-        "hours": 2
-      },
-      {
-        "area": "관계형성",
-        "content": "관계 구축의 중요성 인식",
+        "area": "조직 이해",
+        "content": "핵심 가치, 문화 및 업무 프로세스",
         "hours": 3
       },
       {
-        "area": "관계형성",
-        "content": "협업과 소통을 통한 문제해결",
-        "hours": 2
+        "area": "관계 형성",
+        "content": "인적 네트워크 이해 및 형성 전략 수립",
+        "hours": 3
       },
       {
-        "area": "갈등관리",
-        "content": "갈등관리 대응 역량",
-        "hours": 2
+        "area": "갈등 관리",
+        "content": "갈등 유형 이해 및 해결 방법 학습/실습",
+        "hours": 3
       },
       {
-        "area": "성과향상",
-        "content": "업무 성과 및 시간 관리 역량",
+        "area": "성과 목표 수립",
+        "content": "업무 프레임 분석, 우선순위 결정 실습",
         "hours": 3
       }
     ]
@@ -216,33 +214,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "성찰",
-        "content": "나의 조직 적응기",
+        "area": "자기 성찰",
+        "content": "연차별 조직 경험 돌아보기, 성장 과제 인식",
         "hours": 2
       },
       {
-        "area": "이해",
-        "content": "나의 '마음 상자' 이야기 (1)",
+        "area": "스트레스 관리",
+        "content": "직무 스트레스 및 감정 상태 진단 활동",
         "hours": 3
       },
       {
-        "area": "이해",
-        "content": "나의 '마음 상자' 이야기 (2)",
-        "hours": 2
+        "area": "에너지 회복",
+        "content": "예술 활동을 통한 감정 해소와 에너지 회복",
+        "hours": 3
       },
       {
-        "area": "회복",
-        "content": "예술 활동을 통해 회복하기",
-        "hours": 2
+        "area": "의미 재발견",
+        "content": "일의 의미 탐색, 연차별 관계와 역할 확장",
+        "hours": 3
       },
       {
-        "area": "설계",
-        "content": "나를 지속하게 하는 회복탄력성 향상",
-        "hours": 2
-      },
-      {
-        "area": "설계",
-        "content": "나의 모습 재발견하기",
+        "area": "성장 방향 설계",
+        "content": "강점 기반 커리어·역할 성장 로드맵 수립",
         "hours": 3
       }
     ]
@@ -288,28 +281,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "역할인식",
-        "content": "팀장의 역할 정의 및 역량 도출",
+        "area": "역할 재정립",
+        "content": "팀장 역할과 책임 인식, 기대 리더상 도출",
         "hours": 2
       },
       {
-        "area": "사람관리",
-        "content": "상황대응 리더십",
+        "area": "구성원 관리",
+        "content": "다양성 이해, 동기부여, 소통 및 코칭 피드백",
         "hours": 3
       },
       {
-        "area": "조직관리",
-        "content": "갈등관리",
+        "area": "팀 운영",
+        "content": "신뢰·심리적 안전감, 협업 촉진, 갈등 관리",
         "hours": 3
       },
       {
-        "area": "성과관리",
-        "content": "성과관리 및 목표설정",
+        "area": "성과 창출",
+        "content": "목표설정, 업무지시 및 점검, 성과평가 면담",
         "hours": 3
       },
       {
-        "area": "혁신주도",
-        "content": "전략적 사고",
+        "area": "변화 주도",
+        "content": "변화관리, 전략적 사고, 문제해결 의사결정",
         "hours": 3
       }
     ]
@@ -353,28 +346,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "Frame-In",
-        "content": "승진자 역할 인식 제고",
+        "area": "역할 인식",
+        "content": "셀프 리더의 R&R, 역할의 변화 이해 및 가치관 정립",
         "hours": 2
       },
       {
-        "area": "Re-Frame",
+        "area": "AI 역량",
         "content": "생성형 AI를 활용한 업무자동화",
         "hours": 3
       },
       {
-        "area": "Re-Frame",
-        "content": "업무 역량 강화 - 시간 및 업무 관리",
+        "area": "업무 역량",
+        "content": "시간 및 업무 관리, 자기주도적 업무수행",
         "hours": 3
       },
       {
-        "area": "Re-Frame",
-        "content": "사람 관리 역량 강화 - 커뮤니케이션 Basic",
+        "area": "소통 역량",
+        "content": "커뮤니케이션 및 협업 역량 강화",
         "hours": 3
       },
       {
-        "area": "Frame-Up",
-        "content": "동기부여 - 내 일의 Why 발견",
+        "area": "실행 계획",
+        "content": "잡 크래프팅을 통한 업무 가치와 성장계획 수립",
         "hours": 3
       }
     ]
@@ -418,28 +411,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "Frame-In",
-        "content": "승진자 역할 인식 제고",
+        "area": "역할 인식",
+        "content": "브릿지 리더의 R&R, 역할의 변화 이해 및 가치관 정립",
         "hours": 2
       },
       {
-        "area": "Re-Frame",
-        "content": "생성형 AI를 활용한 업무고도화",
+        "area": "AI 역량",
+        "content": "생성형 AI를 활용한 업무 고도화",
         "hours": 3
       },
       {
-        "area": "Re-Frame",
-        "content": "업무 역량 강화 - 프로젝트 관리스킬 UP",
+        "area": "업무 역량",
+        "content": "문제해결 및 프로젝트 관리 역량 강화",
         "hours": 3
       },
       {
-        "area": "Re-Frame",
-        "content": "사람 관리 역량 강화 - 코칭/피드백",
+        "area": "육성 역량",
+        "content": "후배 육성을 위한 코칭·피드백 학습 및 실습",
         "hours": 3
       },
       {
-        "area": "Frame-Up",
-        "content": "동기부여 - 온(溫)워크",
+        "area": "실행 계획",
+        "content": "중간관리자의 역할 수행을 위한 현업 실천계획 수립",
         "hours": 3
       }
     ]
@@ -483,28 +476,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "Frame-In",
-        "content": "승진자 역할 인식 제고",
+        "area": "역할 인식",
+        "content": "임파워링 리더의 R&R. 업무 패러다임 전환 및 역할 정립",
         "hours": 2
       },
       {
-        "area": "Re-Frame",
-        "content": "생성형 AI를 활용한 의사결정",
+        "area": "AI 역량",
+        "content": "생성형 AI를 활용한 전략적 의사결정",
         "hours": 3
       },
       {
-        "area": "Re-Frame",
-        "content": "업무 역량 강화 - 권한위임과 동기부여",
+        "area": "성과 관리",
+        "content": "목표·성과관리 및 효과적 의사결정 역량 강화",
         "hours": 3
       },
       {
-        "area": "Re-Frame",
-        "content": "사람 관리 역량 강화 - 세대공감 커뮤니케이션",
+        "area": "변화 리더십",
+        "content": "세대공감, 변화관리, 협상·설득 역량 강화",
         "hours": 3
       },
       {
-        "area": "Frame-Up",
-        "content": "동기부여 - 아이디어 스튜디오",
+        "area": "실행 계획",
+        "content": "조직의 방향과 후배 육성을 위한 리더십 실행계획 수립",
         "hours": 3
       }
     ]
@@ -548,23 +541,23 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "핵심 가치",
-        "content": "임원 리더십에 대한 핵심가치",
+        "area": "정체성, 핵심 가치",
+        "content": "임원의 R&R, 비전·핵심가치, 업(業) 이해",
         "hours": 1
       },
       {
         "area": "핵심 역량",
-        "content": "핵심역량 자가진단 및 고찰",
+        "content": "개인별 핵심 역량 진단, 강·약점 분석 및 적용사례 학습",
         "hours": 2
       },
       {
         "area": "리더십",
-        "content": "업무/사람 관점의 리더십",
+        "content": "업무·사람 관점의 리더십과 최신 리더십 동향",
         "hours": 2
       },
       {
-        "area": "조직문화와 성과관리",
-        "content": "효과적인 조직 및 성과 관리 코칭",
+        "area": "성과관리",
+        "content": "효과적인 조직과 성과관리 코칭",
         "hours": 2
       }
     ]
@@ -608,28 +601,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "생성형 AI 기본 이해와 리터러시 향상",
-        "content": "AI 기본 개념 및 트렌드 이해",
+        "area": "AI 리터러시",
+        "content": "최신 AI 트렌드, 윤리·보안, 프롬프트 원리",
         "hours": 2
       },
       {
-        "area": "생성형 AI 기반 업무 효율화",
-        "content": "AI 업무 효율화 영역 구체화",
+        "area": "업무 효율화 실습",
+        "content": "문서 작성·요약, 데이터 분석 및 시각화",
         "hours": 3
       },
       {
-        "area": "생성형 AI 기반 업무 효율화",
-        "content": "맞춤형 AI 프롬프트 설계",
+        "area": "AI 챗봇 제작",
+        "content": "업무 맞춤형 프롬프트 설계 및 챗봇 구현",
         "hours": 3
       },
       {
-        "area": "PRAI로 시작하는 업무 자동화",
-        "content": "AI 업무 자동화 영역 구체화",
+        "area": "자동화 설계",
+        "content": "AI 연동 업무 자동화 개념 및 워크플로우 설계",
         "hours": 3
       },
       {
-        "area": "PRAI로 시작하는 업무 자동화",
-        "content": "고도화된 AI 업무 자동화 구현",
+        "area": "자동화 구현",
+        "content": "RPAI 기반 업무 자동화 프로젝트 실습",
         "hours": 3
       }
     ]
@@ -673,28 +666,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "데이터 분석 Basic 과정",
-        "content": "데이터 리터러시 및 데이터 분석",
+        "area": "데이터 리터러시",
+        "content": "데이터 기본 개념과 데이터 기반 문제 정의",
         "hours": 2
       },
       {
-        "area": "데이터 분석 MID 과정",
-        "content": "데이터 기반 문제해결 및 수집 전처리",
+        "area": "데이터 수집·전처리",
+        "content": "실무 데이터 수집, 정제 및 구조화 실습",
         "hours": 3
       },
       {
-        "area": "데이터 분석 MID 과정",
-        "content": "데이터 분석 및 시각화",
+        "area": "데이터 분석·시각화",
+        "content": "데이터 분석 시각화를 통한 인사이트 도출",
         "hours": 3
       },
       {
-        "area": "AI Agent로 데이터 분석 자동화",
-        "content": "AI 업무 자동화 영역 구체화",
+        "area": "자동화 설계",
+        "content": "데이터 분석 업무의 워크플로우 분석 및 설계",
         "hours": 3
       },
       {
-        "area": "AI Agent로 데이터 분석 자동화",
-        "content": "고도화된 AI 업무 자동화 구현",
+        "area": "자동화 구현",
+        "content": "AI Agent 기반 데이터 분석 자동화 구축 실습",
         "hours": 3
       }
     ]
@@ -737,24 +730,29 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "AI 직무 특화 교육",
-        "content": "직무별 AI 스킬 매트릭스 기반 학습",
+        "area": "직무역량 진단",
+        "content": "직무별 AI 핵심 역량 이해 및 활용계획 수립",
+        "hours": 2
+      },
+      {
+        "area": "워크플로우 분석",
+        "content": "업무 프로세스 분석 및 AI 적용 가능 영역 발굴",
         "hours": 3
       },
       {
-        "area": "팀/직무 단위 AI 워크숍",
-        "content": "워크플로우 분석 및 프로세스 마이닝",
+        "area": "솔루션 설계",
+        "content": "직무별 AI 활용 시나리오와 자동화 프로세스 설계",
         "hours": 3
       },
       {
         "area": "세미 해커톤",
-        "content": "아이디에이션 및 프로토타입 도출",
-        "hours": 4
+        "content": "현업과제 아이디에이션 및 프로토타입 도출",
+        "hours": 3
       },
       {
         "area": "해커톤",
-        "content": "실제 솔루션 구축 및 상용화 런칭",
-        "hours": 4
+        "content": "AI 솔루션 구현·검증 및 현업 적용방안 수립",
+        "hours": 3
       }
     ]
   },
@@ -797,23 +795,23 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "협상의 개념 및 준비",
-        "content": "협상의 구성과 유형, 프로세스 이해",
+        "area": "기본 이해",
+        "content": "협상의 구성요소와 유형, 전략 이해",
         "hours": 1
       },
       {
-        "area": "협상의 진행 및 마무리",
-        "content": "협상 진행 및 합의 도출 방법 습득",
+        "area": "협상 탐구",
+        "content": "성공적인 협상가의 특징 탐구 및 진단 실습",
         "hours": 2
       },
       {
-        "area": "협상을 위한 전술 및 사례",
-        "content": "협상 갈등 관리 및 Win-Win 사례 학습",
+        "area": "사례 학습",
+        "content": "협상에 대한 사례 탐구 및 계획 수립 실습",
         "hours": 2
       },
       {
-        "area": "협상 시뮬레이션",
-        "content": "협상 시뮬레이션을 통한 실행력 강화",
+        "area": "시뮬레이션",
+        "content": "협상 시뮬레이션 및 결과 도출, 피드백",
         "hours": 2
       }
     ]
@@ -857,28 +855,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "Warm-up SPEECH",
-        "content": "개별 스피치 수준 진단 및 개선 방향 설정",
+        "area": "수준 진단",
+        "content": "1분 시연을 통한 개인별 스피치 수준 진단",
         "hours": 2
       },
       {
-        "area": "SPEECH 음성 스킬",
-        "content": "음성 전달력 강화",
+        "area": "음성 스킬",
+        "content": "호흡과 발성 훈련, 말의 전달력 강화 훈련",
         "hours": 3
       },
       {
-        "area": "SPEECH 비언어 스킬",
-        "content": "비언어 전달력 강화",
+        "area": "비언어 스킬",
+        "content": "시선 처리와 자세, 동선 처리, 제스처 훈련",
         "hours": 3
       },
       {
-        "area": "SPEECH 언어 스킬",
-        "content": "언어 표현력 강화",
+        "area": "언어 스킬",
+        "content": "스피치 핵심 메시지 정리, 스피치 구조화",
         "hours": 3
       },
       {
-        "area": "Final SPEECH",
-        "content": "개인별 스피치 완성 및 실전 리허설",
+        "area": "스피치 완성",
+        "content": "개인별 스피치 시연 코칭",
         "hours": 3
       }
     ]
@@ -922,28 +920,28 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "나의 보고 실력 점검하기",
-        "content": "현재의 보고 습관 진단 및 개선 방향 설정",
+        "area": "실력 점검하기",
+        "content": "보고 습관 진단 및 개선방향 설정",
         "hours": 1
       },
       {
-        "area": "보고의 기본기 탄탄하게 다지기",
+        "area": "기본 다지기",
         "content": "보고의 기본 원칙과 핵심 요소 이해",
         "hours": 1
       },
       {
-        "area": "상황에 맞는 보고 스킬 익히기",
-        "content": "보고 유형별 맞춤 기법 습득",
+        "area": "스킬 익히기",
+        "content": "보고 유형별 맞춤 기법 습득 (중간보고 – 문제보고 – 정보보고)",
         "hours": 1
       },
       {
-        "area": "상사 스타일별 보고법",
-        "content": "상사의 특성 파악 및 보고 전략 구사",
+        "area": "유형 파악하기",
+        "content": "성격 유형 및 상사 스타일에 따른 보고 방법과 기술 습득",
         "hours": 2
       },
       {
-        "area": "핵심 위주 간결한 보고 시나리오",
-        "content": "시나리오 실습을 통한 실전 능력 강화",
+        "area": "시나리오 실습",
+        "content": "시나리오 실습 및 피드백",
         "hours": 2
       }
     ]
@@ -987,23 +985,23 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "감성 깨우기",
-        "content": "감성지능(EQ)의 정의와 중요성 이해",
+        "area": "이해하기",
+        "content": "감성의 개념과 감성 커뮤니케이션 이해",
         "hours": 1
       },
       {
-        "area": "감성 인지하기",
-        "content": "감성 커뮤니케이션 역량 개발 및 감성지능 이해",
+        "area": "인지하기",
+        "content": "감성지능지수(EQ) 진단 및 자기분석",
         "hours": 2
       },
       {
-        "area": "감성으로 다가가기",
-        "content": "감정이입 능력 강화 및 공감 커뮤니케이션 습득",
+        "area": "활용하기",
+        "content": "감성지능 향상 전략 이해와 활용",
         "hours": 2
       },
       {
-        "area": "감성 표현하기",
-        "content": "감성 커뮤니케이션 전략 수립 및 실전 연습",
+        "area": "표현하기",
+        "content": "감성 커뮤니케이션 실전훈련 및 심화 전략",
         "hours": 2
       }
     ]
@@ -1047,23 +1045,23 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "공감 소통의 연결의 힘",
-        "content": "공감 대화가 만드는 신뢰와 연결의 가치 이해",
+        "area": "고유 가치 이해",
+        "content": "AI와 다른 인간의 감성과 공감 역량 이해",
         "hours": 1
       },
       {
-        "area": "인간 다움의 핵심역량",
-        "content": "감정 수용과 타인의 생각을 존중하는 역량 강화",
+        "area": "공감 지능 이해",
+        "content": "감성지능과 공감지능 이해",
         "hours": 2
       },
       {
-        "area": "공감대화를 위한 대화모델 익히기",
-        "content": "관계와 상황을 구분하여 대화하는 핵심 기법 습득",
+        "area": "기법 학습",
+        "content": "비폭력 대화모델 구조 이해 및 표현 연습",
         "hours": 2
       },
       {
-        "area": "공감 대화의 적용 및 실습",
-        "content": "일상과 업무에서 공감대화를 직접 실습",
+        "area": "적용 실습",
+        "content": "시나리오 기반 공감대화 적용 실습",
         "hours": 2
       }
     ]
@@ -1106,18 +1104,18 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "세대 및 소통 유형 진단",
-        "content": "세대 특성 이해 및 나의 소통 유형 파악하기",
+        "area": "유형 진단",
+        "content": "소통 유형 진단, 유형별 특징과 대응 전략 모색",
         "hours": 2
       },
       {
-        "area": "수평적 조직문화 이해",
-        "content": "직급별 차이 이해 및 효과적 소통법 습득",
+        "area": "조직문화 이해",
+        "content": "직급별 상황 재구성 및 워크숍",
         "hours": 2
       },
       {
-        "area": "우리 조직의 심리적 안전감 만들기",
-        "content": "조직의 강점 발굴 및 심리적 안전감 구축하기",
+        "area": "심리적 안전감 만들기",
+        "content": "다양한 사례 탐구, 우리 조직 행동원칙 수립",
         "hours": 2
       }
     ]
@@ -1162,23 +1160,23 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "역할 인식",
-        "content": "리더로서의 역할 정립 및 실행 습관화",
+        "area": "역할 정립",
+        "content": "리더십 경험 공유, 역할 정립 토론",
         "hours": 1
       },
       {
-        "area": "구성원 육성",
-        "content": "구성원 육성을 위한 효과적인 코칭 역량 강화",
+        "area": "역량 강화",
+        "content": "실전 코칭 프로세스 적용 연습",
         "hours": 2
       },
       {
-        "area": "협업 강화 및 갈등 관리",
-        "content": "효과적인 협업 및 갈등관리 방안",
+        "area": "협업/갈등관리",
+        "content": "협업 및 갈등관리 실행 전략 모색",
         "hours": 2
       },
       {
-        "area": "업무 습관 관리하기",
-        "content": "업무 효율화 및 조직 습관 개선",
+        "area": "업무 효율화",
+        "content": "업무 효율화 사례연구 실습",
         "hours": 2
       }
     ]
@@ -1223,18 +1221,18 @@ export const KIUM_COURSES: KiumCourse[] =
     ],
     "modules": [
       {
-        "area": "이미지메이킹",
-        "content": "이미지메이킹 이해와 전략",
+        "area": "서비스 접점 이해",
+        "content": "민원응대 이미지·태도와 고객경험(CX)의 중요성 이해",
         "hours": 2
       },
       {
-        "area": "AI 시대 우리 기관의 CX 전략(1)",
-        "content": "우리 기관의 CX 현주소 진단",
+        "area": "CX 현황 진단",
+        "content": "우리 기관 고객경험 진단, Pain Point 및 AI 활용 가능영역 탐색",
         "hours": 2
       },
       {
-        "area": "AI 시대 우리 기관의 CX 전략(2)",
-        "content": "우리 기관의 CX 전략 세우기",
+        "area": "CX 혁신 설계",
+        "content": "To-Be 고객경험 설계, AI 활용 민원서비스 개선 및 차별화 아이디어 도출",
         "hours": 2
       }
     ]

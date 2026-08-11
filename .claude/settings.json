@@ -10,7 +10,23 @@
       "Bash(curl -s -o /dev/null -w \"  구 B-Type /ax-ai : HTTP %{http_code}\\\\n\" \"https://prototype-keess-b-type.vercel.app/ax-ai\" --max-time 30)",
       "Bash(curl -s -o /dev/null -w \"  final /          : HTTP %{http_code}\\\\n\" \"https://prototype-keess-final.vercel.app/\" --max-time 30)",
       "Bash(curl -s -o /dev/null -w \"  final /images/p1-hero.jpg : HTTP %{http_code}  <- public/ 는 서빙됨\\\\n\" \"https://prototype-keess-final.vercel.app/images/p1-hero.jpg\" --max-time 30)",
-      "Bash(curl -s -o /dev/null -w \"  구 B-Type /images/p1-hero.jpg : HTTP %{http_code}\\\\n\" \"https://prototype-keess-b-type.vercel.app/images/p1-hero.jpg\" --max-time 30)"
+      "Bash(curl -s -o /dev/null -w \"  구 B-Type /images/p1-hero.jpg : HTTP %{http_code}\\\\n\" \"https://prototype-keess-b-type.vercel.app/images/p1-hero.jpg\" --max-time 30)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/ax-ai)",
+      "Bash(curl -s http://localhost:3001/ax-ai)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3010/leadership)",
+      "Bash(BASE_URL=http://localhost:3010 node scripts/measure-hero.mjs)",
+      "Bash(git worktree *)",
+      "Bash(cmd //c \"mklink /J \\\\\"C:\\\\\\\\Users\\\\\\\\NT-0127\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c-----------workspace-KEESS-NEWSCOPE\\\\\\\\44a4042c-b4f5-4c03-a640-0b75b9c0efc2\\\\\\\\scratchpad\\\\\\\\head-wt\\\\\\\\node_modules\\\\\" \\\\\"C:\\\\\\\\오피스키퍼 예외\\\\\\\\workspace\\\\\\\\KEESS_NEWSCOPE\\\\\\\\node_modules\\\\\"\")",
+      "Bash(sed -i 's|<Link className=\"logo\" href={LOGO.href}|<Link className=\"logo\" data-probe=\"logo\" href={LOGO.href}|' C:/Users/NT-0127/AppData/Local/Temp/claude/c-----------workspace-KEESS-NEWSCOPE/44a4042c-b4f5-4c03-a640-0b75b9c0efc2/scratchpad/head-wt/components/common/Nav.tsx)",
+      "Bash(sed -i 's|<section className=\"ax-hero\" id=\"hero\">|<section className=\"ax-hero\" id=\"hero\" data-probe=\"hero\">|; s|<span className=\"ax-tag\">|<span className=\"ax-tag\" data-probe=\"hero-badge\">|' C:/Users/NT-0127/AppData/Local/Temp/claude/c-----------workspace-KEESS-NEWSCOPE/44a4042c-b4f5-4c03-a640-0b75b9c0efc2/scratchpad/head-wt/components/sections/axai/Sections.tsx)",
+      "Bash(sed -i 's|<section className=\"ld-hero\" id=\"hero\">|<section className=\"ld-hero\" id=\"hero\" data-probe=\"hero\">|; s|<span className=\"ld-tag\">|<span className=\"ld-tag\" data-probe=\"hero-badge\">|' C:/Users/NT-0127/AppData/Local/Temp/claude/c-----------workspace-KEESS-NEWSCOPE/44a4042c-b4f5-4c03-a640-0b75b9c0efc2/scratchpad/head-wt/components/sections/leadership/Sections.tsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3011/leadership)",
+      "Bash(BASE_URL=http://localhost:3011 node scripts/measure-hero.mjs)",
+      "Bash(BASE_URL=http://localhost:3010 OUT=audit/hero-before node scripts/shoot-hero.mjs)",
+      "Bash(BASE_URL=http://localhost:3011 OUT=audit/hero-head node scripts/shoot-hero.mjs)",
+      "Bash(BASE_URL=http://localhost:3010 OUT=audit/hero-after node scripts/shoot-hero.mjs)",
+      "Bash(node -e ' *)",
+      "Bash(BASE_URL=http://localhost:3001 OUT=audit/kium-summary-before.json node scripts/measure-kium-summary.mjs)"
     ]
   }
 }
