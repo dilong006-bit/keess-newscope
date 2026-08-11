@@ -109,7 +109,7 @@ export const KIUM_COURSES: KiumCourse[] =
     "subCategory": "신입사원",
     "titleMarketing": "경력 신입사원 On-Performing 온보딩 과정",
     "titleOfficial": "경력신입 On-Performing 과정",
-    "target": "경력신입사원",
+    "target": "경력 신입사원",
     "hours": 14,
     "days": 2,
     "type": "일반형",
