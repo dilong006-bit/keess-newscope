@@ -1,5 +1,6 @@
 'use client';
 
+import { Trash2 } from 'lucide-react';
 import { EMAIL_RE, INQ_MAX, fmtPhone, hasNonPhoneChar } from '@/lib/utils';
 import { readInterestParam } from '@/lib/inquiryPreset';
 import { useEffect, useRef, useState } from 'react';
@@ -500,7 +501,7 @@ export default function HomeInquiry({
                       <span className="file-size">({(file.size / 1048576).toFixed(1)}MB)</span>
                       <button type="button" className="file-act" onClick={openPicker} aria-label="첨부파일 변경">변경</button>
                       <button type="button" className="file-del" onClick={removeFile} aria-label={`첨부파일 ${file.name} 삭제`}>
-                        <span aria-hidden="true">×</span>
+                        <Trash2 size={17} aria-hidden="true" />
                       </button>
                     </div>
                   ) : (
