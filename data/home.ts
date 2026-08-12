@@ -99,6 +99,8 @@ export interface Pillar {
   close?: string;
   reverse?: boolean;
   dot: string; // pdots aria-label
+  /** Pillar 상세 페이지 경로. 선택 필드로 두면 누락이 조용히 통과하므로 필수로 둔다. */
+  href: string;
 }
 
 export const PILLARS: Pillar[] = [
@@ -117,6 +119,7 @@ export const PILLARS: Pillar[] = [
       { num: '03', title: '성과 측정·확산', desc: '업무 생산성·활용도 측정과 사전·사후 성과 리포트' },
     ],
     dot: 'AX·AI',
+    href: '/ax-ai',
   },
   {
     id: 'p2',
@@ -134,6 +137,7 @@ export const PILLARS: Pillar[] = [
     ],
     reverse: true,
     dot: '리더십',
+    href: '/leadership',
   },
   {
     id: 'p3',
@@ -151,6 +155,7 @@ export const PILLARS: Pillar[] = [
     ],
     close: '국민건강보험공단과 한국전기안전공사가 선택한 교육 운영 파트너, KG에듀원',
     dot: 'HRD 통합',
+    href: '/hrd',
   },
   {
     id: 'p4',
@@ -170,6 +175,7 @@ export const PILLARS: Pillar[] = [
     // 3중 중복이라 제거했다. 03의 마무리 문구는 공공기관 레퍼런스라 성격이 달라 유지한다.
     reverse: true,
     dot: '콘텐츠',
+    href: '/content',
   },
 ];
 

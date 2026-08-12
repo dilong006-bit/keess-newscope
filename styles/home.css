@@ -87,7 +87,9 @@
 @media(max-width:880px){.pgrid{grid-template-columns:1fr;gap:32px;direction:ltr !important}}
 .pmedia{position:relative;border-radius:22px;overflow:hidden;aspect-ratio:4/3.2;background-image:var(--pg);background-size:cover;box-shadow:0 30px 70px -30px rgba(20,20,26,.45)}
 .pimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform;transition:transform .7s var(--ease)}
-.pmedia:hover .pimg{transform:scale(1.05)}
+/* stretched-link ::after가 .pmedia를 덮어 .pmedia:hover가 더는 발화하지 않는다.
+   확대 효과(값 동일)를 살리기 위해 트리거만 슬라이드 전체로 옮긴다. */
+.pgrid:hover .pimg{transform:scale(1.05)}
 .pscrim{position:absolute;inset:0;background:linear-gradient(160deg,transparent 40%,color-mix(in srgb,var(--ac) 55%,transparent))}
 .pbadge{position:absolute;left:20px;bottom:18px;padding:9px 16px;border-radius:999px;background:rgba(255,255,255,.16);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:13px;font-weight:600;letter-spacing:.02em}
 .ptext .pidx{font-size:clamp(40px,5vw,64px);font-weight:800;letter-spacing:-.03em;color:var(--ac);line-height:1;opacity:.9}
@@ -105,6 +107,21 @@
 .step .stt{font-size:16.5px;font-weight:700}
 .step .std{font-size:14.5px;color:#54575e;line-height:1.6;margin-top:3px}
 .pclose{margin-top:22px;font-size:14.5px;font-weight:600;color:#3a3d44;padding-left:46px}
+/* Pillar 진입 CTA — stretched-link.
+   ::after가 .pgrid 전체를 덮어 이미지 카드·텍스트 어디를 눌러도 라우팅된다.
+   앵커는 슬라이드당 1개(중첩 <a> 없음)이며, 좌측 정렬은 .steps/.pclose의 46px에 맞춘다. */
+.pgrid{position:relative}
+/* 앵커 자신에는 transform을 걸지 않는다 — transform이 걸리면 ::after의 containing block이
+   .pgrid에서 앵커로 바뀌어 클릭 영역이 CTA 크기로 접힌다. 호버 리프트는 내부 .pcta-btn이 맡는다. */
+.pcta{display:inline-block;margin-top:26px;margin-left:46px;border-radius:999px}
+.pcta::after{content:"";position:absolute;inset:0}
+.pcta:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+/* 라벨색은 --ink. 필러색(--ac)을 본문 크기 텍스트에 쓰면 P4 주황이 2.49:1로 AA에 미달한다.
+   필러 정체성은 호버 테두리에서 포인트로만 드러낸다(Design.md §0.5-5). */
+.pcta-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 20px;border:1px solid var(--line);border-radius:999px;color:var(--ink);font-size:14.5px;font-weight:700;transition:border-color .22s var(--ease),transform .22s var(--ease),box-shadow .22s var(--ease)}
+.pcta-btn span{transition:transform .22s var(--ease)}
+.pcta:hover .pcta-btn{border-color:var(--ac);transform:translateY(-2px);box-shadow:var(--shadow-1)}
+.pcta:hover .pcta-btn span{transform:translateX(3px)}
 
 /* ── 성과 지표 (원본 122-131) ─────────────────────────────────────────── */
 .stats{background:var(--ink);color:#fff}
@@ -208,7 +225,7 @@
   .lines .ln span{transform:none}.prule{width:56px}.midrule{width:64px}
   .man-bg,.pimg{transform:none !important}.scrolldown{display:none}
   .man-scrim{opacity:1}.manifesto h2{opacity:1;transform:none}
-  .pmedia:hover .pimg{transform:none}.man-img{transform:none!important}
+  .pgrid:hover .pimg{transform:none}.man-img{transform:none!important}
   .steps-fill{height:100% !important}.step .snum{color:#fff;background:var(--ac);border-color:var(--ac)}
   .ring .fg{stroke-dashoffset:90}
 }

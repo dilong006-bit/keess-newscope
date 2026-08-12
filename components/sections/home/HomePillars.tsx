@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import Img from '@/components/common/Img';
 import { PILLARS } from '@/data/home';
@@ -8,6 +9,19 @@ export default function HomePillars() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [activeDot, setActiveDot] = useState(-1);
   const [dotColor, setDotColor] = useState('#2E1A6B');
+
+  // 카드 전체가 링크이므로, 텍스트 드래그 선택처럼 '누른 채 이동한' 동작이
+  // 클릭으로 오인돼 라우팅되지 않게 막는다. 임계값 10px.
+  const down = useRef({ x: 0, y: 0 });
+  const onPointerDown = (e: React.PointerEvent) => {
+    down.current = { x: e.clientX, y: e.clientY };
+  };
+  const onGuardedClick = (e: React.MouseEvent) => {
+    if (e.detail === 0) return; // 키보드 Enter — 좌표가 없어 판별 대상이 아니다
+    if (Math.hypot(e.clientX - down.current.x, e.clientY - down.current.y) > 10) {
+      e.preventDefault();
+    }
+  };
 
   useEffect(() => {
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -89,7 +103,7 @@ export default function HomePillars() {
           id={p.id}
           style={{ ['--ac' as string]: p.ac, ['--pg' as string]: p.pg }}
         >
-          <div className="pgrid">
+          <div className="pgrid" onPointerDown={onPointerDown}>
             <div className="pmedia">
               <Img className="pimg" src={p.img} />
               <div className="pscrim" />
@@ -115,6 +129,18 @@ export default function HomePillars() {
                 ))}
               </div>
               {p.close && <div className="pclose r">{p.close}</div>}
+              {/* DOM상 슬라이드당 유일한 앵커. ::after가 .pgrid 전체를 덮어 카드 어디를 눌러도 이동한다 */}
+              <Link
+                className="pcta"
+                href={p.href}
+                aria-label={`${p.name} 자세히 보기`}
+                data-cta={`home-pillar-${p.idx}`}
+                onClick={onGuardedClick}
+              >
+                <span className="pcta-btn">
+                  자세히 보기 <span aria-hidden="true">→</span>
+                </span>
+              </Link>
             </div>
           </div>
         </section>
