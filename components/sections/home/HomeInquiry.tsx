@@ -104,13 +104,17 @@ export default function HomeInquiry({
   const [consentOpen, setConsentOpen] = useState<Record<string, boolean>>({});
   const [hp, setHp] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [fileName, setFileName] = useState(FILE_PLACEHOLDER);
+  // 표시 문자열은 file에서 파생한다 — 별도 상태로 두면 file과 어긋날 여지가 생긴다.
   const [fileErr, setFileErr] = useState('');
+  /** 첨부 상태 변경을 스크린리더에 알리는 문구 (aria-live) */
+  const [fileNotice, setFileNotice] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [phoneHint, setPhoneHint] = useState(false);
   const [lenErr, setLenErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  /** 삭제 후 포커스 복귀 지점 — 버튼이 사라지며 포커스가 body로 튀는 것을 막는다 */
+  const fileboxRef = useRef<HTMLLabelElement>(null);
   const mktAllRef = useRef<HTMLInputElement>(null);
   const phoneHintTimer = useRef<ReturnType<typeof setTimeout>>();
   const returnTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -166,9 +170,9 @@ export default function HomeInquiry({
     setLenErr(null);
     setPhoneHint(false);
     setFile(null);
-    setFileName(FILE_PLACEHOLDER);
     setFileErr('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setFileNotice('');
+    if (fileInputRef.current) fileInputRef.current.value = ''; // ③ 제출 성공 후 폼 초기화
     setHp('');
     setDone(false);
     requestAnimationFrame(() => firstFieldRef.current?.focus({ preventScroll: true }));
@@ -215,21 +219,47 @@ export default function HomeInquiry({
 
   const email = `${v.emailLocal.trim()}@${v.emailDomain.trim()}`;
 
+  /**
+   * ★ input.value 초기화가 이 기능의 전부다.
+   * <input type="file">은 값이 같으면 change를 발화시키지 않는다. 상태만 null로 두고
+   * value를 비우지 않으면 "삭제는 되는데 같은 파일 재첨부가 안 되는" 더 나쁜 결함이 된다.
+   * 초기화 지점은 ① 삭제 ② 검증 실패 ③ 제출 성공 후 폼 초기화 3곳이며,
+   * 여기에 더해 선택창을 열기 직전(openPicker)에도 비워 '변경'으로 같은 파일을 골라도 반영되게 한다.
+   */
   function resetFile(msg: string) {
     setFile(null);
-    setFileName(FILE_PLACEHOLDER);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = ''; // ② 검증 실패 시
     if (msg) setFileErr(msg);
   }
 
   function takeFile(f: File | undefined) {
+    // 선택창 취소·빈 드롭 — 기존 첨부를 그대로 둔다(§5-3-3). 여기서 지우면 취소가 삭제가 된다.
+    if (!f) return;
     setFileErr('');
-    if (!f) return resetFile('');
     const ext = f.name.split('.').pop()?.toLowerCase() || '';
     if (!ALLOWED.includes(ext)) return resetFile('허용되지 않는 파일 형식입니다.');
     if (f.size > MAX) return resetFile('파일 용량은 최대 10MB까지 가능합니다.');
     setFile(f);
-    setFileName(`${f.name} (${(f.size / 1048576).toFixed(1)}MB)`);
+    setFileNotice(`${f.name} 첨부되었습니다.`);
+  }
+
+  /** 파일 선택창 열기 — Empty의 '파일 선택'과 Selected의 '변경'이 공유한다 */
+  function openPicker() {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // 같은 파일을 다시 골라도 change가 발화하도록
+      fileInputRef.current.click();
+    }
+  }
+
+  /** 첨부 해제 — 확인 다이얼로그 없이 즉시 반영(PRD C5) */
+  function removeFile() {
+    const name = file?.name ?? '';
+    setFile(null);
+    setFileErr('');
+    if (fileInputRef.current) fileInputRef.current.value = ''; // ① 삭제 시
+    setFileNotice(`${name} 첨부가 삭제되었습니다.`);
+    // 칩이 사라진 뒤에야 드롭존이 렌더되므로 다음 프레임에 포커스를 옮긴다
+    requestAnimationFrame(() => fileboxRef.current?.focus({ preventScroll: true }));
   }
 
   /** R2: 제출 직전 전 필드 길이 재검증 — 초과 시 서버 전송 없이 차단 + 해당 필드 포커스 */
@@ -455,17 +485,42 @@ export default function HomeInquiry({
 
                 {/* 10 첨부파일 (선택·드롭존) */}
                 <div className="field"><label htmlFor="f-file">첨부파일</label>
-                  <label
-                    className={`filebox${file ? ' has' : ''}${dragOver ? ' over' : ''}`}
-                    htmlFor="f-file"
-                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={(e) => { e.preventDefault(); setDragOver(false); takeFile(e.dataTransfer.files?.[0]); }}
-                  >{fileName}</label>
+                  {file ? (
+                    /* Selected — 파일명·용량과 함께 변경·삭제 컨트롤을 항상 노출한다.
+                       label이 아닌 div다: label 안에 버튼을 두면 삭제 버튼이 선택창을 연다. */
+                    <div
+                      className={`file-chip${dragOver ? ' over' : ''}`}
+                      role="group"
+                      aria-label="첨부된 파일"
+                      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={(e) => { e.preventDefault(); setDragOver(false); takeFile(e.dataTransfer.files?.[0]); }}
+                    >
+                      <span className="file-name" title={file.name}>{file.name}</span>
+                      <span className="file-size">({(file.size / 1048576).toFixed(1)}MB)</span>
+                      <button type="button" className="file-act" onClick={openPicker} aria-label="첨부파일 변경">변경</button>
+                      <button type="button" className="file-del" onClick={removeFile} aria-label={`첨부파일 ${file.name} 삭제`}>
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
+                  ) : (
+                    /* Empty · Error — 기존 드롭존을 그대로 둔다(문구·높이·드래그&드롭 무변경).
+                       tabIndex=-1은 삭제 후 포커스 복귀 지점을 만들기 위한 것이라 Tab 순서를 바꾸지 않는다. */
+                    <label
+                      ref={fileboxRef}
+                      tabIndex={-1}
+                      className={`filebox${dragOver ? ' over' : ''}`}
+                      htmlFor="f-file"
+                      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={(e) => { e.preventDefault(); setDragOver(false); takeFile(e.dataTransfer.files?.[0]); }}
+                    >{FILE_PLACEHOLDER}</label>
+                  )}
                   <input id="f-file" ref={fileInputRef} name="attachment" type="file" style={{ display: 'none' }} accept=".zip,.pdf,.hwp,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif" onChange={(e) => takeFile(e.target.files?.[0])} />
                   <div className="filehint">zip·pdf·hwp·ppt·pptx·doc·docx·xls·xlsx·jpg·png·gif / 최대 10MB</div>
                   <div className="filehint">{FILE_PRIVACY_NOTE}</div>
-                  {fileErr && <span className="err" style={{ display: 'block' }} aria-live="polite">{fileErr}</span>}
+                  {fileErr && <span className="err" style={{ display: 'block' }} role="alert">{fileErr}</span>}
+                  <span className="file-live" aria-live="polite">{fileNotice}</span>
                 </div>
 
                 <input className="hp" tabIndex={-1} autoComplete="off" placeholder="website" value={hp} onChange={(e) => setHp(e.target.value)} aria-hidden="true" />
