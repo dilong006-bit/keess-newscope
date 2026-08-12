@@ -346,6 +346,19 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **`prefers-reduced-motion`·IO 미지원**: 되감기를 건너뛰므로 최종값이 처음부터 표시된다(종전 동작과 동일한 결과, 경로만 단순해졌다).
 - **검증**: `npm run build` 경고·에러 0 · 빌드 산출 `/ax-ai` HTML의 `.num` 5개가 실제 수치(5/8/5/8/5)로 렌더되고 `class="num">0<` **0건**.
 
+### 26) 상담 폼 첨부파일 삭제·교체 기능
+> 기준: `KEESS_상담폼_첨부파일관리_기술명세서_v1.0_260812.md`. `components/sections/home/HomeInquiry.tsx` + `styles/components.css`. 백업 태그 `backup/file-attach-7571a98`.
+
+- **문제**: 파일을 한 번 고르면 화면에 취소 수단이 없었다. 민감정보 유의 문구를 띄워두고 **철회 경로를 주지 않은 상태**여서, 잘못 올린 파일을 되돌리려면 새로고침해 폼 전체 입력을 버려야 했다.
+- **`input.value` 초기화가 이 기능의 전부다** — `<input type="file">`은 값이 같으면 `change`를 발화시키지 않는다. 상태만 `null`로 두면 "삭제는 되는데 같은 파일 재첨부가 안 되는" 더 나쁜 결함이 된다. 초기화 지점은 **① 삭제 ② 검증 실패 ③ 제출 성공 후 폼 초기화** 3곳이며, 여기에 더해 **선택창을 여는 `openPicker`에서도 선비워** '변경'으로 같은 파일을 골라도 반영되게 했다(총 4곳).
+- **취소가 삭제로 동작하던 버그** — 기존 `takeFile(undefined)`가 `resetFile('')`을 불러, 빈 `change`가 오면 첨부가 지워졌다. early return으로 바꿔 **선택창 취소 시 기존 첨부를 유지**한다.
+- **3-state** — Selected만 `.file-chip`(파일명·용량·`변경`·`×`)으로 바꾸고 **Empty/Error는 기존 드롭존을 그대로 뒀다.** 문구·높이·드래그&드롭이 무변경으로 남는다. 칩을 `<label>`이 아닌 `<div>`로 둔 이유는, label 안의 버튼을 누르면 삭제 버튼이 파일 선택창을 열어버리기 때문이다.
+- **좁은 폭 우선순위** — 컨트롤은 `flex:0 0 auto`로 고정하고 파일명만 말줄임한다. 컨트롤이 먼저 잘리면 삭제 수단 자체가 사라진다. 360px에서 `변경` 53×44 · `×` 44×44 유지 확인.
+- **접근성** — `aria-label`(`첨부파일 변경` / `첨부파일 {파일명} 삭제`), 아이콘 `aria-hidden`, 상태 변경 `aria-live="polite"` 안내, 오류 `role="alert"`, 버튼 전건 `type="button"`(생략 시 폼이 제출된다). 삭제 후 포커스가 `body`로 튀지 않도록 드롭존에 `tabIndex={-1}`을 주고 다음 프레임에 포커스를 옮긴다.
+- **검증(F5)은 수정하지 않았다** — 확장자·10MB 검사와 오류 문구가 이미 명세와 동일하고 `resetFile`이 이미 `input.value`를 비우고 있었다. 명세 §7 "이미 동일하게 동작하면 수정하지 않는다"에 해당.
+- **공통 컴포넌트라 전수 반영** — 첨부 필드를 가진 폼은 `HomeInquiry` 하나뿐이고 홈 `/#inq`와 `/kium` 두 페이지에서 렌더된다. `/leadership`·`/hrd`의 간이 폼과 `/content`에는 첨부 필드가 없고, `/ax-ai`는 자체 폼 없이 홈으로 일원화돼 있다.
+- **검증**: 브라우저 회귀 **54/54 PASS** — 최우선 항목인 **삭제 후 동일 파일 재선택** 포함(홈·`/kium` 양쪽), 취소 시 유지, 검증 3종, 키보드 Tab/Enter, 삭제 시 다른 입력값 영향 0, 제출 성공 후 Empty 복귀, 360/768/1440 컨트롤 미잘림, 콘솔 에러 0. `tsc --noEmit` 0 · `next build` 경고 0.
+
 ### 25) 홈 「KG에듀원 교육체계」 카피 전면 개편 + Pillar 진입 동선 신설
 > 기준: `ref/spec/KEESS_홈_교육체계섹션_고도화_기술명세서_v3.0_260812.md`. `data/home.ts`의 `PILLARS` + `components/sections/home/HomePillars.tsx` + `styles/home.css` `.pillar` 블록. 백업 태그 `backup/home-pillar-fb9e75b`.
 
