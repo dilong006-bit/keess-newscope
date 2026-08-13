@@ -1,6 +1,7 @@
 'use client';
 
-import { EMAIL_RE, fmtPhone, hasNonPhoneChar } from '@/lib/utils';
+import { fmtPhone, hasNonPhoneChar } from '@/lib/utils';
+import { validateField, type ValidatedField } from '@/lib/validation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useModal } from '@/lib/useModal';
 import { REPORT_SEED, REPORT_STATUS, REPORT_MASTER_PW, type ReportRecord } from '@/data/report';
@@ -67,6 +68,10 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
   // 신고 접수
   const [form, setForm] = useState({ ...emptyForm });
   const [errs, setErrs] = useState<Record<string, boolean>>({});
+  // 필드 단위 검증 — errs(필수 누락 불리언)와 달리 '보여줄 문구'를 담는다.
+  // touched: 한 번이라도 입력한 적이 있는지. 탭으로 지나가기만 한 빈 필드는 지적하지 않는다.
+  const [fieldErr, setFieldErr] = useState<Record<string, string>>({});
+  const touched = useRef<Record<string, boolean>>({});
   const [agree1, setAgree1] = useState(false);
   const [agree2, setAgree2] = useState(false);
   const [consentOpen, setConsentOpen] = useState<Record<string, boolean>>({});
@@ -100,6 +105,8 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
   const resetReport = useCallback(() => {
     setForm({ ...emptyForm });
     setErrs({});
+    setFieldErr({});
+    touched.current = {};
     setAgree1(false);
     setAgree2(false);
     setConsentOpen({});
@@ -140,6 +147,37 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
   const upd = (k: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  // 검증 결과를 필드 키에 반영 (null 이면 해제)
+  const setErrFor = useCallback((k: string, msg: string | null) => {
+    setFieldErr((s) => {
+      if (!msg) {
+        if (!(k in s)) return s;
+        const n = { ...s };
+        delete n[k];
+        return n;
+      }
+      return s[k] === msg ? s : { ...s, [k]: msg };
+    });
+  }, []);
+
+  // 검증 타이밍 — 늦게 지적하고, 빠르게 풀어준다.
+  // 입력 중에는 지적하지 않되(아직 다 치지 않았다), 이미 에러가 뜬 뒤에는 매 입력마다
+  // 재검증해 고치는 순간 해제한다(blur 를 기다리게 하지 않는다).
+  const onValidatedChange = (k: ValidatedField) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setForm((f) => ({ ...f, [k]: v }));
+    touched.current[k] = true;
+    if (fieldErr[k]) setErrFor(k, validateField(k, v));
+  };
+  // 포커스 이탈 = "이 필드 다 썼다"는 신호. 이 시점에 최초 검증한다.
+  // 붙여넣기로 섞여 들어온 앞뒤 공백은 여기서 state 까지 정리한다.
+  const onValidatedBlur = (k: ValidatedField) => () => {
+    const trimmed = (form[k] || '').trim();
+    if (trimmed !== form[k]) setForm((f) => ({ ...f, [k]: trimmed }));
+    if (!trimmed && !touched.current[k]) return;
+    setErrFor(k, validateField(k, trimmed));
+  };
+
   const onPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     const bad = hasNonPhoneChar(raw);
@@ -165,7 +203,8 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
   // 이메일은 처리결과 안내 채널이므로 필수(정보보호팀 회신 조건부 지침 + 사업 결정 · G2-11).
   function submitReport() {
     const LBL: Record<string, string> = { name: '성함', phone: '전화번호', pw: '비밀번호', email: '이메일', title: '제목', content: '내용' };
-    const reqs: (keyof typeof emptyForm)[] = ['name', 'phone', 'pw', 'email', 'title', 'content'];
+    // 이메일은 아래 필드 단위 검증이 빈값·형식을 함께 판정하므로 이 목록에서 제외한다.
+    const reqs: (keyof typeof emptyForm)[] = ['name', 'phone', 'pw', 'title', 'content'];
     const next: Record<string, boolean> = {};
     const miss: string[] = [];
     let ok = true;
@@ -174,14 +213,13 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
       next[id] = bad;
       if (bad) { ok = false; miss.push(LBL[id]); }
     });
-    // 이메일: 빈값은 위 필수 검증에서 이미 차단된다. 값이 있을 때만 형식을 추가 검증한다
-    // (여기서 next.email 을 되돌리면 필수 미입력 표기가 지워지므로 false 대입 금지).
+    // 이메일: blur 없이 바로 제출한 경우를 대비해 여기서 다시 검증한다.
+    // 미입력/형식 오류를 필드 아래 문구로 구분해 알린다(토스트는 항목명만).
     const email = (form.email || '').trim();
-    if (email && !EMAIL_RE.test(email)) {
-      next.email = true;
-      ok = false;
-      miss.push('이메일 형식');
-    }
+    if (email !== form.email) setForm((f) => ({ ...f, email }));
+    const emailErrMsg = validateField('email', email);
+    setErrFor('email', emailErrMsg);
+    if (emailErrMsg) { ok = false; miss.push(LBL.email); }
     // 비번확인: 값 있을 때만 일치검증
     if (form.pw2 && form.pw !== form.pw2) {
       next.pw2 = true;
@@ -195,8 +233,13 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
     if (c1 || c2) { ok = false; miss.push('개인정보 동의'); }
     setErrs(next);
     if (!ok) {
-      const first = bodyRef.current?.querySelector('#pv-report-form .field.invalid, #pv-report-form .consent.invalid');
-      first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // 값이 모두 유효하면 포커스를 건드리지 않는다(기존 정책). 오류가 있을 때만 그 자리로 보낸다.
+      // invalid 클래스는 위 setState 가 커밋된 뒤에야 DOM 에 붙으므로 다음 프레임에서 찾는다.
+      requestAnimationFrame(() => {
+        const first = bodyRef.current?.querySelector<HTMLElement>('#pv-report-form .field.invalid, #pv-report-form .consent.invalid');
+        first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        first?.querySelector<HTMLElement>('input, select, textarea')?.focus({ preventScroll: true });
+      });
       showToast(miss.join(', ') + ' 항목을 확인해 주세요.', 'error');
       return;
     }
@@ -338,7 +381,8 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
                       <div className={fld('pw2')}><label>비밀번호 확인</label><input id="pv-pw2" aria-label="비밀번호 확인" type="password" value={form.pw2} onChange={upd('pw2')} /><span className="err">비밀번호가 일치하지 않습니다.</span></div>
                     </div>
                     <div className="pv-frow">
-                      <div className={fld('email')}><label>이메일 <span className="req">*</span></label><input id="pv-email" aria-label="이메일" type="email" placeholder="name@company.com" value={form.email} onChange={upd('email')} /><span className="err">필수 항목을 확인해 주세요.</span></div>
+                      {/* 이메일 = 접수 비밀번호와 함께 신고 조회 인증 키. 오입력 시 본인도 다시 열 수 없다 */}
+                      <div className={`field${fieldErr.email ? ' invalid' : ''}`}><label htmlFor="pv-email">이메일 <span className="req">*</span></label><input id="pv-email" aria-label="이메일" type="email" inputMode="email" autoComplete="email" placeholder="name@company.com" value={form.email} onChange={onValidatedChange('email')} onBlur={onValidatedBlur('email')} aria-invalid={fieldErr.email ? true : undefined} aria-describedby={fieldErr.email ? 'pv-email-error' : undefined} /><span className="err" id="pv-email-error" aria-live="polite">{fieldErr.email || ''}</span></div>
                       <div className="field"><label>신고자 신분</label><div className="sel"><select id="pv-role" aria-label="신고자 신분" value={form.role} onChange={upd('role')}><option value="">선택</option><option>훈련생</option><option>훈련강사</option><option>훈련기관 관계자</option><option>기업 관계자</option><option>기타</option></select></div></div>
                     </div>
                   </div>
