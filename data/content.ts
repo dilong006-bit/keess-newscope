@@ -90,7 +90,7 @@ export const AX4 = {
 
 export const AX5 = {
   no: '05', kicker: 'Compliance', titleLead: '필수 기준은 정확하게, 콘텐츠는 ', titleEmph: '매년 새롭게', titleTail: '',
-  lead: '근거·대상·주기는 정확하게, 콘텐츠는 지겹지 않게.',
+  lead: '법정 기준은 철저히 준수하고, 매년 새로운 콘텐츠로 학습 경험을 높입니다.',
   tag: '법정의무 · 컴플라이언스',
   seriesSub: '연도별 대표 시리즈',
   timeline: [
