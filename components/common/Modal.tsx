@@ -6,6 +6,8 @@ interface ModalProps {
   open: boolean;
   onClose: () => void;
   labelledBy: string;
+  /** 본문 설명 요소 id — 전달한 모달만 aria-describedby를 갖는다(미전달 시 기존 동작 그대로). */
+  describedBy?: string;
   title: React.ReactNode;
   children: React.ReactNode;
   maxWidth?: number;
@@ -16,6 +18,7 @@ export default function Modal({
   open,
   onClose,
   labelledBy,
+  describedBy,
   title,
   children,
   maxWidth = 540,
@@ -27,6 +30,7 @@ export default function Modal({
       role="dialog"
       aria-modal="true"
       aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
       aria-hidden={!open}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();

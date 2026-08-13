@@ -207,7 +207,26 @@ export const DOWNLOAD_MODAL = {
   // 상단 안내 배너 문구는 data/consent.ts의 DOWNLOAD_OPTIN_BANNER로 이관.
   // 선택 동의(CONSENT_TEXTS.download.optional)와 한 스위치에 묶기 위함 — 여기에 다시 두지 말 것.
   submit: '리스트 다운로드',
+  // directMode(iOS·저메모리) 전용 — 전송 완료를 감지할 수 없는 경로의 확정 카피
   okTitle: '다운로드가 시작됩니다',
   okMsg: '자동으로 저장되지 않으면 아래 버튼을 눌러주세요.',
   okBtn: '지금 다운로드',
+  /** 진행 상태별 문구 (기술명세서 §2) — 상태 머신 6단계와 1:1 */
+  steps: {
+    preparingTitle: '파일을 준비하고 있습니다',
+    preparingMsg: '잠시만 기다려 주세요',
+    downloadingTitle: '내려받는 중입니다',
+    downloadingIndet: '내려받는 중',
+    savingTitle: '저장하는 중입니다',
+    doneTitle: '다운로드가 완료되었습니다',
+    doneMsg: '과정 리스트를 저장했습니다.',
+    doneHint: '잠시 후 닫힙니다',
+    errTitle: '파일을 불러오지 못했습니다',
+    errMsg: '네트워크 상태를 확인한 뒤 다시 시도해 주세요.',
+    cancel: '취소',
+    close: '닫기',
+    retry: '다시 시도',
+    direct: '직접 내려받기',
+    fallback: '저장되지 않았나요? 직접 내려받기',
+  },
 };
