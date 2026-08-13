@@ -84,6 +84,10 @@
 /* ── KGESA 데모 (F16) ───────────────────────────────────────────────── */
 .kg-demo{display:grid;grid-template-columns:1.25fr .75fr;gap:22px;margin-top:38px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 30px 70px -46px rgba(46,26,107,.3);color:var(--ink)}
 @media(max-width:880px){.kg-demo{grid-template-columns:1fr}}
+/* PC 권장 안내 — 데모 카드가 1단으로 접히는 폭(≤880px)에서만 노출. 2단 폭에서는 display:none(접근성 트리 제외) */
+.kg-pcnote{display:none;margin-top:16px;font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.6);word-break:keep-all}
+.kg-pcnote .tbd-d{display:inline-block;margin-left:0;margin-right:8px;white-space:nowrap}
+@media(max-width:880px){.kg-pcnote{display:block}}
 .kg-fo-wrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--p3) 3%,#fff)}
 .kg-fo-bar{display:flex;align-items:center;gap:6px;padding:9px 14px;background:color-mix(in srgb,var(--p3) 8%,#fff);border-bottom:1px solid var(--line)}
 .kg-fo-bar .dot{width:9px;height:9px;border-radius:50%;background:color-mix(in srgb,var(--p3) 28%,#fff)}

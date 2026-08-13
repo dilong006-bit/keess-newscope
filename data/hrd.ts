@@ -55,6 +55,8 @@ export const DEMO = {
   title: '클릭 몇 번으로, 학습자 화면 완성',
   tbd: '정식 오픈 예정',
   lead: '개발 없이 테마와 위젯만 조작하면 학습자 화면(FO)이 실시간으로 완성됩니다. 아래에서 직접 조작해 보세요.',
+  pcBadge: 'PC 화면 권장',
+  pcNote: '미리보기와 설정을 나란히 놓고 확인할 수 있습니다.',
   widgets: [
     { id: 'banner', n: '메인 배너', on: true },
     { id: 'dash', n: '학습 대시보드', on: true },
@@ -64,7 +66,7 @@ export const DEMO = {
     { id: 'float', n: '플로팅 메뉴', on: false },
   ],
   foMenu: ['수강신청', '나의 강의실', '부가학습', '학습자료실'],
-  ctrlHint: '테마를 바꾸거나 위젯을 켜고 끄고 순서를 조정해 보세요. 왼쪽 학습자 화면이 즉시 반영됩니다.',
+  ctrlHint: '테마를 바꾸거나 위젯을 켜고 끄고 순서를 조정해 보세요. 학습자 화면 미리보기에 즉시 반영됩니다.',
 };
 
 export const AI = {

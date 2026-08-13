@@ -111,6 +111,7 @@ export default function Sections() {
           <p className="eyebrow r">{DEMO.eyebrow}</p>
           <h2 className="sec-title r" style={{ marginTop: 14 }}>{DEMO.title}<span className="tbd-d">{DEMO.tbd}</span></h2>
           <p className="sec-sub r">{DEMO.lead}</p>
+          <p className="kg-pcnote r"><span className="tbd-d">{DEMO.pcBadge}</span> {DEMO.pcNote}</p>
           <KgesaDemo />
         </div>
       </section>
