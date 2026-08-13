@@ -346,7 +346,7 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
                   <div className="pv-fs">
                     <span className="pv-fs-t"><svg className="pvi-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4h13a1 1 0 0 1 1 1v15H6a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1z"/><path d="M5 17h14"/></svg>훈련 정보</span>
                     <div className="pv-frow">
-                      <div className="field"><label>훈련 구분</label><div className="sel"><select id="pv-ttype" aria-label="훈련 구분" value={form.ttype} onChange={upd('ttype')}><option value="">선택</option><option>사업주훈련</option><option>디지털아카이브</option><option>기업훈련카드</option><option>국민내일배움카드</option><option>기타</option></select></div></div>
+                      <div className="field"><label>훈련 구분</label><div className="sel"><select id="pv-ttype" aria-label="훈련 구분" value={form.ttype} onChange={upd('ttype')}><option value="">선택</option><option>사업주훈련</option><option>디지털아카이브</option><option>AI 기초훈련</option><option>국민내일배움카드</option><option>기타</option></select></div></div>
                       <div className="field"><label>훈련 과정명</label><input id="pv-course" aria-label="훈련 과정명" type="text" value={form.course} onChange={upd('course')} /></div>
                     </div>
                     <div className="field"><label>훈련 기관</label><input id="pv-org" aria-label="훈련 기관" type="text" value={form.org} onChange={upd('org')} /></div>
