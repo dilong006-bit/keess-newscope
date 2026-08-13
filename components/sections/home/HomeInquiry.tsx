@@ -77,7 +77,8 @@ type InquiryStatus = 'idle' | 'submitting' | InquiryResult;
 const RISKY_PATTERNS = [/<script/i, /onerror=/i, /javascript:/i, /<iframe/i];
 const hasRiskyInput = (s: string) =>
   RISKY_PATTERNS.some((re) => re.test(s)) || (/<img/i.test(s) && /src=/i.test(s));
-const RISKY_HINT = '코드 형태의 문장은 접수되지 않습니다. 내용을 풀어서 적어 주세요.';
+/** 차단 결과 화면과 같은 문구를 쓴다 — 제출 전후로 같은 말을 들어야 무엇을 고칠지 헷갈리지 않는다. */
+const RISKY_HINT = ['입력하신 내용 중 일부는 접수할 수 없습니다.', '< > 기호나 코드 형태의 문장을 지운 뒤 다시 시도해 주세요.'];
 
 /** presetInterests → 칩 선택 상태. 미지정(홈)이면 빈 객체 = 기존 동작 */
 function initInterests(preset?: string[]): Record<string, boolean> {
@@ -523,7 +524,11 @@ export default function HomeInquiry({
                     aria-describedby={risky ? 'f-msg-risky' : undefined}
                     placeholder="도입을 검토 중인 교육 주제와 예상 인원·시기, 해결하고 싶은 조직 과제를 남겨주시면 담당 컨설턴트가 맞춤 상담으로 안내드립니다. (예: 임직원 300명 대상 AX 전환 교육을 3분기 중 검토 중입니다.)" />
                   {/* 사전 안내 — 입력을 막지도, 제출을 잠그지도 않는다(§2-4) */}
-                  {risky && <span id="f-msg-risky" className="phone-hint" aria-live="polite">{RISKY_HINT}</span>}
+                  {risky && (
+                    <span id="f-msg-risky" className="phone-hint" aria-live="polite">
+                      {RISKY_HINT[0]}<br />{RISKY_HINT[1]}
+                    </span>
+                  )}
                   <div className={`len-count${v.message.length >= INQ_MAX.message ? ' max' : ''}`} aria-live="polite">
                     {v.message.length}/{INQ_MAX.message}
                   </div>
