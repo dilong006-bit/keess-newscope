@@ -135,14 +135,16 @@ export default function Sections() {
           </div>
           <div className="roadmap r">
             <p className="rm-label">{AI.roadmapLabel}</p>
-            <div className="rm-flow">
+            {/* 순서 있는 3단계 — 스크린리더가 1/3·2/3·3/3으로 읽도록 ol/li.
+                레일·노드는 CSS 가상요소이므로 DOM에는 카드와 화살표만 둔다. */}
+            <ol className="rm-flow" role="list">
               {AI.roadmap.map((r, i) => (
-                <span key={r.rmt} style={{ display: 'contents' }}>
+                <li key={r.rmt} className={`rm-item${r.now ? ' is-now' : ''}`} aria-current={r.now ? 'step' : undefined}>
                   <div className={`rm${r.now ? ' rm-now' : ''}`}><span className="rmt">{r.rmt}</span><b>{r.b}</b><p>{r.p}</p></div>
-                  {i < AI.roadmap.length - 1 && <div className="rm-arr">→</div>}
-                </span>
+                  {i < AI.roadmap.length - 1 && <span className="rm-arr" aria-hidden="true">→</span>}
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
         </div>
       </section>

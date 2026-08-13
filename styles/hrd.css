@@ -150,15 +150,56 @@
 @media(max-width:640px){.amx{grid-template-columns:1fr}.amx span{padding:10px 14px}}
 .roadmap{margin-top:24px}
 .rm-label{font-size:12px;font-weight:800;color:color-mix(in srgb,var(--p3) 45%,#fff);letter-spacing:.03em;margin-bottom:14px}
-.rm-flow{display:flex;align-items:stretch;gap:12px;flex-wrap:wrap}
-.rm{flex:1;min-width:160px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:18px}
+/* 로드맵 = 순서 있는 목록 한 벌. 커넥터 표현만 640px 단일 값에서 분기한다.
+   ≥641px 3열 가로+화살표 / ≤640px 1열 세로+레일·노드.
+   레이아웃 전환과 커넥터 전환이 어긋나면 '3열인데 커넥터 없음' 구간이 생기므로
+   두 전환은 반드시 이 하나의 미디어쿼리 안에서 같이 일어나야 한다. */
+.rm-flow{
+  --rm-gap-pc:40px;                  /* 12 + 화살표 글리프 16.28 + 12 = 40.28 을 gap 이 대신 떠안는다 */
+  --rm-gap-mo:12px;                  /* 모바일 카드 간격 = 현행 유지 */
+  --rm-gutter:30px;                  /* 레일·노드가 놓이는 카드 바깥 거터 */
+  --rm-node:12px;
+  --rm-node-top:27.5px;              /* 라벨 광학중심 33.5px − 노드 반지름 6px */
+  --rm-rail-w:2px;
+  --rm-rail-x:5px;                   /* (12−2)/2 — 레일 중심을 노드 중심에 맞춘다 */
+  --rm-rail:rgba(255,255,255,.14);   /* 기존 카드 보더와 동일 */
+  --rm-rail-dim:rgba(255,255,255,.09);
+  display:flex;align-items:stretch;flex-wrap:nowrap;gap:var(--rm-gap-pc);
+  list-style:none;margin:0;padding:0}
+.rm-item{position:relative;display:flex;flex:1 1 0;min-width:160px}
+.rm{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:18px}
 .rm.rm-now{background:linear-gradient(150deg,color-mix(in srgb,#000 15%,var(--p3)),var(--p3) 80%);border-color:transparent}
 .rm .rmt{font-size:11px;font-weight:800;color:color-mix(in srgb,var(--p3) 45%,#fff);letter-spacing:.04em}
 .rm.rm-now .rmt{color:rgba(255,255,255,.82)}
 .rm b{display:block;font-size:15px;font-weight:800;margin-top:8px}
 .rm p{font-size:12.5px;color:rgba(255,255,255,.78);margin-top:6px;line-height:1.5}
-.rm-arr{display:flex;align-items:center;color:rgba(255,255,255,.4);font-size:18px}
-@media(max-width:640px){.rm-arr{display:none}}
+/* 화살표 — li 안에서 우측 gap 중앙에 절대배치. 글리프·폰트·색은 종전 그대로 */
+.rm-arr{position:absolute;left:100%;top:50%;transform:translate(-50%,-50%);margin-left:calc(var(--rm-gap-pc) / 2);
+  display:flex;align-items:center;color:rgba(255,255,255,.4);font-size:18px;pointer-events:none}
+
+/* ≤640px — 1열 세로 + 레일·노드. 레일·노드는 전부 좌측 거터에 있으므로 세로 길이에 기여하지 않는다 */
+@media(max-width:640px){
+  .rm-flow{flex-direction:column;gap:var(--rm-gap-mo);padding-left:var(--rm-gutter)}
+  .rm-item{flex:0 0 auto;min-width:0}
+  .rm-arr{display:none}
+
+  /* 레일 — 자기 노드 아래에서 다음 노드 상단까지. bottom 음수 = gap + node-top */
+  .rm-item::before{content:"";position:absolute;
+    left:calc(-1 * var(--rm-gutter) + var(--rm-rail-x));
+    top:calc(var(--rm-node-top) + var(--rm-node));
+    bottom:calc(-1 * (var(--rm-gap-mo) + var(--rm-node-top)));
+    border-left:var(--rm-rail-w) solid var(--rm-rail)}
+  .rm-item:nth-child(2)::before{border-left-style:dashed;border-left-color:var(--rm-rail-dim)}
+  .rm-item:last-child::before{content:none}
+
+  /* 노드 — 카드 세로 중앙이 아니라 라벨 광학 중심에 맞춘다(카드 높이가 달라져도 흔들리지 않게) */
+  .rm-item::after{content:"";position:absolute;box-sizing:border-box;
+    left:calc(-1 * var(--rm-gutter));top:var(--rm-node-top);
+    width:var(--rm-node);height:var(--rm-node);border-radius:50%;
+    background:var(--ink);border:2px solid var(--rm-rail)}
+  .rm-item.is-now::after{background:var(--p3);border-color:var(--p3);
+    box-shadow:0 0 0 5px color-mix(in srgb,var(--p3) 22%,transparent)}
+}
 
 /* ── 솔루션 모듈 탭 ─────────────────────────────────────────────────── */
 .tabs{display:flex;flex-wrap:wrap;gap:9px;margin-top:34px}
