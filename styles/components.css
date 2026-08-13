@@ -239,6 +239,9 @@
 .form-done h4{font-size:21px;font-weight:800}.form-done p{margin-top:8px;color:var(--muted);font-size:14.5px}
 .form-done .done-return{margin-top:14px;font-size:13px;color:#9aa0a8}
 .form-done .done-again{margin-top:18px}
+/* 접수 불가·실패 상태 — 성공과 같은 카드 골격에 색만 폼 오류색(--p2) 규약으로 바꾼다 */
+.form-done.is-blocked .check{border-color:var(--p2);color:var(--p2)}
+.form-done .done-return a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 
 /* ── Cards / helpers (원본 146-157) ───────────────────────────────────── */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-1);transition:transform .3s var(--ease),box-shadow .4s var(--ease)}

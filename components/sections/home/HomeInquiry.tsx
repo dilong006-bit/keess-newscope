@@ -1,10 +1,13 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { AlertCircle, Trash2 } from 'lucide-react';
 import { EMAIL_RE, INQ_MAX, fmtPhone, hasNonPhoneChar } from '@/lib/utils';
 import { readInterestParam } from '@/lib/inquiryPreset';
 import { useEffect, useRef, useState } from 'react';
 import { INQ } from '@/data/home';
+import { submitInquiry } from '@/lib/inquiry/submit';
+import type { InquiryResult } from '@/lib/inquiry/types';
+import { INQUIRY_CONTACT, INQUIRY_MAILTO, INQUIRY_TEL_HREF } from '@/lib/inquiry/contact';
 
 const ALLOWED = ['zip', 'pdf', 'hwp', 'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif'];
 const MAX = 10 * 1024 * 1024;
@@ -64,10 +67,17 @@ interface HomeInquiryProps {
   prefillEventName?: string;
 }
 
-/** 백엔드 없음(CLAUDE.md §0-6) — 추후 사내 API·메일 서비스 엔드포인트를 여기에 연결한다. */
-function submitInquiry(payload: InquiryPayload) {
-  return Promise.resolve(payload);
-}
+/** 제출 진행 상태 (기술명세서 §1) — idle·submitting 을 거쳐 결과 3종 중 하나로 간다. */
+type InquiryStatus = 'idle' | 'submitting' | InquiryResult;
+
+/**
+ * '문의 내용' 사전 경고 패턴 (기술명세서 §2-4).
+ * 입력을 막지 않는다 — 오탐 가능성이 있으므로 안내만 하고 제출 버튼도 활성 상태로 둔다.
+ */
+const RISKY_PATTERNS = [/<script/i, /onerror=/i, /javascript:/i, /<iframe/i];
+const hasRiskyInput = (s: string) =>
+  RISKY_PATTERNS.some((re) => re.test(s)) || (/<img/i.test(s) && /src=/i.test(s));
+const RISKY_HINT = '코드 형태의 문장은 접수되지 않습니다. 내용을 풀어서 적어 주세요.';
 
 /** presetInterests → 칩 선택 상태. 미지정(홈)이면 빈 객체 = 기존 동작 */
 function initInterests(preset?: string[]): Record<string, boolean> {
@@ -112,8 +122,16 @@ export default function HomeInquiry({
   const [dragOver, setDragOver] = useState(false);
   const [phoneHint, setPhoneHint] = useState(false);
   const [lenErr, setLenErr] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [status, setStatus] = useState<InquiryStatus>('idle');
+  /** 완료(감사) 화면 여부 — 기존 자동복귀·렌더 분기가 이 값을 그대로 쓴다. */
+  const done = status === 'success';
+  const submitting = status === 'submitting';
   const fileInputRef = useRef<HTMLInputElement>(null);
+  /** 결과 카드 — 상태 전환 시 포커스를 옮길 지점(§5-3) */
+  const resultRef = useRef<HTMLDivElement>(null);
+  const msgRef = useRef<HTMLTextAreaElement>(null);
+  /** [다시 시도]가 같은 내용으로 재전송할 수 있도록 마지막 페이로드를 보관한다 */
+  const lastPayload = useRef<InquiryPayload | null>(null);
   /** 삭제 후 포커스 복귀 지점 — 버튼이 사라지며 포커스가 body로 튀는 것을 막는다 */
   const fileboxRef = useRef<HTMLLabelElement>(null);
   const mktAllRef = useRef<HTMLInputElement>(null);
@@ -175,8 +193,31 @@ export default function HomeInquiry({
     setFileNotice('');
     if (fileInputRef.current) fileInputRef.current.value = ''; // ③ 제출 성공 후 폼 초기화
     setHp('');
-    setDone(false);
+    setStatus('idle');
+    lastPayload.current = null;
     requestAnimationFrame(() => firstFieldRef.current?.focus({ preventScroll: true }));
+  }
+
+  // 결과 화면 진입 시 결과 카드로 포커스를 옮긴다(§5-3). 입력 필드로는 자동 이동하지 않는다.
+  useEffect(() => {
+    if (status === 'idle' || status === 'submitting') return;
+    resultRef.current?.focus();
+  }, [status]);
+
+  /** 차단 안내 → 폼 복귀. 입력값은 그대로 두고 '문의 내용'만 짚어 준다(§2-2 규칙 3·4). */
+  function backToForm() {
+    setStatus('idle');
+    requestAnimationFrame(() => {
+      msgRef.current?.focus();
+      msgRef.current?.scrollIntoView({ block: 'center' });
+    });
+  }
+
+  /** 제출 실행 — [다시 시도]도 같은 페이로드로 이 경로를 탄다. */
+  async function send(payload: InquiryPayload) {
+    lastPayload.current = payload;
+    setStatus('submitting');
+    setStatus(await submitInquiry(payload));
   }
 
   // R1: 입력 단계 캡 — maxLength를 우회하는 붙여넣기·IME 조합까지 slice로 차단
@@ -273,8 +314,9 @@ export default function HomeInquiry({
   }
 
   // 제출 차단 = 필수 5개(회사·기관명/담당자명/연락처/직급·직책/이메일) + 개인정보 동의
-  function submit() {
+  async function submit() {
     if (hp) return; // 허니팟
+    if (submitting) return;
     const next: Record<string, boolean> = {};
     let ok = true;
     (['company', 'name', 'phone', 'position'] as const).forEach((k) => {
@@ -328,8 +370,7 @@ export default function HomeInquiry({
       // 유입 경로 태깅 — 폼에 입력 UI가 없는 비노출 메타(GA4·GTM 코드 삽입 아님)
       ...(leadSource ? { lead_source: leadSource } : {}),
     };
-    submitInquiry(payload);
-    setDone(true);
+    await send(payload);
   }
 
   // 세부 분야 — 부모 칩이 켜져 있을 때만 노출/집계. 부모를 끄면 선택값도 초기화한다.
@@ -345,6 +386,7 @@ export default function HomeInquiry({
 
   const fld = (k: string) => `field${errs[k] ? ' invalid' : ''}`;
   const half = { flex: '1 1 160px', width: 'auto', minWidth: 0 } as const;
+  const risky = hasRiskyInput(v.message);
 
   return (
     <section className="section inq" id="inq">
@@ -366,7 +408,7 @@ export default function HomeInquiry({
           </div>
 
           <div className="form r">
-            {!done ? (
+            {status === 'idle' || submitting ? (
               <div id="form-body">
                 {/* 1·2 회사·기관명* / 담당자명* */}
                 <div className="frow">
@@ -477,8 +519,11 @@ export default function HomeInquiry({
                 {/* 9 문의 내용 (선택) */}
                 <div className="field">
                   <label htmlFor="f-msg">문의 내용</label>
-                  <textarea id="f-msg" name="message" rows={3} maxLength={INQ_MAX.message} value={v.message} onChange={upd('message')}
+                  <textarea id="f-msg" ref={msgRef} name="message" rows={3} maxLength={INQ_MAX.message} value={v.message} onChange={upd('message')}
+                    aria-describedby={risky ? 'f-msg-risky' : undefined}
                     placeholder="도입을 검토 중인 교육 주제와 예상 인원·시기, 해결하고 싶은 조직 과제를 남겨주시면 담당 컨설턴트가 맞춤 상담으로 안내드립니다. (예: 임직원 300명 대상 AX 전환 교육을 3분기 중 검토 중입니다.)" />
+                  {/* 사전 안내 — 입력을 막지도, 제출을 잠그지도 않는다(§2-4) */}
+                  {risky && <span id="f-msg-risky" className="phone-hint" aria-live="polite">{RISKY_HINT}</span>}
                   <div className={`len-count${v.message.length >= INQ_MAX.message ? ' max' : ''}`} aria-live="polite">
                     {v.message.length}/{INQ_MAX.message}
                   </div>
@@ -548,15 +593,36 @@ export default function HomeInquiry({
                   </div>
                   <div className="consent-text" style={{ maxHeight: consentOpen.mkt ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>마케팅 정보 수신 동의 (선택)</b></p><p>KG에듀원 KEESS는 「개인정보 보호법」 제22조에 의거하여 마케팅 목적의 개인정보 수집·이용에 대해 별도 동의를 받습니다. 동의를 거부하셔도 서비스 이용이 가능하며, 일부 서비스·혜택 제공이 제한될 수 있습니다.</p><p><b>수집·이용 목적</b><br />① 이메일·SMS(문자)·전화(TM)를 통한 EDM·이벤트 등 마케팅 정보 발송<br />② 모바일 상품권(기프티콘) MMS 발송</p><p><b>수집 항목</b><br />이름, 전화번호, 이메일</p><p><b>보유 및 이용 기간</b><br />① EDM·이벤트 마케팅: 동의일로부터 1년간 (또는 삭제 요청 시 지체 없이 파기)<br />② 모바일 상품권(기프티콘): 상품권 수령 완료 시까지</p><p>상기 이외의 마케팅 목적으로 수집·이용 시 별도 동의를 받습니다.</p></div></div>
                 </div>
-                <button className="btn submit" onClick={submit}>상담 신청</button>
+                <button className="btn submit" onClick={submit} disabled={submitting} aria-busy={submitting}>
+                  {submitting ? '접수 중…' : '상담 신청'}
+                </button>
               </div>
-            ) : (
-              <div className="form-done show" role="status" aria-live="polite">
+            ) : done ? (
+              <div className="form-done show" role="status" aria-live="polite" tabIndex={-1} ref={resultRef}>
                 <div className="check">✓</div>
                 <h4>{INQ.success.title}</h4>
                 <p>{INQ.success.msg}</p>
                 <p className="done-return">접수가 완료되었습니다. 잠시 후 문의 폼으로 돌아갑니다.</p>
                 <button type="button" className="btn btn-line-dark done-again" onClick={resetForm}>새 문의 작성</button>
+              </div>
+            ) : status === 'blockedByFilter' ? (
+              /* 재시도해도 같은 결과이므로 '다시 시도' 계열 안내를 두지 않는다. 고칠 곳만 짚어 준다. */
+              <div className="form-done show is-blocked" role="status" aria-live="polite" tabIndex={-1} ref={resultRef}>
+                <div className="check"><AlertCircle size={30} aria-hidden="true" /></div>
+                <h4>입력하신 내용 중 일부는 접수할 수 없습니다</h4>
+                <p>{'< > 기호나 코드 형태의 문장을 지운 뒤 다시 시도해 주세요.'}</p>
+                <p className="done-return">
+                  어려우시면 <a href={INQUIRY_MAILTO}>{INQUIRY_CONTACT.EMAIL}</a> 또는{' '}
+                  <a href={INQUIRY_TEL_HREF}>{INQUIRY_CONTACT.TEL}</a> 로 연락 주세요.
+                </p>
+                <button type="button" className="btn btn-line-dark done-again" onClick={backToForm}>내용 수정하기</button>
+              </div>
+            ) : (
+              <div className="form-done show is-blocked" role="status" aria-live="polite" tabIndex={-1} ref={resultRef}>
+                <div className="check"><AlertCircle size={30} aria-hidden="true" /></div>
+                <h4>일시적인 오류로 접수에 실패했습니다</h4>
+                <p>잠시 후 다시 시도해 주세요.</p>
+                <button type="button" className="btn btn-line-dark done-again" onClick={() => { if (lastPayload.current) void send(lastPayload.current); }}>다시 시도</button>
               </div>
             )}
           </div>
