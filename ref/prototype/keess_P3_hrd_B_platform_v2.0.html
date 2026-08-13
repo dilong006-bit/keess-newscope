@@ -965,7 +965,7 @@ var MOD=[
  function renderCtrl(){
   var th='<div class="kc-label">테마</div><div class="kc-theme"><button class="kc-tbtn'+(TH==='gnb'?' on':'')+'" data-th="gnb">GNB형 (상단 메뉴)</button><button class="kc-tbtn'+(TH==='lnb'?' on':'')+'" data-th="lnb">LNB형 (좌측 메뉴)</button></div>';
   var list=KW.map(function(w,i){return '<div class="kw-item"><span class="kw-name">'+w.n+'</span><div class="kw-actions"><button class="kw-mv" data-mv="up" data-i="'+i+'">↑</button><button class="kw-mv" data-mv="down" data-i="'+i+'">↓</button><button class="kw-sw'+(w.on?' on':'')+'" data-i="'+i+'" aria-label="사용 여부"></button></div></div>'}).join('');
-  CT.innerHTML=th+'<div class="kc-label" style="margin-top:20px">위젯 구성</div><div class="kw-list">'+list+'</div><p class="kc-hint">테마를 바꾸거나 위젯을 켜고 끄고 순서를 조정해 보세요 — 왼쪽 학습자 화면이 즉시 반영됩니다.</p>';
+  CT.innerHTML=th+'<div class="kc-label" style="margin-top:20px">위젯 구성</div><div class="kw-list">'+list+'</div><p class="kc-hint">테마를 바꾸거나 위젯을 켜고 끄고 순서를 조정해 보세요 — 학습자 화면 미리보기에 즉시 반영됩니다.</p>';
  }
  host.addEventListener('click',function(e){
   var t=e.target.closest('.kc-tbtn');if(t){TH=t.dataset.th;renderCtrl();renderFO();return;}
