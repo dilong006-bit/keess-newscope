@@ -347,6 +347,15 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **`prefers-reduced-motion`·IO 미지원**: 되감기를 건너뛰므로 최종값이 처음부터 표시된다(종전 동작과 동일한 결과, 경로만 단순해졌다).
 - **검증**: `npm run build` 경고·에러 0 · 빌드 산출 `/ax-ai` HTML의 `.num` 5개가 실제 수치(5/8/5/8/5)로 렌더되고 `class="num">0<` **0건**.
 
+### 37) 서브내비·접수 완료 카드 배포 반영 확인 및 배포본 실검증 기록
+> 코드 변경 0. 36)에서 수행한 `main` 병합·푸시가 실제 배포에 반영됐는지를 **배포 URL 기준으로 재검증**하고 결과를 남긴다.
+
+- **멱등 확인 결과 이미 병합돼 있었다** — `newscope/main`이 `6ac29d3`으로 `fix/subnav-active-autoscroll`(`e5cf4e1`)을 이미 포함한 상태였다(36) 시점의 fast-forward 병합·푸시). 산출물 4종 전부 원격 `main`에 존재: `SubNav.tsx`의 `data-nav-id` 2건·`ALIGN_RATIO` 2건, `components.css`의 `.subnav-in[data-fade=` 3건·`.done-progress` 2건, `hooks/useAutoDismissTimer.ts`·`components/common/InquirySuccess.tsx` 파일 존재. 재병합·재푸시 없이 검증만 수행했다.
+- **⚠️ 배포 CSS 폴링에는 함정이 있다 — 번들이 4개다** — `/leadership`은 CSS 번들을 4개 로드하며(전역 `components.css` + 페이지별 + 청크), `grep -o 'static/css/...' | head -1`로 **첫 번째만 검사하면 0건이 나와 미반영으로 오판한다.** 실제 전역 번들은 `2923e9ae4ada7681.css`(45KB)이고 여기에 `done-progress`·`data-fade`·`inq-shell`이 각 1건씩 들어 있다. 첫 번째로 잡히는 `1eb5c076559cdc44.css`(95KB)에는 없다. **배포 검증 시 CSS 번들은 전부 훑어야 한다.**
+- **배포본 실검증 7/7 PASS** — 390×844 모바일 뷰포트로 4개 페이지를 최상단→최하단 전 구간 스윕: `/ax-ai` 32지점·`/leadership` 33지점·`/hrd` 30지점·`/content` 31지점에서 **활성칩 최소 가시율 100.0%, 활성 없음 0회, 세로 튐 0px**. 엣지 페이드 좌단 `right`/중간 `both`/우단 `left`·mask 적용 확인. 완료 카드는 `/leadership` **6484ms**·`/hrd` **6510ms**에 폼 복귀하며 프로그레스 바 노출 확인(허용 5500~7200ms).
+- **재발 방지 규칙을 실제로 적용했다** — 36)에서 세운 "완료 조건에 배포 URL 검증 포함"을 이번에 그대로 실행했다. 로컬 통과는 "코드가 맞다"만 증명하고 "사용자 화면이 바뀌었다"는 증명하지 못한다. 앞으로도 배포가 걸린 작업은 배포본 검증 결과 수치까지 이 이력에 남긴다.
+- ⚠️ **실기기 확인은 여전히 미완이며 자동 검증으로 대체할 수 없다** — ① iOS Safari·Android Chrome에서 서브내비 가로 관성 스크롤과 자동 정렬의 충돌 여부 ② 좌측 스와이프가 브라우저 뒤로가기를 유발하지 않는지(`overscroll-behavior-x:contain` 실효) ③ iOS Safari의 `mask-image` 렌더. 세 항목은 **확인 필요 상태로 남는다.**
+
 ### 36) 배포 미반영 복구 + 홈 상담 폼 완료 UX 통일 (RD-009 후속)
 > `components/sections/home/HomeInquiry.tsx` 1개 파일 수정 + 34)·35) 작업분을 `main`에 병합. 코드 결함 수정이 아니라 **배포 반영 누락 복구 + 범위 확장**이다.
 
