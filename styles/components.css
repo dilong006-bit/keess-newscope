@@ -445,6 +445,21 @@
 .subnav a{flex:none;font-size:13.5px;font-weight:600;color:var(--muted);padding:8px 14px;border-radius:999px;transition:color .2s var(--ease),background .2s var(--ease)}
 .subnav a:hover{color:var(--ink)}
 .subnav a.on{color:var(--ink);background:var(--surface)}
+/* ── 서브내비 오버플로 엣지 페이드 (SubNav.tsx의 data-fade와 짝) ──────────────
+   .subnav는 rgba(255,255,255,.86)+backdrop-filter라 배경색 오버레이를 얹으면 톤이
+   반드시 어긋난다. 새 색을 만들지 않고 mask로 콘텐츠만 페이드시켜 뒤의 블러 배경이
+   그대로 비치게 한다(신규 컬러 토큰 0). 스크롤 가능한 방향에만 적용한다.
+   overscroll-behavior-x: 가로 스와이프가 브라우저 뒤로가기로 연쇄되는 것을 막는다. */
+.subnav-in{overscroll-behavior-x:contain}
+.subnav-in[data-fade="left"]{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px);
+          mask-image:linear-gradient(90deg,transparent 0,#000 28px)}
+.subnav-in[data-fade="right"]{
+  -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent 100%);
+          mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent 100%)}
+.subnav-in[data-fade="both"]{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
 
 /* ===== 개인정보처리방침 모달 전용 (.priv-doc 스코프 — 기존 .pv-* 규칙 무변경) ===== */
 .priv-doc{display:flex;flex-direction:column}

@@ -346,6 +346,21 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **`prefers-reduced-motion`·IO 미지원**: 되감기를 건너뛰므로 최종값이 처음부터 표시된다(종전 동작과 동일한 결과, 경로만 단순해졌다).
 - **검증**: `npm run build` 경고·에러 0 · 빌드 산출 `/ax-ai` HTML의 `.num` 5개가 실제 수치(5/8/5/8/5)로 렌더되고 `class="num">0<` **0건**.
 
+### 34) 모바일 서브내비 — 활성 항목 자동 가로 스크롤 + 오버플로 페이드
+> `components/common/SubNav.tsx` + `styles/components.css` 2개 파일. 4개 페이지(`/ax-ai`·`/leadership`·`/hrd`·`/content`)가 이 컴포넌트 하나를 공유해 1곳 수정으로 전부 해결된다.
+
+- **결함** — 스크롤스파이는 정상이었다(활성 클래스·`aria-current` 갱신 정상). 없던 것은 **활성 칩을 가로 스크롤 컨테이너의 가시 영역으로 옮기는 로직**이다. 390px에서 칩이 4개만 보여, 5번째 이후 섹션으로 내려가면 활성 표시가 화면 밖에 있어 "활성 항목이 하나도 없는 내비"가 된다. 그 안에 전환 목표인 `#inq`가 포함된다.
+- **정렬 기준은 중앙이 아니라 30%** — 아래로 읽어 내려가는 사용자에게 중요한 정보는 **뒤쪽 항목**이다. 활성 칩 좌변을 컨테이너 폭의 30% 지점에 두면 다음 항목들이 더 많이 보인다. 좌우 24px(`--gut`) 여유를 두고 이미 완전히 보이면 재정렬하지 않아 불필요한 흔들림이 없다.
+- **`scrollIntoView` 를 쓰지 않은 이유** — `inline:'center'`에 딸려오는 `block:'nearest'`를 구형 브라우저가 조상 스크롤 컨테이너(=페이지)까지 조정한다. `.subnav`가 sticky라 **페이지가 세로로 튀고 → 스크롤스파이가 재발화 → 재정렬 → 무한 진동**이 된다. `el.scrollTo({left})`로 **가로만** 제어한다.
+- **좌표는 `getBoundingClientRect()` 차분으로만** — `.subnav`가 `position:sticky`(=positioned)라 `offsetParent`가 `.subnav-in`이 아니라 `.subnav`가 되어, `offsetLeft` 기반 계산은 `.wrap`의 24px 패딩만큼 어긋난다.
+- **사용자 조작이 항상 우선** — 컨테이너의 `pointerdown`·`touchstart`·`wheel` 등 **입력 이벤트만** 1.5초 잠금 트리거로 쓴다. `scroll` 이벤트로 판별하면 **자기 스무스 스크롤이 자기 잠금에 걸려** 자동 정렬이 영구 정지한다. 칩 탭은 잠금을 무시하고 즉시 정렬한 뒤 0.8초 잠금(세로 이동 중 중간 활성 변화로 가로가 딸리는 것 차단).
+- **감소 모션은 JS에서 분기** — `globals.css`의 `*{scroll-behavior:auto!important}`는 **명시적 `behavior:'smooth'` API 호출을 막지 못한다.** CSS `scroll-behavior`는 `behavior:'auto'`일 때만 참조되므로 `matchMedia`로 직접 분기한다.
+- **페이드는 오버레이가 아니라 `mask-image`** — `.subnav`는 `rgba(255,255,255,.86)`+`backdrop-filter`라 배경색 오버레이를 얹으면 톤이 어긋난다. 게다가 절대 배치 오버레이는 문서 폭을 넓혀 `tests/hero-collision.spec.ts`의 "가로 오버플로 0" 검사를 깨뜨린다. mask로 콘텐츠만 투명하게 만들어 **신규 컬러 토큰 0 · 신규 요소 0**.
+- **데스크톱 무변경이 코드로 보장** — `align()`은 `scrollWidth - clientWidth <= 2`면 즉시 return한다. 1280px 4개 페이지 실측 `overflow=0px` · `data-fade="none"` · `mask-image:none` · `scrollLeft=0`.
+- **검증**: 390×844에서 4개 페이지를 최상단→최하단 전 구간 스윕(표본 36/38/34/35지점) — **활성칩 최소 가시율 100.0%, 활성 없음 0회, 모든 항목이 활성으로 등장**(9/9/7/6종). 자동 정렬 전후 `window.scrollY` 최대 변화 **0px**(4개 페이지). 한 섹션 정지 5초 관찰 시 `scrollLeft` 고유값 1개(진동 0). 잠금 유지·해제 후 재개, 칩 탭, `#framework` 해시 직입(로드 200ms 시점 이미 정렬), 페이드 3구간(`right`/`both`/`left`), 감소 모션 즉시 이동, 자동 정렬 전후 포커스 불변 — 18항목 전건 PASS. `npx tsc --noEmit` 통과 · `npm run build` 경고·에러 0 · `hero-collision` 8건 PASS.
+- ⚠️ 배경 문서는 4개 페이지 항목이 모두 9개라고 봤으나 **실제로는 9/9/7/6개**이며 `/content`는 `SUBNAV`가 아니라 `AXISNAV`를 쓴다. 결함 자체는 오버플로가 생기는 모든 경우에 동일하게 재현되므로 수정 범위는 변하지 않는다.
+- ⚠️ 관성 스크롤 충돌·터치 제스처·iOS Safari의 `mask-image` 렌더는 **실기기에서만 확인 가능**하다. iOS Safari · Android Chrome 실기기 확인이 남아 있다.
+
 ### 33) 부정훈련 신고 접수 — 이메일 형식 유효성 검증 + 인라인 안내
 > `components/common/ReportModal.tsx` + `lib/validation.ts` 신설. CSS 변경 0(기존 `.field.invalid .err` 패턴 재사용).
 
