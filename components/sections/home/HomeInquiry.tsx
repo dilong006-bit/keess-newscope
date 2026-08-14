@@ -3,17 +3,18 @@
 import { AlertCircle, Trash2 } from 'lucide-react';
 import { EMAIL_RE, INQ_MAX, fmtPhone, hasNonPhoneChar } from '@/lib/utils';
 import { readInterestParam } from '@/lib/inquiryPreset';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { INQ } from '@/data/home';
 import { submitInquiry } from '@/lib/inquiry/submit';
 import type { InquiryResult } from '@/lib/inquiry/types';
 import { INQUIRY_CONTACT, INQUIRY_MAILTO, INQUIRY_TEL_HREF } from '@/lib/inquiry/contact';
+import { useAutoDismissTimer } from '@/hooks/useAutoDismissTimer';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { SUCCESS_AUTO_RESET_MS } from '@/components/common/InquirySuccess';
 
 const ALLOWED = ['zip', 'pdf', 'hwp', 'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif'];
 const MAX = 10 * 1024 * 1024;
 const FILE_PLACEHOLDER = '파일을 선택하거나 끌어다 놓으세요';
-/** 접수 완료 후 입력 폼으로 자동 복귀까지의 대기 시간(ms) */
-const AUTO_RETURN_MS = 5000;
 /**
  * 첨부파일 민감정보 유의 문구(정보보호팀 승인 문구 · G2-11). 전문 말미(4. 동의 거부 권리 뒤)와
  * 첨부파일 필드 헬퍼에 동일 문구로 노출한다 — 전문을 열지 않아도 인지 가능하도록.
@@ -128,8 +129,8 @@ export default function HomeInquiry({
   const done = status === 'success';
   const submitting = status === 'submitting';
   const fileInputRef = useRef<HTMLInputElement>(null);
-  /** 결과 카드 — 상태 전환 시 포커스를 옮길 지점(§5-3) */
-  const resultRef = useRef<HTMLDivElement>(null);
+  /** 결과 카드 — 상태 전환 시 포커스를 옮길 지점(§5-3). 완료 카드에서는 타이머 관측 ref와 병합되므로 null 허용 타입이어야 한다 */
+  const resultRef = useRef<HTMLDivElement | null>(null);
   const msgRef = useRef<HTMLTextAreaElement>(null);
   /** [다시 시도]가 같은 내용으로 재전송할 수 있도록 마지막 페이로드를 보관한다 */
   const lastPayload = useRef<InquiryPayload | null>(null);
@@ -137,7 +138,6 @@ export default function HomeInquiry({
   const fileboxRef = useRef<HTMLLabelElement>(null);
   const mktAllRef = useRef<HTMLInputElement>(null);
   const phoneHintTimer = useRef<ReturnType<typeof setTimeout>>();
-  const returnTimer = useRef<ReturnType<typeof setTimeout>>();
   const firstFieldRef = useRef<HTMLInputElement>(null);
   /** 쿼리(?interest=)로 들어온 관심 영역 프리셀렉트 — 접수 후 복귀 시에도 같은 값으로 되돌린다 */
   const urlPreset = useRef<string[]>([]);
@@ -165,17 +165,28 @@ export default function HomeInquiry({
   const toggleMktAll = (checked: boolean) => setMkt({ email: checked, sms: checked, tel: checked });
   const toggleMkt = (k: 'email' | 'sms' | 'tel') => setMkt((p) => ({ ...p, [k]: !p[k] }));
 
-  // 완료(감사) 상태에서만 자동복귀 타이머 가동, 복귀/언마운트 시 정리(중복 실행·누수 방지)
-  useEffect(() => {
-    if (!done) return;
-    returnTimer.current = setTimeout(() => resetForm(), AUTO_RETURN_MS);
-    return () => clearTimeout(returnTimer.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done]);
+  /*
+   * 완료(감사) 상태 자동 복귀 — /leadership·/hrd 인라인 폼과 같은 훅·같은 6초·같은 일시정지 규칙.
+   * 종전의 setTimeout 5초 단독은 코드 읽는 중이든, 다른 탭에 가 있든, 카드가 화면 밖에 있든
+   * 무조건 사라져 같은 사이트 안에서 완료 UX가 두 갈래가 됐다.
+   * blockedByFilter·error 상태에는 걸지 않는다 — 이 두 상태는 자동으로 사라지면 안 된다.
+   */
+  const reducedMotion = usePrefersReducedMotion();
+  const { cardRef: doneCardRef, barRef: doneBarRef } = useAutoDismissTimer({
+    durationMs: SUCCESS_AUTO_RESET_MS,
+    enabled: done,
+    onExpire: () => resetForm(),   // 훅이 ref로 최신값을 잡으므로 타이머가 재시작되지 않는다
+    quantizeMs: reducedMotion ? 1000 : 0,
+  });
+
+  // 완료 카드는 결과 포커스 지점(resultRef)과 타이머 관측 대상(doneCardRef) 두 역할을 겸한다
+  const setDoneCardRef = useCallback((el: HTMLDivElement | null) => {
+    resultRef.current = el;
+    doneCardRef.current = el;
+  }, [doneCardRef]);
 
   /** 상태 완전 초기화 후 입력 폼으로 복귀 + 첫 필드 포커스 (즉시복귀·자동복귀 공용) */
   function resetForm() {
-    clearTimeout(returnTimer.current);
     clearTimeout(phoneHintTimer.current);
     setV({ company: '', name: '', phone: '', position: '', emailLocal: '', emailDomain: '', companySize: '', trainees: '', message: '' });
     setCustomDomain(false);
@@ -603,11 +614,14 @@ export default function HomeInquiry({
                 </button>
               </div>
             ) : done ? (
-              <div className="form-done show" role="status" aria-live="polite" tabIndex={-1} ref={resultRef}>
+              <div className="form-done show" role="status" aria-live="polite" tabIndex={-1} ref={setDoneCardRef}>
                 <div className="check">✓</div>
                 <h4>{INQ.success.title}</h4>
                 <p>{INQ.success.msg}</p>
-                <p className="done-return">접수가 완료되었습니다. 잠시 후 문의 폼으로 돌아갑니다.</p>
+                {/* 잔여 시간은 문장이 아니라 바로만 표현한다 — 타이머가 일시정지되므로 시간을 예고하면 반드시 실제와 어긋난다(RD-009 원인) */}
+                <div className="done-progress" aria-hidden="true">
+                  <div className="done-progress__bar" ref={doneBarRef} />
+                </div>
                 <button type="button" className="btn btn-line-dark done-again" onClick={resetForm}>새 문의 작성</button>
               </div>
             ) : status === 'blockedByFilter' ? (
