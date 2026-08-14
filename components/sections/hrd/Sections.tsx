@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { goToInquiry, scrollToId } from '@/lib/utils';
 import Link from 'next/link';
 import Img from '@/components/common/Img';
 import SubNav from '@/components/common/SubNav';
 import ConsentGroup from '@/components/common/ConsentGroup';
+import InquirySuccess, { SUCCESS_AUTO_RESET_MS } from '@/components/common/InquirySuccess';
+import { DEDUPE_WINDOW_MS, DUPLICATE_MSG, RETURN_MSG, dedupeKey, type InquiryPhase } from '@/lib/inquiry/inlineForm';
 import KgesaDemo from './KgesaDemo';
 import ModuleTabs from './ModuleTabs';
 import { useHdModal } from './HdModal';
@@ -215,8 +217,16 @@ export default function Sections() {
 function Inquiry({ preselect, nonce }: { preselect?: string; nonce: number }) {
   const [v, setV] = useState({ company: '', name: '', contact: '', interest: INQ.interests[0], msg: '' });
   const [errs, setErrs] = useState<Record<string, boolean>>({});
-  const [done, setDone] = useState(false);
+  const [phase, setPhase] = useState<InquiryPhase>('form');
+  const [minHeight, setMinHeight] = useState<number | undefined>();
+  const [dupErr, setDupErr] = useState<string | null>(null);
   const areaRef = useRef<HTMLSelectElement>(null);
+
+  const sectionRef = useRef<HTMLDivElement>(null);   // 제출 후 포커스 앵커
+  const shellRef = useRef<HTMLDivElement>(null);     // minHeight 측정·적용 대상(동일 요소)
+  const liveRef = useRef<HTMLDivElement>(null);      // phase 무관 상시 live region
+  const lastSubmitRef = useRef<{ key: string; at: number } | null>(null);
+  const agreedAtRef = useRef<string | null>(null);   // 동의 체크된 시각
 
   // 프리셀렉트 (정부지원 CTA)
   useEffect(() => {
@@ -242,34 +252,68 @@ function Inquiry({ preselect, nonce }: { preselect?: string; nonce: number }) {
     setAgreeErr(!agree);
     if (!agree) ok = false;
     if (!ok) return;
+
+    // 중복 접수 방지 — 10분 이내 동일 내용은 전송 없이 차단
+    const key = dedupeKey(v);
+    const prev = lastSubmitRef.current;
+    if (prev && prev.key === key && Date.now() - prev.at < DEDUPE_WINDOW_MS) {
+      setDupErr(DUPLICATE_MSG);
+      return;
+    }
+    setDupErr(null);
+    setPhase('submitting');
     // 제출 payload — 동의 사실 입증 기록(추후 연동 슬롯). 입력값은 분석 도구로 전송하지 않는다.
-    void { ...v, privacy_agreed: true, agreed_at: new Date().toISOString() };
-    setDone(true);
+    void { ...v, privacy_agreed: agree, agreed_at: agreedAtRef.current };
+    lastSubmitRef.current = { key, at: Date.now() };
+    // 레이아웃 점프 차단 — 전환 직전 셸 높이를 고정한다(측정·적용 대상 동일)
+    setMinHeight(shellRef.current?.offsetHeight);
+    setPhase('success');
+    sectionRef.current?.focus({ preventScroll: true });
+    if (liveRef.current) liveRef.current.textContent = `${INQ.successTitle}. ${INQ.successMsg}`;
   }
 
-  if (done) {
-    return (
-      <div className="form-done show">
-        <div className="check">✓</div>
-        <h4>{INQ.successTitle}</h4>
-        <p>{INQ.successMsg}</p>
-      </div>
-    );
-  }
+  const handleReset = useCallback(() => {
+    setV({ company: '', name: '', contact: '', interest: INQ.interests[0], msg: '' });
+    setErrs({});
+    setAgree(false);
+    setAgreeErr(false);
+    setDupErr(null);
+    agreedAtRef.current = null;
+    setMinHeight(undefined);
+    setPhase('form');
+    if (liveRef.current) liveRef.current.textContent = RETURN_MSG;
+  }, []);
+
   const fld = (k: string) => `field${errs[k] ? ' invalid' : ''}`;
   return (
-    <form onSubmit={submit}>
-      <div className="frow">
-        <div className={fld('company')}><label>회사명 <span className="req">*</span></label><input aria-label="회사명" placeholder="예) KG에듀원" value={v.company} onChange={upd('company')} /><span className="err">회사명을 입력해 주세요.</span></div>
-        <div className={fld('name')}><label>담당자 <span className="req">*</span></label><input aria-label="담당자" placeholder="성함" value={v.name} onChange={upd('name')} /><span className="err">담당자명을 입력해 주세요.</span></div>
+    <div ref={sectionRef} tabIndex={-1} style={{ outline: 'none' }}>
+      <div ref={shellRef} className="inq-shell" style={minHeight ? { minHeight } : undefined}>
+        {phase === 'success' ? (
+          <InquirySuccess
+            title={INQ.successTitle}
+            message={INQ.successMsg}
+            autoResetMs={SUCCESS_AUTO_RESET_MS}
+            onReset={handleReset}
+          />
+        ) : (
+          <form onSubmit={submit}>
+            <div className="frow">
+              <div className={fld('company')}><label>회사명 <span className="req">*</span></label><input aria-label="회사명" placeholder="예) KG에듀원" value={v.company} onChange={upd('company')} /><span className="err">회사명을 입력해 주세요.</span></div>
+              <div className={fld('name')}><label>담당자 <span className="req">*</span></label><input aria-label="담당자" placeholder="성함" value={v.name} onChange={upd('name')} /><span className="err">담당자명을 입력해 주세요.</span></div>
+            </div>
+            <div className="frow">
+              <div className={fld('contact')}><label>연락처 <span className="req">*</span></label><input aria-label="연락처" placeholder="010-0000-0000" value={v.contact} onChange={upd('contact')} /><span className="err">연락처를 입력해 주세요.</span></div>
+              <div className="field"><label>관심 영역</label><select id="fArea" aria-label="관심 영역" ref={areaRef} value={v.interest} onChange={upd('interest')}>{INQ.interests.map((o) => <option key={o}>{o}</option>)}</select></div>
+            </div>
+            <div className="field"><label>문의 내용</label><textarea aria-label="문의 내용" rows={3} placeholder="대상·인원·목표를 간단히 적어주세요" value={v.msg} onChange={upd('msg')} /></div>
+            <ConsentGroup formKey="hrd" idPrefix="hrd-" required={agree} onRequiredChange={(c) => { setAgree(c); if (c) { setAgreeErr(false); agreedAtRef.current = new Date().toISOString(); } else { agreedAtRef.current = null; } }} error={agreeErr} />
+            {dupErr && <span className="inq-dupe" role="alert">{dupErr}</span>}
+            <button className="btn btn-ink" type="submit" disabled={phase === 'submitting'} style={{ width: '100%', marginTop: 20 }}>도입 문의 보내기</button>
+          </form>
+        )}
       </div>
-      <div className="frow">
-        <div className={fld('contact')}><label>연락처 <span className="req">*</span></label><input aria-label="연락처" placeholder="010-0000-0000" value={v.contact} onChange={upd('contact')} /><span className="err">연락처를 입력해 주세요.</span></div>
-        <div className="field"><label>관심 영역</label><select id="fArea" aria-label="관심 영역" ref={areaRef} value={v.interest} onChange={upd('interest')}>{INQ.interests.map((o) => <option key={o}>{o}</option>)}</select></div>
-      </div>
-      <div className="field"><label>문의 내용</label><textarea aria-label="문의 내용" rows={3} placeholder="대상·인원·목표를 간단히 적어주세요" value={v.msg} onChange={upd('msg')} /></div>
-      <ConsentGroup formKey="hrd" idPrefix="hrd-" required={agree} onRequiredChange={(c) => { setAgree(c); if (c) setAgreeErr(false); }} error={agreeErr} />
-      <button className="btn btn-ink" type="submit" style={{ width: '100%', marginTop: 20 }}>도입 문의 보내기</button>
-    </form>
+      {/* phase 와 무관하게 항상 DOM 에 존재해야 낭독된다 */}
+      <div ref={liveRef} className="inq-live" aria-live="polite" />
+    </div>
   );
 }

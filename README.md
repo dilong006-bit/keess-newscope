@@ -79,12 +79,13 @@ npm run test:hero # 모바일 헤더/히어로 겹침 회귀 테스트 (Playwrig
 ```
 app/            # 라우트 + globals.css + layout(폰트·공통 Footer·ToTop) + csr/ + kium/
 components/
-  common/       # Nav·Footer·ReportModal·Modal·SubNav·Button·Reveal·SparkleIcon 등
+  common/       # Nav·Footer·ReportModal·Modal·SubNav·Button·Reveal·SparkleIcon·InquirySuccess 등
   sections/     # 페이지별 섹션(home/axai/leadership/hrd/content)
   csr/          # 사회공헌 카드·목록 그리드·본문·홈 밴드
   kium/         # 인재키움 히어로·탭·개요표·자격확인·절차·FAQ·과정 그리드/카드/썸네일/패널
 data/           # 카피·데이터(verbatim)
-lib/            # useReveal·useModal·utils·validation(필드 검증)·types + csr/(data·types·queries) + kium/(data·content·queries·facts)
+hooks/          # useAutoDismissTimer(완료 카드 자동 소멸)·usePrefersReducedMotion
+lib/            # useReveal·useModal·utils·validation(필드 검증)·types + csr/(data·types·queries) + kium/(data·content·queries·facts) + inquiry/(submit·types·contact·inlineForm)
 scripts/        # 유지보수·계측 스크립트(이미지 리사이즈, 대비 검증, 히어로/카드 계측·스크린샷)
 tests/          # Playwright 회귀 테스트 (hero-collision.spec.ts)
 styles/         # components.css(공통) + 페이지별(home/axai/leadership/hrd/content/csr/kium).css
@@ -346,7 +347,7 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **`prefers-reduced-motion`·IO 미지원**: 되감기를 건너뛰므로 최종값이 처음부터 표시된다(종전 동작과 동일한 결과, 경로만 단순해졌다).
 - **검증**: `npm run build` 경고·에러 0 · 빌드 산출 `/ax-ai` HTML의 `.num` 5개가 실제 수치(5/8/5/8/5)로 렌더되고 `class="num">0<` **0건**.
 
-### 34) 모바일 서브내비 — 활성 항목 자동 가로 스크롤 + 오버플로 페이드
+### 35) 모바일 서브내비 — 활성 항목 자동 가로 스크롤 + 오버플로 페이드
 > `components/common/SubNav.tsx` + `styles/components.css` 2개 파일. 4개 페이지(`/ax-ai`·`/leadership`·`/hrd`·`/content`)가 이 컴포넌트 하나를 공유해 1곳 수정으로 전부 해결된다.
 
 - **결함** — 스크롤스파이는 정상이었다(활성 클래스·`aria-current` 갱신 정상). 없던 것은 **활성 칩을 가로 스크롤 컨테이너의 가시 영역으로 옮기는 로직**이다. 390px에서 칩이 4개만 보여, 5번째 이후 섹션으로 내려가면 활성 표시가 화면 밖에 있어 "활성 항목이 하나도 없는 내비"가 된다. 그 안에 전환 목표인 `#inq`가 포함된다.
@@ -360,6 +361,27 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **검증**: 390×844에서 4개 페이지를 최상단→최하단 전 구간 스윕(표본 36/38/34/35지점) — **활성칩 최소 가시율 100.0%, 활성 없음 0회, 모든 항목이 활성으로 등장**(9/9/7/6종). 자동 정렬 전후 `window.scrollY` 최대 변화 **0px**(4개 페이지). 한 섹션 정지 5초 관찰 시 `scrollLeft` 고유값 1개(진동 0). 잠금 유지·해제 후 재개, 칩 탭, `#framework` 해시 직입(로드 200ms 시점 이미 정렬), 페이드 3구간(`right`/`both`/`left`), 감소 모션 즉시 이동, 자동 정렬 전후 포커스 불변 — 18항목 전건 PASS. `npx tsc --noEmit` 통과 · `npm run build` 경고·에러 0 · `hero-collision` 8건 PASS.
 - ⚠️ 배경 문서는 4개 페이지 항목이 모두 9개라고 봤으나 **실제로는 9/9/7/6개**이며 `/content`는 `SUBNAV`가 아니라 `AXISNAV`를 쓴다. 결함 자체는 오버플로가 생기는 모든 경우에 동일하게 재현되므로 수정 범위는 변하지 않는다.
 - ⚠️ 관성 스크롤 충돌·터치 제스처·iOS Safari의 `mask-image` 렌더는 **실기기에서만 확인 가능**하다. iOS Safari · Android Chrome 실기기 확인이 남아 있다.
+
+### 34) 도입문의 완료 카드 — 잔여 시간 프로그레스 바 + 6초 뒤 폼 자동 복귀 (RD-009)
+> `hooks/useAutoDismissTimer.ts`·`hooks/usePrefersReducedMotion.ts`·`components/common/InquirySuccess.tsx`·`lib/inquiry/inlineForm.ts` 신설 + `components/sections/{leadership,hrd}/Sections.tsx`·`styles/components.css` 수정. 적용 대상은 `/leadership`·`/hrd` 최하단 **인라인 폼 2곳뿐**이다.
+
+- **결함** — 제출 후 완료 카드가 영구 유지돼 재문의 동선이 끊겼다. 근본 원인은 **"안내 문구가 실제로 일어나지 않는 동작을 예고한 것"**이다. 그래서 이번엔 남은 시간을 문장으로 약속하지 않고 **프로그레스 바로만** 표현했다.
+- **사전 조사 — 완료 카드는 공용 컴포넌트가 아니었다** — `/leadership`·`/hrd`(`.form-done`), `/content` 모달(`.okmsg`, 골격 자체가 다르고 닫기 버튼 있음), 홈 `/#inq`(`.form-done`+자체 5초 복귀) **네 곳이 각자 인라인 구현**이었다. 공유 자산은 전역 CSS `.form-done` 하나뿐이라 신규 클래스만 추가하면 회귀가 구조적으로 불가능하다.
+- **그럼에도 `autoResetMs` prop(기본값 `null`)로 주입** — 공용 `InquirySuccess`를 새로 두되 자동 복귀를 내부에 하드코딩하지 않았다. 값을 넘기지 않은 호출부는 **코드 변경 0으로 현행 유지**다. 훗날 모달이 이 컴포넌트로 수렴해도 자동 소멸이 번지지 않는다.
+- **`setTimeout` 단독 금지 — rAF 누적 경과 시간** — 계측 시작은 제출 시점이 아니라 `IntersectionObserver`로 카드가 **뷰포트 50% 이상 보인 시점**부터다. ① 카드 hover ② `document.hidden` ③ 뷰포트 50% 미만 — 셋 중 하나라도 참인 프레임은 경과에 누적하지 않고, 정지가 풀리면 리셋이 아니라 **남은 시간부터 이어서** 간다.
+- **함정 1 — 탭이 숨겨지면 브라우저가 rAF 자체를 멈춘다** — `document.hidden` 분기가 도는 프레임이 없어, 그대로 두면 탭 복귀 첫 프레임에 숨김 구간 전체(수십 초)가 한 번에 누적돼 카드가 즉시 사라진다. `visibilitychange`에서 기준 시각을 즉시 리셋하고, 추가 안전장치로 프레임 델타를 `Math.min(now - last, 100)`으로 클램프했다.
+- **함정 2 — `isIntersecting`은 "1px이라도 겹치면 true"** — threshold 이상이라는 뜻이 아니다. 그대로 쓰면 50% 규칙이 무력화되므로 `intersectionRatio >= 0.5`로 판정하고 threshold를 `[0, 0.5]`로 뒀다.
+- **hover 정지는 마우스 환경에서만 등록** — 터치 기기는 `pointerleave`가 오지 않아 탭 한 번에 영구 정지될 수 있다. `matchMedia('(hover: hover)')`로 분기했다.
+- **완료 카드에 `aria-live`를 걸지 않았다** — live region은 DOM에 먼저 존재한 뒤 내용이 바뀌어야 낭독된다. 내용을 담은 채 통째로 마운트되는 카드는 NVDA·VoiceOver가 읽지 않는 경우가 많다. 낭독은 **phase와 무관하게 항상 DOM에 있는** 시각적 숨김 live region(`.inq-live`)이 맡는다.
+- **레이아웃 점프 — 측정 대상과 적용 대상이 같은 요소여야 한다** — 내부 래퍼를 재서 바깥 박스에 적용하면 `box-sizing: border-box`에서 padding·border만큼 낮아져 점프가 남는다. `.inq-shell` 하나를 재고 그 요소에 `minHeight`를 걸고, 카드가 폼보다 짧아도 높이가 유지되도록 같은 박스에 `flex-direction:column; justify-content:center`를 줬다.
+- **진행률은 리렌더 없이 DOM에 직접** — `barRef.current.style.transform = scaleX(1-ratio)`. 매 프레임 `setState`는 하지 않는다. `onExpire`는 ref로 최신값을 유지해 콜백 변경이 타이머를 재시작시키지 않게 하고, `finished` 플래그로 정확히 1회만 호출한다.
+- **감소 모션에서도 기능은 유지** — 바를 없애지 않고 `quantizeMs=1000`을 넘겨 **1초 단위 6단계로만** 갱신해 연속 애니메이션만 제거했다. 자동 복귀는 그대로다.
+- **중복 접수 방지** — 자동 복귀가 빈 폼을 다시 노출하므로 재제출을 유도한다. 정규화한 키(`회사명|담당자|연락처|관심영역|문의내용`)와 타임스탬프를 `useRef`에 두고 **10분 이내 동일 키는 네트워크 호출 없이 차단**, 제출 버튼 위 인라인으로 안내한다.
+- **`privacy_agreed` 하드코딩 제거** — 종전 `privacy_agreed: true`를 실제 동의 체크 상태로 바꾸고, `agreed_at`은 제출 시각이 아니라 **체크박스가 체크된 시각**을 보관했다가 쓴다. 복귀 시 이 보관 값도 함께 초기화한다. payload 스키마 자체는 변경 없음.
+- **검증**: production build + Chromium 실측 13항목 전건 PASS. 복귀 6485ms(/leadership)·6449ms(/hrd), hover 15초 정지 후 해제 시 남은 시간만 진행(4965ms/기대 4783ms), 다른 탭 20초 후 카드 유지·이어서 진행(2384ms/기대 2200ms), 노출 30%로 15초 완전 정지, **컨테이너 높이 변화 0.03px**, 복귀 후 전 필드·동의 초기화 + `scrollY` Δ0(4회 반복 전건), 동일 내용 재제출 차단·네트워크 요청 0건, 감소 모션 바 단계 정확히 6개. 금지 문자열 5종이 leadership/hrd HTML + 클라이언트 청크 13개씩에서 **0건**. `/content` 모달은 9초 후에도 완료 카드·닫기 버튼 유지, 홈 완료 UX 회귀 0. `next build` 경고·에러 0.
+- ⚠️ **제출 payload는 네트워크 탭으로 확인하지 못했다.** 이 두 폼은 백엔드가 없어(§0-6) payload가 연동 슬롯으로만 존재하고 HTTP 요청 자체가 발생하지 않는다. `privacy_agreed`·`agreed_at`은 코드 레벨로만 확인했으며, 실제 검증은 API가 붙은 뒤에 가능하다.
+- ⚠️ 이 두 폼에는 **허니팟 필드가 없다**(홈 폼에만 있음). 초기화 대상이 없어 해당 항목은 무동작이다.
+- ⚠️ 홈 `/#inq`의 `잠시 후 문의 폼으로 돌아갑니다` 문구는 **의도적으로 남겼다.** 홈 상담 폼은 변경 금지 대상이라 손대지 않았고, 금지 문자열 0건 기준은 leadership·hrd 경로 산출물에 한정된다.
 
 ### 33) 부정훈련 신고 접수 — 이메일 형식 유효성 검증 + 인라인 안내
 > `components/common/ReportModal.tsx` + `lib/validation.ts` 신설. CSS 변경 0(기존 `.field.invalid .err` 패턴 재사용).
