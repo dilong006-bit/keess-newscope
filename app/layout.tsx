@@ -4,6 +4,7 @@ import '@/styles/components.css';
 import { pretendard, gowun } from './fonts';
 import Footer from '@/components/common/Footer';
 import ToTop from '@/components/common/ToTop';
+import TeaserSnackbar from '@/components/common/TeaserSnackbar';
 
 // OG 이미지(상대경로)의 절대 URL 해석 기준. 정본 도메인 미확정이라 값을 임의로 정하지 않고,
 // Vercel이 빌드 시 주입하는 VERCEL_URL을 쓰고 로컬은 dev 포트로 폴백한다.
@@ -30,6 +31,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <ToTop />
+        <TeaserSnackbar />
       </body>
     </html>
   );

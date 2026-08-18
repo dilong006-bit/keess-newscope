@@ -79,13 +79,13 @@ npm run test:hero # 모바일 헤더/히어로 겹침 회귀 테스트 (Playwrig
 ```
 app/            # 라우트 + globals.css + layout(폰트·공통 Footer·ToTop) + csr/ + kium/
 components/
-  common/       # Nav·Footer·ReportModal·Modal·SubNav·Button·Reveal·SparkleIcon·InquirySuccess 등
+  common/       # Nav·Footer·ReportModal·Modal·SubNav·Button·Reveal·SparkleIcon·InquirySuccess·NewBadge·TeaserSnackbar 등
   sections/     # 페이지별 섹션(home/axai/leadership/hrd/content)
   csr/          # 사회공헌 카드·목록 그리드·본문·홈 밴드
   kium/         # 인재키움 히어로·탭·개요표·자격확인·절차·FAQ·과정 그리드/카드/썸네일/패널
 data/           # 카피·데이터(verbatim)
-hooks/          # useAutoDismissTimer(완료 카드 자동 소멸)·usePrefersReducedMotion
-lib/            # useReveal·useModal·utils·validation(필드 검증)·types + csr/(data·types·queries) + kium/(data·content·queries·facts) + inquiry/(submit·types·contact·inlineForm)
+hooks/          # useAutoDismissTimer(완료 카드 자동 소멸)·usePrefersReducedMotion·useNoticeFlag(신규 메뉴 알림 미열람 상태)
+lib/            # useReveal·useModal·utils·validation(필드 검증)·notice(알림 열람 기록)·types + csr/(data·types·queries) + kium/(data·content·queries·facts) + inquiry/(submit·types·contact·inlineForm)
 scripts/        # 유지보수·계측 스크립트(이미지 리사이즈, 대비 검증, 히어로/카드 계측·스크린샷)
 tests/          # Playwright 회귀 테스트 (hero-collision.spec.ts)
 styles/         # components.css(공통) + 페이지별(home/axai/leadership/hrd/content/csr/kium).css
@@ -94,7 +94,14 @@ docs/           # 기획 산출물 — 기술명세서 2종 + 일관성 개선 P
 ref/kium/       # 기준 문서 — spec/(인재키움 PRD·기술명세서 + 정보보호팀 회신 반영 명세)·전략·데이터 원본·소스대조표
 ref/spec/       # 기준 문서 — 페이지 개선 기술명세서
 playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 3001 재사용)
+.env.example    # 공개 환경변수 예시 — NEXT_PUBLIC_KIUM_TEASER(기본 off)
 ```
+
+### 환경변수
+
+| 키 | 기본값 | 용도 |
+|---|---|---|
+| `NEXT_PUBLIC_KIUM_TEASER` | `off` | `on`이면 모바일 첫 진입 1.2초 뒤 `/kium` 안내 스낵바를 1회 노출. `off`(미설정 포함)면 DOM에 렌더되지 않음 |
 
 ### 계측·검증 스크립트
 
@@ -346,6 +353,27 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **`useEffect` 대신 `useLayoutEffect`인 이유**: `useEffect`는 페인트 후에 돌아 최종값 → 0 → 카운트업의 **숫자 깜빡임**이 눈에 보인다. 서버에서는 `useLayoutEffect`가 경고를 내므로 `typeof window`로 분기해(`useIsoLayout`) SSR에서는 `useEffect`로 대체한다.
 - **`prefers-reduced-motion`·IO 미지원**: 되감기를 건너뛰므로 최종값이 처음부터 표시된다(종전 동작과 동일한 결과, 경로만 단순해졌다).
 - **검증**: `npm run build` 경고·에러 0 · 빌드 산출 `/ax-ai` HTML의 `.num` 5개가 실제 수치(5/8/5/8/5)로 렌더되고 `class="num">0<` **0건**.
+
+### 38) 모바일 신규 메뉴(`/kium`) 인지 개선 — 햄버거 NEW 배지 + 드로어 풀스크린 (DF-033)
+> `lib/notice.ts`·`hooks/useNoticeFlag.ts`·`components/common/NewBadge.tsx`·`components/common/TeaserSnackbar.tsx`·`.env.example` 신설 + `components/common/Nav.tsx`·`styles/components.css`·`app/globals.css`·`app/layout.tsx` 수정. 기존 GNB·드로어의 **메뉴 순서·문구는 무변경**이다.
+
+- **문제는 노출이 아니라 경로였다** — PC는 GNB 우측 `인재키움 프리미엄` 칩이 상시 보이지만, 모바일은 **햄버거를 탭해 드로어를 열어야만** 신규 메뉴의 존재를 알 수 있다. 즉 모바일 사용자에게 `/kium`은 "잘 안 보이는" 게 아니라 **구조적으로 차단**돼 있었다. 그래서 처방도 칩을 키우는 쪽이 아니라 **드로어를 열기 전 단계에 신호를 놓는 쪽**이다.
+- **신호는 두 장치로 나눠야 완성된다** — 배지는 "새 게 있다"까지만 말하고 드로어를 여는 순간 사라진다. 이어서 드로어 안 `인재키움 프리미엄` 항목이 3초간 글로우해 **"그게 이것"**을 잇는다. 한쪽만으로는 신호(무엇인지 모름) 또는 지목(볼 이유가 없음) 중 하나가 빈다.
+- **배지 소멸 조건은 "노출"이 아니라 "열었을 때"** — 노출 기준으로 끄면 스크롤만 하다 나간 사용자에게서 신호가 사라져 배지가 무의미해진다. 드로어 `open` 핸들러에서만 `kiumBadgeSeen=true`를 기록한다.
+- **⚠️ 배지를 `<span>`으로 두면 햄버거 3선 규칙에 눌린다** — `.hamb span{width:24px;height:2px}`이 특이도 (0,1,1)로 `.new-badge`(0,1,0)를 이겨 배지가 **18×18 원이 아니라 24×4 막대**로 렌더됐다(실측). `.nav.solid .hamb span{background:var(--ink)}`까지 겹쳐 배경색도 뺏긴다. 규칙마다 특이도를 올려 쫓아가는 대신 태그를 `<i>`로 바꿔 **선택자 매칭 자체를 끊었다.** 3선의 `span:nth-child(1~3)`은 배지가 4번째 자식이라 영향 없다.
+- **⚠️ `transition:visibility .28s`가 포커스 트랩을 죽인다** — 드로어를 열고 `focus()`를 걸어도 포커스가 햄버거에 남았다. 원인은 `visibility`가 전환 진행률 0 지점에서 아직 `hidden`으로 계산되고, **`visibility:hidden` 요소의 `focus()`를 브라우저가 조용히 무시**하기 때문이다(에러도 이벤트도 없다). `requestAnimationFrame` 지연으로도 해결되지 않았다. 처방은 CSS 쪽 — `visibility 0s linear .28s`(닫힘만 지연)로 바꿔 **열 때는 즉시 focusable, 닫을 때는 슬라이드아웃이 끝까지 보이게** 했다. 시각 결과는 종전과 동일하다.
+- **스크롤 락은 `overflow:hidden`으로 부족하다** — iOS Safari는 body `overflow:hidden`을 무시하고 배경을 계속 스크롤한다. `position:fixed` + `top:-scrollY`로 들어올리되, 이 방식은 문서 스크롤을 0으로 리셋하므로 닫을 때 저장한 y로 되돌려야 한다. 복원 시 `html{scroll-behavior:smooth}`가 살아 있으면 되돌아가는 과정이 애니메이션으로 보여, **그 순간만 `auto`로 내린다.**
+- **포커스 트랩 범위에 햄버거를 포함했다** — 닫기 X는 드로어가 아니라 헤더에 있다. 트랩을 `.mmenu` 내부로만 좁히면 **키보드 사용자가 닫기 수단에 영원히 닿지 못한다.** 순환 첫 항목으로 넣어 마지막(`교육 상담`)에서 Tab → 햄버거로 돌아온다(총 7개 요소).
+- **하이드레이션 규칙을 지켜야 배지가 성립한다** — `localStorage`는 서버에 없으므로 초기 상태는 반드시 `false`(배지 숨김)이고, 서버·최초 클라이언트 렌더가 같은 DOM을 만든 뒤 `useEffect`에서만 켠다. M1의 **"마운트 0.6초 뒤 pop" 지연이 이 공백을 그대로 흡수**해, 접근성 타협 없이 불일치 경고 0을 만든다.
+- **`localStorage` 접근은 전부 `try/catch`** — 프라이빗 모드·쿠키 차단은 읽기 시점에 **예외를 던진다**. 실패 시 예외를 올리지 않고 "미열람" 기본값으로 되돌린다(알림을 한 번 더 보는 손해가 화면 백지보다 싸다). JSON 파싱 실패·스키마 불일치는 키를 지우고 기본값을 쓴다. 키는 `keess_notice_v1` — 다음 신규 메뉴 알림에서 `_v2`로 올리면 전체가 자연히 초기화된다.
+- **신규 토큰은 2개이고 색은 1개뿐** — `--notice:#E5342B`(명세서가 허용한 유일한 추가 색)와 `--ease-pop:cubic-bezier(.2,.8,.2,1)`. 후자는 명세서 지정 이징이 기존 `--ease`·`--ease-out` 어느 것과도 달라, **값 하드코딩 대신 토큰으로 올려 §0-2 "이징은 `var(--*)` 경유"를 지켰다**(색 토큰 아님).
+- **배지 모션은 유한 반복** — 0.6s 지연 → pop 220ms → 링 pulse **2회(1.2s) 후 정지**. `animation-iteration-count` 실측 `1, 2`로 무한 반복 0. `prefers-reduced-motion`에서는 전역 reduce 규칙이 duration만 줄이고 **0.6s 지연은 남기므로** 별도 규칙으로 애니메이션을 끄고 즉시 표시·즉시 제거한다.
+- **티저 스낵바는 기본 off로 배포된다** — `NEXT_PUBLIC_KIUM_TEASER=on`일 때만 렌더. off면 DOM·문구·타이머 전부 생성되지 않는다(빌드 산출 HTML에 문구 0건). 떠 있는 동안 `body.teaser-on`으로 **`맨 위로` FAB을 위로 밀어** 겹침을 막는다.
+- **GA4·GTM 코드는 넣지 않았다** — `data-ga-id` 5종(`gnb-hamburger`·`gnb-new-badge`·`drawer-kium`·`teaser-kium-cta`·`teaser-kium-close`)만 부여. 스크립트 삽입은 승인 후 별건이다.
+- **검증**: `npm run build` **경고·에러 0**(46/46 정적 생성) · 콘솔 error/warning **0건** · **하이드레이션 불일치 0건**. 배지 18×18 · `top -2 / right -2` · `aria-hidden="true"` · 햄버거 `aria-label`이 `메뉴 열기 (새로운 메뉴 있음)` ↔ `메뉴 열기` 전환. 소멸 시나리오 전건 PASS(진입→노출→열기 즉시 저장·소멸→재오픈 미노출→새로고침 미노출). **PC 1280px 배지 DOM 0개**. 드로어 375×812·768×1024 = 뷰포트 100%, 닫힘 시 `translateX(375px)`(우→좌), `body{position:fixed}`, 스크롤 399→399 복원, ESC 닫힘, 포커스 `mmenu`→`hamb` 복귀. 감소 모션 `animation-name:none`·250ms 시점 이미 표시. 플래그 on 별도 빌드로 티저 6초 자동소멸·X·CTA **3경로 모두** `kiumTeaserSeen` 저장 후 재노출 없음, `/kium`·PC 미노출, FAB 겹침 `false` 확인.
+- ⚠️ **실기기 확인이 남아 있다** — ① iOS Safari의 `100dvh` 실렌더와 주소창 접힘/펴짐 구간 ② 노치·홈 인디케이터 영역 `env(safe-area-inset-*)` 패딩 실효 ③ iOS에서 `position:fixed` 스크롤 락 해제 후 위치 복원. 자동 검증으로 대체할 수 없다.
+- ⚠️ **미결정 3건** — ① 티저(M3)를 배포에 켤지(현재 `off`) ② 티저 문구 `2026 정부지원 훈련 신설 — 훈련비 90~95% 환급` 최종 확정 ③ 배지 노출 종료일(예: 9/30 이후 코드 제거) 설정 여부.
+- ⚠️ **배포본 검증은 미수행이다** — 37)에서 세운 규칙(배포 URL 실검증까지가 완료)에 따라, 이 항목은 **로컬 프로덕션 빌드 검증까지만** 끝난 상태다. 배포 반영 후 별도 확인이 필요하다.
 
 ### 37) 서브내비·접수 완료 카드 배포 반영 확인 및 배포본 실검증 기록
 > 코드 변경 0. 36)에서 수행한 `main` 병합·푸시가 실제 배포에 반영됐는지를 **배포 URL 기준으로 재검증**하고 결과를 남긴다.

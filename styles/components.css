@@ -32,7 +32,8 @@
 .nav.solid .logo{color:var(--ink)}
 .nav.solid .menu{color:#3a3d44}
 .nav.solid .btn-glass{background:var(--ink);border-color:var(--ink);color:#fff}
-.hamb{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:10px;z-index:80;min-width:44px;min-height:44px;align-items:center;justify-content:center}
+/* position:relative — NEW 배지(.new-badge)의 절대 좌표 기준. 배치 외 시각 변화 없음 */
+.hamb{display:none;position:relative;flex-direction:column;gap:5px;background:none;border:none;padding:10px;z-index:80;min-width:44px;min-height:44px;align-items:center;justify-content:center}
 .hamb span{width:24px;height:2px;border-radius:2px;background:#fff;transition:transform .35s var(--ease),opacity .2s var(--ease),background .4s var(--ease)}
 .nav.solid .hamb span{background:var(--ink)}
 /* 햄버거 → X (닫기 어포던스) */
@@ -92,6 +93,38 @@
 }
 @media(max-width:940px){.nav .menu,.nav .nav-cta,.nav .nav-right{display:none}.hamb{display:flex}}
 
+/* ── 햄버거 NEW 배지 (모바일 신규 메뉴 인지 개선 명세서 v1.0 §2 M1) ──────────
+   PC 는 .nav-chip 이 상시 보이므로 배지가 중복 신호가 된다 → 모바일 전용.
+   노출 게이트는 JS(≤1023.98px)와 CSS(≤940px, 햄버거가 뜨는 폭) 이중이다.
+   지름 18px 은 테두리 포함(전역 box-sizing:border-box) — 흰 링 2px 이 다크 헤더에서
+   배지 윤곽을 확보한다. 문자 'N' 은 색만으로 정보를 주지 않기 위한 필수 요소.
+   pointer-events:none — 배지는 히트 영역을 나눠 갖지 않고 햄버거 44px 타깃을 그대로 둔다. */
+.new-badge{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--notice);border:2px solid #fff;
+  color:#fff;font-size:12px;font-weight:700;font-style:normal;line-height:1;letter-spacing:0;
+  pointer-events:none}
+@media(min-width:941px){.new-badge{display:none}}
+
+/* 등장: 마운트 0.6s 뒤 pop 220ms → 이어서 링 pulse 2회(600ms×2=1.2s) 후 정지.
+   무한 반복 금지(§5-3) — iteration-count 는 반드시 유한값 2. */
+@keyframes nb-pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes nb-pulse{
+  0%{box-shadow:0 0 0 0 rgba(229,52,43,.55)}
+  100%{box-shadow:0 0 0 8px rgba(229,52,43,0)}
+}
+@keyframes nb-out{from{transform:scale(1);opacity:1}to{transform:scale(0);opacity:0}}
+.new-badge[data-state="in"]{
+  animation:nb-pop 220ms var(--ease-pop) 600ms both,
+            nb-pulse 600ms var(--ease) 820ms 2}
+.new-badge[data-state="out"]{animation:nb-out 180ms var(--ease-pop) both}
+
+/* 모션 저감 — 지연·pop·pulse 전부 생략하고 그 자리에 즉시 존재한다.
+   (전역 reduce 규칙은 duration 만 줄이고 delay 0.6s 는 남기므로 여기서 명시적으로 끈다) */
+@media(prefers-reduced-motion:reduce){
+  .new-badge[data-state="in"],.new-badge[data-state="out"]{animation:none;transform:none;opacity:1;box-shadow:none}
+}
+
 /* ── hero-shell — 모바일에서 헤더를 레이아웃 흐름에 참여시킨다 (P1·P2) ────
    [겹침의 진짜 원인]
    .nav는 position:fixed라 흐름 공간을 0으로 점유한다. 그래서 히어로의 좌표계는
@@ -135,9 +168,36 @@
 .mmenu-chip .spark{flex:none;width:16px;height:16px;display:block}
 .mmenu-chip .chip-new{flex:none;font-size:9px;font-weight:800;letter-spacing:.06em;color:#C4B5FD}
 
+/* 신규 항목 지목 글로우 (명세서 v1.0 §2 M2)
+   배지는 "새 게 있다"까지만 말한다. 드로어를 연 직후 3초간 이 항목만 빛나게 해서
+   "그게 이것"을 잇는다. 배지가 살아 있던 사용자에게만 1회 — 재방문자에겐 붙지 않는다.
+   box-shadow 만 움직이므로 레이아웃·스크롤에 영향이 없다(강제 스크롤·포커스 이동 금지). */
+@keyframes mm-glow{
+  0%,86%{box-shadow:0 0 0 2px rgba(229,52,43,.55),0 0 22px 2px rgba(229,52,43,.45)}
+  100%{box-shadow:0 0 0 2px rgba(229,52,43,0),0 0 22px 2px rgba(229,52,43,0)}
+}
+.mmenu a.mmenu-chip.is-new-hl{animation:mm-glow 3.5s var(--ease) forwards}
+
 /* ── Mobile menu (원본 53-56) ─────────────────────────────────────────── */
-.mmenu{position:fixed;inset:0;z-index:75;background:rgba(18,16,28,.97);backdrop-filter:blur(8px);display:flex;flex-direction:column;justify-content:flex-start;gap:4px;padding:96px var(--gut) calc(28px + env(safe-area-inset-bottom));transform:translateY(-100%);visibility:hidden;transition:transform .5s var(--ease),visibility .5s;overflow-y:auto}
-.mmenu.open{transform:none;visibility:visible}
+/* 풀스크린 드로어 (명세서 v1.0 §2 M4 · DF-033)
+   100dvh 를 먼저 쓰고 미지원 브라우저를 위해 100vh 를 앞에 둔다(뒤 선언이 이긴다).
+   dvh 는 모바일 주소창이 접혔다 펴질 때 실제 보이는 높이를 따라가므로, 하단 CTA 가
+   주소창 뒤로 숨는 문제가 사라진다.
+   슬라이드 방향은 우→좌: 헤더 우측의 햄버거에서 화면이 끌려나오는 인과를 만든다.
+   inset:0 대신 명시 좌표 — 높이를 vh/dvh 로 직접 잡아야 하기 때문. */
+.mmenu{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;z-index:75;
+  background:rgba(18,16,28,.97);backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;justify-content:flex-start;gap:4px;
+  padding:calc(96px + env(safe-area-inset-top)) max(var(--gut),env(safe-area-inset-right))
+          calc(28px + env(safe-area-inset-bottom)) max(var(--gut),env(safe-area-inset-left));
+  transform:translateX(100%);visibility:hidden;
+  /* visibility 는 "지속시간 0 + 지연"으로 다룬다. .28s 짜리 전환으로 두면 열림 직후
+     한동안 hidden 으로 계산돼 브라우저가 focus() 를 무시한다(포커스 트랩이 죽는다).
+     닫힐 때만 .28s 늦춰 flip → 슬라이드아웃이 끝까지 보이고, 열 때는 즉시 focusable. */
+  transition:transform .28s var(--ease-pop),visibility 0s linear .28s;overflow-y:auto}
+.mmenu.open{transform:none;visibility:visible;
+  transition:transform .28s var(--ease-pop),visibility 0s linear 0s}
+.mmenu:focus{outline:none}
 .mmenu a{display:flex;align-items:center;color:#fff;font-size:22px;font-weight:700;min-height:60px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
 .mmenu a[aria-current="page"]{color:color-mix(in srgb,var(--p1) 45%,#fff)}
 .mmenu .btn-ink{margin-top:30px;background:#fff;color:var(--ink);align-self:stretch;justify-content:center;gap:9px;padding:17px 24px;font-size:16px;font-weight:700;min-height:56px;border-radius:16px}
@@ -149,6 +209,34 @@
 .to-top:active{transform:translateY(-1px) scale(.96)}
 .to-top svg{width:22px;height:22px}
 @media(max-width:560px){.to-top{right:16px;bottom:16px;width:44px;height:44px}}
+/* 티저가 떠 있는 동안에는 FAB 을 스낵바 위로 올린다 (명세서 §2 M3 "맨위로 버튼과 겹치지 않을 것").
+   bottom 은 .to-top 의 transition 목록에 없으므로 즉시 이동한다 — 표시/숨김 모션은 그대로 유지. */
+body.teaser-on .to-top{bottom:calc(22px + 74px)}
+@media(max-width:560px){body.teaser-on .to-top{bottom:calc(16px + 74px)}}
+
+/* ── 원타임 티저 스낵바 (명세서 v1.0 §2 M3 · NEXT_PUBLIC_KIUM_TEASER=on 일 때만) ──
+   z-index 78 = FAB(60)·드로어(75) 위, 헤더(70/76) 아래.
+   기본값 off 로 배포되므로 평시에는 이 규칙이 매칭되는 노드가 없다. */
+.teaser{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:78;
+  display:flex;align-items:center;gap:10px;padding:12px 12px 12px 16px;
+  border-radius:16px;background:var(--ink);color:#fff;box-shadow:var(--shadow-3);
+  transform:translateY(calc(100% + 24px));opacity:0;
+  transition:transform .28s var(--ease-pop),opacity .28s var(--ease-pop)}
+.teaser.show{transform:none;opacity:1}
+/* 배지와 같은 이유로 모바일 전용 — PC 는 GNB 칩이 상시 보인다 */
+@media(min-width:941px){.teaser{display:none}}
+.teaser-msg{flex:1 1 auto;min-width:0;font-size:13.5px;font-weight:600;line-height:1.45;letter-spacing:-.01em}
+.teaser-cta{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  min-height:36px;padding:0 14px;border-radius:999px;background:#fff;color:var(--ink);
+  font-size:13px;font-weight:700;white-space:nowrap;
+  transition:background-color .3s var(--ease),transform .3s var(--ease)}
+.teaser-cta:active{transform:scale(.97)}
+.teaser-close{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;
+  transition:background-color .3s var(--ease)}
+.teaser-close:hover{background:rgba(255,255,255,.24)}
+.teaser-close svg{width:15px;height:15px}
+.teaser-cta:focus-visible,.teaser-close:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ── Fields / Form (원본 168-191 · 307-323) ───────────────────────────── */
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
