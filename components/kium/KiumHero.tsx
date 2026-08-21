@@ -27,7 +27,8 @@ function heroArtExists() {
 }
 
 export default function KiumHero() {
-  const { copyMain, copySub, agencies } = KIUM_CONTENT.hero;
+  // 주관 행 삭제(Q1 A안) — hero.agencies 데이터는 content.ts에 그대로 둔다(지원개요표와 무관한 별개 필드)
+  const { copyMain, copySub } = KIUM_CONTENT.hero;
   const [before, after] = copyMain.split(RATE);
   const hasArt = heroArtExists();
 
@@ -57,15 +58,6 @@ export default function KiumHero() {
                 <span key={s}>{s}</span>
               ))}
             </p>
-
-            <div className="kium-agencies r">
-              <span className="lab">주관</span>
-              {agencies.map((a) => (
-                <span className="org" key={a}>
-                  {a}
-                </span>
-              ))}
-            </div>
 
             <div className="kium-hero-cta r">
               <a className="btn btn-ink" href="#inq">
