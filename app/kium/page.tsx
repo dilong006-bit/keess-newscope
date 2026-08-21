@@ -82,9 +82,9 @@ export default function KiumPage() {
             <KiumFaq />
           </div>
           <div className="kium-faq-foot r">
-            <span className="t">더 궁금한 점은 도입문의로 남겨 주세요.</span>
+            <span className="t">{'더 궁금한 점은 신청\u00A0문의로 남겨 주세요.'}</span>
             <a className="btn btn-ink faq-cta" href="#inq">
-              도입문의
+              신청 문의
             </a>
           </div>
         </div>

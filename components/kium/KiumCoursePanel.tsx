@@ -140,7 +140,7 @@ export default function KiumCoursePanel({
           className="btn btn-ink"
           onClick={() => requestKiumInquiry(course.titleMarketing)}
         >
-          이 과정으로 도입문의
+          {'이 과정으로 신청\u00A0문의'}
         </button>
       </div>
     </div>

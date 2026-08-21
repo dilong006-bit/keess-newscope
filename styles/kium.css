@@ -65,7 +65,7 @@
 .kium-hero-sub span+span{margin-top:6px}
 
 .kium-hero-cta{margin-top:32px;display:flex;gap:10px;flex-wrap:wrap}
-.kium-hero-cta .btn-ink{min-height:44px}
+.kium-hero-cta .btn-ink{min-height:44px;white-space:nowrap}
 .kium-btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;
   min-height:44px;padding:15px 26px;border-radius:999px;border:1px solid var(--line);
   background:#fff;color:var(--ink);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
@@ -315,6 +315,7 @@
 @media(max-width:560px){.kium-faq .faq-a-inner{padding-left:24px}}
 .kium-faq-foot{margin-top:26px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .kium-faq-foot .t{font-size:14.5px;color:var(--muted);font-weight:600}
+.kium-faq-foot .faq-cta{white-space:nowrap}
 
 /* =========================================================================
    F7 필터 칩 + 카드 그리드

@@ -61,7 +61,7 @@ export default function KiumHero() {
 
             <div className="kium-hero-cta r">
               <a className="btn btn-ink" href="#inq">
-                도입문의
+                신청 문의
               </a>
               <a className="kium-btn-ghost" href="#kium-eligibility">
                 지원대상 확인
