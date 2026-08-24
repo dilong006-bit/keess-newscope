@@ -15,7 +15,7 @@ export function getBenefitStats(): { k: string; v: string }[] {
   return [
     rate.verified ? { k: rate.label, v: rate.value } : null,
     limit.verified ? { k: limit.label, v: limit.value } : null,
-    isAllRealtimeRemote() ? { k: '운영 방식', v: '전 과정 실시간 비대면 가능' } : null,
+    isAllRealtimeRemote() ? { k: '운영 방식', v: '대면 또는 비대면 선택\u00A0가능' } : null,
   ].filter(Boolean) as { k: string; v: string }[];
 }
 
