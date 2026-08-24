@@ -371,13 +371,15 @@
 .kium-lab.cat{background:color-mix(in srgb,var(--p1) 8%,#fff);color:var(--p1)}
 /* [수정 4] 카테고리 컬러 dot — 해당 카테고리 --mesh-a. 색은 보조 신호이고 라벨 텍스트가 정보를 든다 */
 .kium-lab .kium-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--dot,var(--p1))}
+/* [카테고리 재지정 · 260824] 7종. 신규 색 없음 — 소멸한 executive/common의 색을
+   business/comm에 재배정하고, 남는 cs 1종만 기존 전역 토큰 var(--p4)로 채운다. */
 .kium-lab.cat[data-cat="onboarding"]{--dot:#2563EB}
 .kium-lab.cat[data-cat="roleup"]{--dot:#7C3AED}
 .kium-lab.cat[data-cat="leadership"]{--dot:#3730A3}
-.kium-lab.cat[data-cat="executive"]{--dot:#172554}
 .kium-lab.cat[data-cat="ai"]{--dot:#0891B2}
-.kium-lab.cat[data-cat="common"]{--dot:#52525B}
-.kium-lab.sub{background:var(--surface);color:var(--muted)}
+.kium-lab.cat[data-cat="business"]{--dot:#172554}
+.kium-lab.cat[data-cat="comm"]{--dot:#52525B}
+.kium-lab.cat[data-cat="cs"]{--dot:var(--p2)}
 /* [수정 12]로 제거됐던 본문 과정명 — 이미지 모드에서만 복원된다(썸네일이 과정명을 못 들기 때문).
    텍스트 모드 카드에는 이 요소가 렌더되지 않아 현재 화면과 픽셀 단위로 동일하다. */
 .kium-card-title{font-size:16px;font-weight:800;color:var(--ink);line-height:1.4;
@@ -396,7 +398,8 @@
 .kium-meta-t b{font-weight:700;color:#3a3a42}
 .kium-badge{display:inline-flex;align-items:center;gap:5px;border-radius:12px;padding:4px 9px;
   font-size:11px;font-weight:800;letter-spacing:.01em}
-/* AI융합형 — 신규 색 금지: surface + 퍼플 텍스트 + hairline (정보는 라벨 텍스트가 든다) */
+/* AI융합형 — [260824] 칩 렌더가 제거되어 현재 사용처 없음(data.ts `type` 필드는 보존).
+   .kium-elig-note와 동일하게 복원 대비해 규칙만 남겨 둔다. */
 .kium-badge.ai{background:var(--surface);border:1px solid var(--line);color:var(--p1)}
 /* 정부지원 환급 — 기존 정부지원 옐로우 의미 고정 그대로 */
 .kium-badge.gov{background:color-mix(in srgb,var(--gov) 20%,#fff);color:#8A6314}
@@ -416,12 +419,15 @@
     radial-gradient(120% 90% at 85% 12%, var(--mesh-b) 0%, transparent 70%),
     radial-gradient(110% 100% at 68% 78%, var(--mesh-a) 0%, transparent 85%),
     linear-gradient(150deg, var(--mesh-base) 0%, var(--mesh-dark) 100%)}
+/* [카테고리 재지정 · 260824] business ← 구 executive 색, comm ← 구 common 색 재배정.
+   cs만 기존 전역 토큰 var(--p2)(#E91E63)와 그 파생 틴트 — 신규 hex 생성 0. */
 .kium-thumb[data-cat="onboarding"]{--mesh-a:#2563EB;--mesh-b:#60A5FA}
 .kium-thumb[data-cat="roleup"]{--mesh-a:#7C3AED;--mesh-b:#C4B5FD}
 .kium-thumb[data-cat="leadership"]{--mesh-a:#3730A3;--mesh-b:#818CF8}
-.kium-thumb[data-cat="executive"]{--mesh-a:#172554;--mesh-b:#D4A72C}
 .kium-thumb[data-cat="ai"]{--mesh-a:#0891B2;--mesh-b:#67E8F9}
-.kium-thumb[data-cat="common"]{--mesh-a:#52525B;--mesh-b:#D4D4D8}
+.kium-thumb[data-cat="business"]{--mesh-a:#172554;--mesh-b:#D4A72C}
+.kium-thumb[data-cat="comm"]{--mesh-a:#52525B;--mesh-b:#D4D4D8}
+.kium-thumb[data-cat="cs"]{--mesh-a:var(--p2);--mesh-b:color-mix(in srgb,var(--p2) 45%,#fff)}
 /* 텍스트 스크림 — 하단 40% 1겹.
    커버리지 상향 후 ai 카테고리가 .35에서 AA 미달(4.70 → 마진 부족)이라 지시서 지침대로 .45로 상향.
    값 변경 시 scripts/check-contrast.mjs의 SCRIM_ALPHA 기본값도 함께 맞출 것. */

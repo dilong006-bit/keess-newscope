@@ -10,10 +10,13 @@
 //   · 교체 전 XLSX 유래 modules 원본은 ref/kium/build/data.ts에 그대로 보존돼 있다(대조·롤백용).
 //     그래서 이 파일에 죽은 상수로 중복 보관하지 않는다.
 
-export type KiumCategory = 'onboarding'|'roleup'|'leadership'|'executive'|'ai'|'common'
+// [카테고리 재지정 · 260824] 6종 → 7종. 소멸: executive(임원)·common(공통 직무역량).
+// 신설: business(비즈니스 역량)·comm(커뮤니케이션·조직활성화)·cs(CS·민원응대).
+// onboarding·roleup·leadership·ai는 키를 유지하고 라벨만 갱신한다.
+export type KiumCategory = 'onboarding'|'roleup'|'leadership'|'ai'|'business'|'comm'|'cs'
 
 export type KiumCourse = {
-  id: string; category: KiumCategory; subCategory: string
+  id: string; category: KiumCategory
   titleMarketing: string; titleOfficial: string
   target: string; hours: number; days: number
   type: '일반형' | 'AI융합형'; capacity: number; schedule: string; delivery: string
@@ -27,10 +30,11 @@ export type KiumCourse = {
 export const KIUM_CATEGORY_META: Record<KiumCategory, { label: string; order: number }> = {
   onboarding: { label: '신입·온보딩', order: 1 },
   roleup:     { label: '승진자', order: 2 },
-  leadership: { label: '리더십', order: 3 },
-  executive:  { label: '임원', order: 4 },
-  ai:         { label: 'AI 실무역량', order: 5 },
-  common:     { label: '공통 직무역량', order: 6 },
+  leadership: { label: '리더십·관리자', order: 3 },
+  ai:         { label: 'AI활용', order: 4 },
+  business:   { label: '비즈니스 역량', order: 5 },
+  comm:       { label: '커뮤니케이션·조직활성화', order: 6 },
+  cs:         { label: 'CS·민원응대', order: 7 },
 }
 
 export const KIUM_COURSES: KiumCourse[] = 
@@ -40,7 +44,6 @@ export const KIUM_COURSES: KiumCourse[] =
     // [샘플] 디자인 참조용 Unsplash 썸네일 — 실제 자산 입고 시 교체, 미입고 시 오픈 전 이 줄 삭제
     "thumbSrc": "/images/kium/kium-01.sample.jpg",
     "category": "onboarding",
-    "subCategory": "신입사원",
     "titleMarketing": "신입사원 On-Syncing 온보딩 과정",
     "titleOfficial": "신입사원 On-Syncing 과정",
     "target": "신입사원",
@@ -107,7 +110,6 @@ export const KIUM_COURSES: KiumCourse[] =
     // [샘플] 디자인 참조용 Unsplash 썸네일 — 실제 자산 입고 시 교체, 미입고 시 오픈 전 이 줄 삭제
     "thumbSrc": "/images/kium/kium-02.sample.jpg",
     "category": "onboarding",
-    "subCategory": "신입사원",
     "titleMarketing": "경력 신입사원 On-Performing 온보딩 과정",
     "titleOfficial": "경력신입 On-Performing 과정",
     "target": "경력 신입사원",
@@ -174,7 +176,6 @@ export const KIUM_COURSES: KiumCourse[] =
     // [샘플] 디자인 참조용 Unsplash 썸네일 — 실제 자산 입고 시 교체, 미입고 시 오픈 전 이 줄 삭제
     "thumbSrc": "/images/kium/kium-03.sample.jpg",
     "category": "onboarding",
-    "subCategory": "신입사원",
     "titleMarketing": "On-Powering 리텐션 과정",
     "titleOfficial": "리텐션 On-Powering 과정",
     "target": "1~5년차 사원",
@@ -239,7 +240,6 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-04",
     "category": "leadership",
-    "subCategory": "리더십",
     "titleMarketing": "진단 기반 팀장 리더십 Re-Lead 과정",
     "titleOfficial": "Next Leadership: 팀장리더십 Re-Lead 과정",
     "target": "팀장급 리더",
@@ -304,10 +304,9 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-05",
     "category": "roleup",
-    "subCategory": "승진자 과정",
     "titleMarketing": "승진자 과정 Role Up [사원~대리]",
     "titleOfficial": "Role Up(승진자): 사원~대리",
-    "target": "승진자 (사원 및 대리급)",
+    "target": "사원~대리",
     "hours": 14,
     "days": 2,
     "type": "일반형",
@@ -369,10 +368,9 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-06",
     "category": "roleup",
-    "subCategory": "승진자 과정",
     "titleMarketing": "승진자 과정 Role Up [과장~차장]",
     "titleOfficial": "Role Up(승진자): 과장~차장",
-    "target": "승진자 (과장 및 차장급)",
+    "target": "과장~차장",
     "hours": 14,
     "days": 2,
     "type": "일반형",
@@ -434,10 +432,9 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-07",
     "category": "roleup",
-    "subCategory": "승진자 과정",
     "titleMarketing": "승진자 과정 Role Up [부장]",
     "titleOfficial": "Role Up(승진자): 부장",
-    "target": "승진자 (부장급)",
+    "target": "부장",
     "hours": 14,
     "days": 2,
     "type": "일반형",
@@ -498,11 +495,10 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-08",
-    "category": "executive",
-    "subCategory": "임원교육",
+    "category": "leadership",
     "titleMarketing": "임원 역량개발 과정",
     "titleOfficial": "임원 역량개발 과정",
-    "target": "신임 임원 및 기존 임원. 임원 승진을 앞둔 예비경영자",
+    "target": "임원 및 예비경영자",
     "hours": 7,
     "days": 1,
     "type": "일반형",
@@ -559,7 +555,6 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-09",
     "category": "ai",
-    "subCategory": "AI 활용",
     "titleMarketing": "업무효율화: Agent 과정",
     "titleOfficial": "AI 실무역량강화_업무효율화 Track_Agent 과정",
     "target": "전체 임직원",
@@ -624,7 +619,6 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-10",
     "category": "ai",
-    "subCategory": "AI 활용",
     "titleMarketing": "업무효율화: Data 과정",
     "titleOfficial": "AI 실무역량강화_업무효율화 Track_Data 과정",
     "target": "전체 임직원",
@@ -689,7 +683,6 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-11",
     "category": "ai",
-    "subCategory": "AI 활용",
     "titleMarketing": "AI 직무전문화 과정",
     "titleOfficial": "AI 실무역량강화_직무전문화 Track_AI 직무 특화 과정",
     "target": "전체 임직원",
@@ -753,8 +746,7 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-12",
-    "category": "common",
-    "subCategory": "비즈니스 역량",
+    "category": "business",
     "titleMarketing": "전략적 비즈니스 협상 스킬 과정",
     "titleOfficial": "전략적 비즈니스 협상 스킬",
     "target": "전체 임직원",
@@ -813,8 +805,7 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-13",
-    "category": "common",
-    "subCategory": "비즈니스 역량",
+    "category": "business",
     "titleMarketing": "스피치&프레젠테이션 클리닉 과정",
     "titleOfficial": "스피치&프레젠테이션 클리닉",
     "target": "전체 임직원",
@@ -878,8 +869,7 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-14",
-    "category": "common",
-    "subCategory": "비즈니스 역량",
+    "category": "business",
     "titleMarketing": "인정받는 직장인의 구두보고 스킬",
     "titleOfficial": "인정받는 직장인의 구두보고 스킬",
     "target": "전체 임직원",
@@ -943,8 +933,7 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-15",
-    "category": "common",
-    "subCategory": "커뮤니케이션",
+    "category": "comm",
     "titleMarketing": "AI 시대, 감성 지능 소통역량",
     "titleOfficial": "AI시대 감성 지능 소통역량",
     "target": "전체 임직원",
@@ -1003,8 +992,7 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-16",
-    "category": "common",
-    "subCategory": "커뮤니케이션",
+    "category": "comm",
     "titleMarketing": "AI 시대, 사람을 움직이는 공감 대화의 기술",
     "titleOfficial": "AI 시대, 사람을 움직이는 공감 대화의 기술",
     "target": "전체 임직원",
@@ -1063,8 +1051,7 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-17",
-    "category": "common",
-    "subCategory": "조직활성화",
+    "category": "comm",
     "titleMarketing": "세대와 직급별 소통 백과사전",
     "titleOfficial": "세대와 직급별 소통 백과사전",
     "target": "전체 임직원",
@@ -1119,10 +1106,9 @@ export const KIUM_COURSES: KiumCourse[] =
   {
     "id": "kium-18",
     "category": "leadership",
-    "subCategory": "현장 관리자",
     "titleMarketing": "현장 플레잉 코치 과정",
     "titleOfficial": "현장 플레잉 코치 과정",
-    "target": "전체 임직원",
+    "target": "현장 관리자",
     "hours": 7,
     "days": 1,
     "type": "일반형",
@@ -1178,8 +1164,7 @@ export const KIUM_COURSES: KiumCourse[] =
   },
   {
     "id": "kium-19",
-    "category": "common",
-    "subCategory": "민원응대",
+    "category": "cs",
     "titleMarketing": "CS 종합 솔루션 과정",
     "titleOfficial": "CS 종합 솔루션",
     "target": "전체 임직원",

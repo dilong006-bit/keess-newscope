@@ -154,7 +154,7 @@ export default function KiumCourseGrid({ courses, categories }: Props) {
 
   return (
     <>
-      {/* 필터 칩 — [전체] + 6카테고리, 카운트 병기 */}
+      {/* 필터 칩 — [전체] + 7카테고리, 카운트 병기 */}
       <div className="kium-filters" role="group" aria-label="과정 카테고리 필터">
         <button
           type="button"

@@ -4,7 +4,7 @@
  *
  * styles/kium.css의 .kium-thumb 3겹 그라디언트를 그대로 재현해
  * "과정명 텍스트 앵커 존"(좌하단)의 여러 지점에서 흰색 텍스트 대비를 계산한다.
- * 6카테고리 × 스크림 유무 전 조합을 검사하고, 4.5:1(WCAG AA) 미달이 하나라도 있으면 exit 1.
+ * 7카테고리 × 스크림 유무 전 조합을 검사하고, 4.5:1(WCAG AA) 미달이 하나라도 있으면 exit 1.
  *
  *   실행: node scripts/check-contrast.mjs
  *
@@ -17,13 +17,16 @@ const MESH_BASE = '#2E1A6B';
 const MESH_DARK = '#1B0F45';
 
 // [수정 4] 보조색 채도·커버리지 상향판
+// [카테고리 재지정 · 260824] 6종 → 7종. business/comm은 소멸한 executive/common 색을 재배정했고,
+// cs만 기존 전역 토큰 --p2(#E91E63) + 그 45% 틴트(color-mix 결과 #F59AB9)를 쓴다.
 const CATEGORIES = [
   { key: 'onboarding', label: '신입·온보딩', a: '#2563EB', b: '#60A5FA' },
   { key: 'roleup', label: '승진자', a: '#7C3AED', b: '#C4B5FD' },
-  { key: 'leadership', label: '리더십', a: '#3730A3', b: '#818CF8' },
-  { key: 'executive', label: '임원', a: '#172554', b: '#D4A72C' },
-  { key: 'ai', label: 'AI 실무역량', a: '#0891B2', b: '#67E8F9' },
-  { key: 'common', label: '공통 직무역량', a: '#52525B', b: '#D4D4D8' },
+  { key: 'leadership', label: '리더십·관리자', a: '#3730A3', b: '#818CF8' },
+  { key: 'ai', label: 'AI활용', a: '#0891B2', b: '#67E8F9' },
+  { key: 'business', label: '비즈니스 역량', a: '#172554', b: '#D4A72C' },
+  { key: 'comm', label: '커뮤니케이션·조직활성화', a: '#52525B', b: '#D4D4D8' },
+  { key: 'cs', label: 'CS·민원응대', a: '#E91E63', b: '#F59AB9' },
 ];
 
 // 레이어 정의 — CSS의 radial-gradient(rx ry at cx cy, color 0%, transparent stop)
