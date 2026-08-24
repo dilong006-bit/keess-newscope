@@ -19,12 +19,12 @@ const PATH_LINK: Record<string, number | undefined> = { cert: 0, mgmtno: 1, bizn
 const PATH_ICON: Record<string, typeof KeyRound> = { cert: KeyRound, mgmtno: Building2, bizno: Hash };
 
 /**
- * [수정 2] 방법3에 '고용24에서 직접 확인' 스텝 추가.
- * 문안은 빌드 프롬프트 지정분이며, content.ts facts의 검증 항목
+ * [수정 2] 방법3은 content.ts paths 대신 이 직접 확인 스텝을 렌더한다.
+ * content.ts facts의 검증 항목
  * `limitCheckPath`('고용24 로그인 → 직업 능력 개발 → 사업주훈련 → 지원한도 조회')와 동일 경로다.
+ * 보조 라벨('고용24에서 직접 확인')은 사업 지시로 삭제 — 카드 3장 헤더를 1줄로 통일한다.
  */
 const BIZNO_DIRECT = {
-  title: '고용24에서 직접 확인',
   steps: ['고용24 기업회원 가입·로그인', '직업 능력 개발 → 사업주훈련', '지원한도 조회'],
 };
 
@@ -32,7 +32,7 @@ const BIZNO_DIRECT = {
 const isResult = (s: string) => s.includes('참여 가능');
 
 export default function KiumEligibility() {
-  const { intro, paths, exclusion } = KIUM_CONTENT.eligibility;
+  const { intro, paths } = KIUM_CONTENT.eligibility;
   const [accordion, setAccordion] = useState(false);
   const [openKey, setOpenKey] = useState<string>(paths[0].key);
 
@@ -85,14 +85,7 @@ export default function KiumEligibility() {
 
           const body = (
             <div className="kium-elig-body" id={bodyId}>
-              {direct ? (
-                <>
-                  <p className="kium-elig-sub">{direct.title}</p>
-                  {stepList(direct.steps)}
-                </>
-              ) : (
-                stepList(p.steps)
-              )}
+              {stepList(direct ? direct.steps : p.steps)}
               {link && (
                 <a
                   className="kium-elig-link"
@@ -107,9 +100,8 @@ export default function KiumEligibility() {
               )}
               {/*
                 [수정 16] 03 카드의 점선 구분선 + 상담 유도 푸터는 렌더에서 제거했다.
-                03만 길어져 카드 3장의 시각 균형이 깨졌기 때문이며,
-                해당 안내는 섹션 하단 캡션(content.ts eligibility.exclusion)으로 통합됐다.
-                이제 세 카드 모두 아이콘 → 스텝 → 바로가기 버튼으로 동일하게 종결된다.
+                03만 길어져 카드 3장의 시각 균형이 깨졌기 때문이다.
+                세 카드 모두 아이콘 → 스텝 → 바로가기 버튼으로 동일하게 종결된다.
               */}
             </div>
           );
@@ -141,9 +133,6 @@ export default function KiumEligibility() {
           );
         })}
       </div>
-
-      {/* 제한도 정직하게 — 제외 대상 고지 */}
-      <p className="kium-caption soft">{exclusion}</p>
     </>
   );
 }
