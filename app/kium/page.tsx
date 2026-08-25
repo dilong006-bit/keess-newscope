@@ -38,6 +38,8 @@ export default function KiumPage() {
           <h2 className="kium-sec-title r" tabIndex={-1} data-panel-heading>
             {KIUM_CONTENT.sectionLeads.overview}
           </h2>
+          {/* 섹션 리드 — 자격확인(KiumEligibility)이 쓰는 .kium-sec-sub 재사용. 신규 클래스 없음 */}
+          <p className="kium-sec-sub r">{KIUM_CONTENT.sectionLeads.overviewSub}</p>
           <div className="r">
             <KiumOverviewTable />
           </div>
