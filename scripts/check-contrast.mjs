@@ -191,69 +191,79 @@ if (fails > 0) {
 console.log(`\n✓ 렌더 구성 전건 AA 통과 — 최저 ${min.toFixed(2)}:1`);
 
 /* =========================================================================
-   [공개교육 탭 · 명세 §9] 상태 배지 4종 + '공개교육' 칩 × 배경 조합 대비 검증
+   [공개교육 고도화 v1.0 · 명세 §2-2 / §8] 모집 상태 배지 4톤 대비 검증
    -------------------------------------------------------------------------
-   styles/kium-open.css의 color / background 선언을 그대로 재현한다.
-   배지 글자는 11px·weight 800 → WCAG '큰 텍스트'(굵은 18.66px)에 못 미치므로
-   일반 텍스트 기준 4.5:1을 적용한다.
-   ※ 색 값은 globals.css :root 토큰과 color-mix 파생뿐이다. 이 스크립트에서 바꾸지 않는다.
+   styles/kium-open.css의 .kium-sbadge[data-tone] · .kium-pill-ses[data-tone] 선언을
+   그대로 재현한다. 배지 글자는 12px·weight 700 → WCAG '큰 텍스트'(굵은 18.66px)에
+   못 미치므로 일반 텍스트 기준 4.5:1을 적용한다.
+   ※ 값은 명세 원문이다. 미달이 나오면 이 스크립트가 아니라 명세 톤을 재검토한다.
    ========================================================================= */
 
-const TOKEN = { p1: '#2E1A6B', p3: '#8B27A8', p4: '#F58220', muted: '#54585f', surface: '#F3F5F8', white: '#ffffff' };
+/** 4톤 — 명세 §2-2 값 그대로 (배지·회차 pill 공용) */
+const TONES = [
+  { key: 'amber', label: '모집중',   bg: '#FEF3C7', fg: '#92400E' },
+  { key: 'green', label: '개강확정', bg: '#DCFCE7', fg: '#166534' },
+  { key: 'red',   label: '마감임박', bg: '#FEE2E2', fg: '#B91C1C' },
+  { key: 'gray',  label: '마감',     bg: '#F3F4F6', fg: '#4B5563' },
+];
 
-/** CSS color-mix(in srgb, C p%, #fff) — srgb 좌표 선형 혼합 */
-function mixWhite(hex, pct) {
-  const c = parseColor(hex);
-  const t = pct / 100;
-  return [c[0] * t + 255 * (1 - t), c[1] * t + 255 * (1 - t), c[2] * t + 255 * (1 - t)];
+/** 마감임박 CTA(유일한 filled) · 마감 CTA(텍스트 링크) — 카드 배경 #fff 위 */
+const CTA_CASES = [
+  { name: 'CTA 마감임박 filled (#DC2626 / #fff 글자)', bg: '#DC2626', fg: '#ffffff' },
+  { name: 'CTA 마감임박 hover (#B91C1C / #fff 글자)', bg: '#B91C1C', fg: '#ffffff' },
+  { name: 'CTA 기본 outline (#fff / --p1 글자)',       bg: '#ffffff', fg: '#2E1A6B' },
+  { name: 'CTA 마감 링크 (#fff / --muted 글자)',       bg: '#ffffff', fg: '#54585f' },
+];
+
+function relLum(hex) {
+  const [r, g, b] = parseColor(hex);
+  const f = (c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 }
-
 function contrast(fg, bg) {
-  const l1 = relLuminance(fg);
-  const l2 = relLuminance(bg);
+  const l1 = relLum(fg);
+  const l2 = relLum(bg);
   const [hi, lo] = l1 > l2 ? [l1, l2] : [l2, l1];
   return (hi + 0.05) / (lo + 0.05);
 }
-
-// 배지가 놓이는 표면 — 회차 버튼/카드는 #fff, 매트릭스 행 hover·빈 셀은 --surface
-const ON = [
-  { name: '#fff (회차 버튼·리스트 카드)', rgb: parseColor(TOKEN.white).slice(0, 3) },
-  { name: '--surface (행 hover)', rgb: parseColor(TOKEN.surface).slice(0, 3) },
-];
-
-const BADGES = [
-  { key: 'st/open',      label: '모집중',      fg: TOKEN.p1,    fill: null },
-  { key: 'st/confirmed', label: '개강확정',    fg: TOKEN.p1,    fill: mixWhite(TOKEN.p1, 10) },
-  { key: 'st/closing',   label: '마감임박',    fg: '#8a4a05',   fill: mixWhite(TOKEN.p4, 16) },
-  { key: 'st/closed',    label: '마감',        fg: TOKEN.muted, fill: parseColor(TOKEN.surface).slice(0, 3) },
-  { key: 'open',         label: '공개교육 개설/칩', fg: TOKEN.p3, fill: mixWhite(TOKEN.p3, 12) },
-];
 
 const badgeRows = [];
 let badgeFails = 0;
 let badgeMin = Infinity;
 
-for (const b of BADGES) {
-  // fill이 있으면 배경은 fill 고정, 없으면(투명) 놓이는 표면 전부를 검사한다
-  const backgrounds = b.fill ? [{ name: 'badge fill', rgb: b.fill }] : ON;
-  for (const bg of backgrounds) {
-    const ratio = contrast(parseColor(b.fg).slice(0, 3), bg.rgb);
-    if (ratio < AA) badgeFails++;
-    badgeMin = Math.min(badgeMin, ratio);
-    badgeRows.push({
-      배지: `${b.key} (${b.label})`,
-      배경: bg.name,
-      대비: `${ratio.toFixed(2)}:1`,
-      등급: ratio >= AAA ? 'AAA' : ratio >= AA ? 'AA' : '미달',
-    });
-  }
+for (const t of TONES) {
+  const ratio = contrast(t.fg, t.bg);
+  if (ratio < AA) badgeFails++;
+  badgeMin = Math.min(badgeMin, ratio);
+  badgeRows.push({
+    대상: `배지·pill ${t.key} (${t.label})`,
+    배경: t.bg,
+    글자: t.fg,
+    대비: `${ratio.toFixed(2)}:1`,
+    등급: ratio >= AAA ? 'AAA' : ratio >= AA ? 'AA' : '미달',
+  });
+}
+for (const c of CTA_CASES) {
+  const ratio = contrast(c.fg, c.bg);
+  if (ratio < AA) badgeFails++;
+  badgeMin = Math.min(badgeMin, ratio);
+  badgeRows.push({
+    대상: c.name,
+    배경: c.bg,
+    글자: c.fg,
+    대비: `${ratio.toFixed(2)}:1`,
+    등급: ratio >= AAA ? 'AAA' : ratio >= AA ? 'AA' : '미달',
+  });
 }
 
-console.log('\n공개교육 상태 배지 대비 검증 — WCAG AA 4.5:1 (11px/800 = 일반 텍스트 기준)');
+console.log('\n공개교육 모집 상태 4톤 + 상태별 CTA 대비 검증 — WCAG AA 4.5:1');
 console.table(badgeRows);
 
 if (badgeFails > 0) {
-  console.error(`\n✗ 배지 대비 AA 미달 ${badgeFails}건 — 명세 §9 위반. 토큰 파생 비율 재검토 필요.`);
+  console.error(`\n✗ AA 미달 ${badgeFails}건 — 명세 §2-2 톤 재검토 필요.`);
   process.exit(1);
 }
-console.log(`✓ 배지 전건 AA 통과 — 최저 ${badgeMin.toFixed(2)}:1`);
+console.log(`✓ 4톤 + CTA 전건 AA 통과 — 최저 ${badgeMin.toFixed(2)}:1`);

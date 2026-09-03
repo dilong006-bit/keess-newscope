@@ -1,23 +1,73 @@
 /* =========================================================================
-   KEESS 공개교육 탭 — 기존 토큰만 사용. 신규 색·라운드·그림자 값 발명 금지.
+   KEESS /kium 공개교육 탭 — 고도화 v1.0
+   -------------------------------------------------------------------------
+   · 기본은 globals.css :root 토큰과 color-mix 파생을 쓴다.
+   · 예외는 상태 배지 4톤뿐 — 명세 §2-2가 지정한 전용 4톤을 그대로 쓴다(하단 블록 주석 참조).
+   · 월=열 매트릭스 CSS는 전량 삭제됐다(테이블 컴포넌트 제거).
    ========================================================================= */
 
-/* ── 히어로 지표 ─────────────────────────────────────────────── */
+/* ── 히어로 ───────────────────────────────────────────────────── */
+/* 인트로 문장이 조사 앞에서 끊기던 문제(D5): 기본 .kium-sec-sub는 56ch라 이 문장에서
+   어색한 지점에 줄이 걸린다. 공개교육 히어로 안에서만 폭을 올린다 —
+   자격확인·지원개요 등 다른 .kium-sec-sub 사용처는 영향받지 않는다. */
+.kium-open-hero .kium-sec-sub{max-width:74ch}
+
 .kium-open-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 0}
 .kium-open-stats>div{background:var(--surface);border:1px solid var(--line);border-radius:14px;
-  padding:16px 18px;text-align:center}
-.kium-open-stats b{display:block;font-size:18px;font-weight:800;color:var(--p1);letter-spacing:-.02em}
+  padding:16px 18px;text-align:center;color:var(--p1)}
+.kium-open-stats b{display:block;font-size:18px;font-weight:800;color:var(--p1);letter-spacing:-.02em;margin-top:6px}
 .kium-open-stats span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
 @media(max-width:560px){.kium-open-stats{grid-template-columns:1fr;gap:8px}
-  .kium-open-stats>div{display:flex;align-items:baseline;gap:8px;text-align:left;padding:12px 16px}
-  .kium-open-stats b{font-size:16px}.kium-open-stats span{margin-top:0}}
+  .kium-open-stats>div{display:flex;align-items:center;gap:8px;text-align:left;padding:12px 16px}
+  .kium-open-stats b{font-size:16px;margin-top:0}.kium-open-stats span{margin-top:0}}
 
-/* ── 가장 빠른 개강 ───────────────────────────────────────────── */
 .kium-open-next{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;
   padding:12px 16px;background:#fff;border:1px solid var(--line);border-radius:14px;
   box-shadow:var(--shadow-1);font-size:14px}
 .kium-open-next .lb{font-weight:800;color:var(--p1)}
-.kium-open-next button{min-height:44px}
+.kium-open-next .dt{font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.kium-open-next .nm{color:var(--muted)}
+@media(max-width:560px){.kium-open-next{gap:8px}.kium-open-next .nm{width:100%}}
+
+/* ── 상태 배지 4톤 (명세 §2-2) ────────────────────────────────────
+   ⚠ 명세는 이 4톤을 `.kium-badge[data-tone]`로 지정하지만, `.kium-badge`는 과정안내 탭의
+   `정부지원 환급` 칩이 이미 쓰는 기존 클래스다. 베이스를 재정의하면 같은 페이지의 다른 탭
+   렌더가 바뀌므로(절대 규칙 위반) **클래스명만 `.kium-sbadge`로 격리**하고 값은 그대로 둔다.
+   4톤 전건 명도대비 AA(4.5:1) 이상 — scripts/check-contrast.mjs가 게이트한다. */
+.kium-sbadge{display:inline-flex;align-items:center;gap:4px;height:24px;
+  padding:0 8px;border-radius:999px;font-size:12px;font-weight:700;
+  letter-spacing:-.01em;white-space:nowrap}
+.kium-sbadge svg{width:14px;height:14px;flex:none}
+.kium-sbadge[data-tone="amber"]{background:#FEF3C7;color:#92400E}
+.kium-sbadge[data-tone="green"]{background:#DCFCE7;color:#166534}
+.kium-sbadge[data-tone="red"]  {background:#FEE2E2;color:#B91C1C}
+.kium-sbadge[data-tone="gray"] {background:#F3F4F6;color:#4B5563}
+.kium-sbadge em{font-style:normal;font-weight:800}
+
+/* ── 상태별 CTA (명세 §2-3) ───────────────────────────────────── */
+.kium-cta-ses{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:44px;padding:0 16px;border-radius:999px;font-size:13.5px;font-weight:700;
+  color:var(--p1);background:#fff;border:1px solid color-mix(in srgb,var(--p1) 30%,#fff);
+  white-space:nowrap;
+  transition:background .18s var(--ease),border-color .18s var(--ease),color .18s var(--ease)}
+.kium-cta-ses:hover,.kium-cta-ses:focus-visible{background:color-mix(in srgb,var(--p1) 7%,#fff);
+  border-color:var(--p1)}
+/* 마감임박 — 지면에서 유일한 filled. 레드 계열은 이 상태 외에 쓰지 않는다 */
+.kium-cta-ses.is-urgent{background:#DC2626;border-color:#DC2626;color:#fff}
+.kium-cta-ses.is-urgent:hover,.kium-cta-ses.is-urgent:focus-visible{background:#B91C1C;border-color:#B91C1C}
+/* 마감 — 버튼 강도를 낮춘 텍스트 링크형. aria-disabled 대신 요소 자체를 교체한 결과 */
+.kium-cta-next{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:44px;padding:0 12px;border-radius:999px;background:transparent;border:0;
+  font-size:13.5px;font-weight:700;color:var(--muted);text-decoration:underline;
+  text-underline-offset:3px;white-space:nowrap;transition:color .18s var(--ease)}
+.kium-cta-next:hover,.kium-cta-next:focus-visible{color:var(--ink)}
+/* 보조 CTA — 월 그룹 헤더·과정 상세 토글 */
+.kium-cta-quiet{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;
+  border:0;background:transparent;font-size:13.5px;font-weight:700;color:var(--p1);
+  border-radius:999px;white-space:nowrap;transition:background .18s var(--ease)}
+.kium-cta-quiet:hover,.kium-cta-quiet:focus-visible{background:color-mix(in srgb,var(--p1) 7%,#fff)}
+.kium-cta-quiet svg{transition:transform .2s var(--ease)}
+.kium-cta-quiet svg.is-up{transform:rotate(180deg)}
 
 /* ── 보기 전환 세그먼트 ───────────────────────────────────────── */
 .kium-viewseg{display:inline-flex;background:var(--surface);border:1px solid var(--line);
@@ -27,115 +77,162 @@
   transition:background .18s var(--ease),color .18s var(--ease)}
 .kium-viewseg-btn[aria-checked="true"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-1)}
 
-/* ── 상태 배지 (기존 .kium-badge 상속 + data-st 변주) ─────────── */
-.kium-badge.st[data-st="open"]{background:transparent;color:var(--p1);
-  border:1px solid color-mix(in srgb,var(--p1) 32%,#fff)}
-.kium-badge.st[data-st="confirmed"]{background:color-mix(in srgb,var(--p1) 10%,#fff);
-  color:var(--p1);border:1px solid color-mix(in srgb,var(--p1) 26%,#fff);font-weight:800}
-.kium-badge.st[data-st="closing"]{background:color-mix(in srgb,var(--p4) 16%,#fff);
-  color:#8a4a05;border:1px solid color-mix(in srgb,var(--p4) 40%,#fff);font-weight:800}
-.kium-badge.st[data-st="closed"]{background:var(--surface);color:var(--muted);
-  border:1px solid var(--line)}
-.kium-badge.open{background:color-mix(in srgb,var(--p3) 12%,#fff);color:var(--p3);
-  border:1px solid color-mix(in srgb,var(--p3) 28%,#fff)}
+/* ── 상태 필터 칩 — 칩 안에 배지를 그대로 넣어 색·아이콘 축을 공유한다 ── */
+.kium-filters-st{margin-top:10px}
+.kium-chip-st{gap:6px;padding-left:6px}
+.kium-chip-st[aria-pressed="true"]{background-color:var(--p1);border-color:var(--p1)}
+.kium-chip-st[aria-pressed="true"] .kium-sbadge{outline:2px solid rgba(255,255,255,.9);outline-offset:1px}
 
-/* ── 매트릭스 (≥1024) ─────────────────────────────────────────── */
-.kium-mtx-wrap{overflow:visible}
-.kium-mtx{width:100%;border-collapse:separate;border-spacing:0;
-  background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.kium-mtx thead th{position:sticky;top:var(--kium-sticky,72px);z-index:2;
-  background:var(--p1);color:#fff;font-size:13.5px;font-weight:800;padding:13px 14px;text-align:center}
-.kium-mtx thead th:first-child{text-align:left}
-.kium-mtx tbody tr+tr th,.kium-mtx tbody tr+tr td{border-top:1px solid var(--line)}
-.kium-mtx tbody tr:hover th,.kium-mtx tbody tr:hover td{background:var(--surface)}
-.kium-mtx-course{width:240px;text-align:left;vertical-align:top;padding:14px;font-weight:400}
-@media(max-width:1279px){.kium-mtx-course{width:200px;padding:12px}}
-.kium-mtx-title{display:block;font-size:15px;font-weight:800;color:var(--ink);
-  line-height:1.4;letter-spacing:-.01em;word-break:keep-all;margin-top:6px}
-.kium-mtx-meta{display:block;font-size:12.5px;color:var(--muted);margin-top:4px}
-.kium-mtx-price{display:block;font-size:13.5px;font-weight:800;color:var(--p1);margin-top:6px}
-.kium-mtx-price i{font-style:normal;font-size:11.5px;font-weight:600;color:var(--muted);margin-left:4px}
-.kium-mtx-cell{padding:10px;text-align:center;vertical-align:middle;min-height:72px}
-.kium-mtx-cell.is-empty{background:var(--surface)}
-.kium-mtx-cell.is-empty:hover{background:var(--surface)}
+.kium-sched-head{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;
+  justify-content:space-between;gap:12px}
+.kium-sched-head .kium-count{margin-top:0}
+.kium-sched-body{transition:opacity 120ms var(--ease)}
+.kium-sched-body.fading{opacity:0}
 
-/* 회차 버튼 */
-.kium-ses{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;
-  min-height:72px;justify-content:center;padding:10px 8px;border:1px solid var(--line);
-  border-radius:12px;background:#fff;
-  transition:border-color .18s var(--ease),box-shadow .18s var(--ease),transform .18s var(--ease)}
-.kium-ses+.kium-ses{margin-top:8px}
-.kium-ses:hover,.kium-ses:focus-visible{border-color:var(--p1);box-shadow:var(--shadow-1);transform:translateY(-1px)}
-.kium-ses[data-status="closed"]{opacity:.5}
-.kium-ses[data-status="closed"]:hover{transform:none;box-shadow:none;border-color:var(--line)}
-.kium-ses-date{font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
-.kium-ses.is-tbd{color:var(--muted);font-size:13px;background:var(--surface);cursor:default}
+/* ── 빈 상태 ──────────────────────────────────────────────────── */
+.kium-empty2{margin-top:22px;padding:40px 24px;text-align:center;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:10px}
+.kium-empty2 p{font-size:14.5px;font-weight:600}
 
-/* ── 리스트 (<1024) ───────────────────────────────────────────── */
-.kium-list-mh{position:sticky;top:var(--kium-sticky,72px);z-index:2;
-  background:var(--bg);padding:12px 0 8px;margin-top:8px;
-  font-size:15px;font-weight:800;letter-spacing:-.01em}
-.kium-list-mh .cnt{font-size:12.5px;font-weight:700;color:var(--muted);margin-left:8px}
-.kium-list-ul{list-style:none;display:grid;grid-template-columns:1fr;gap:10px}
-@media(min-width:768px) and (max-width:1023px){.kium-list-ul{grid-template-columns:repeat(2,1fr)}}
-.kium-scard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+/* ── 일정순 뷰 (기본) ─────────────────────────────────────────── */
+.kium-slist{margin-top:6px}
+.kium-mgroup+.kium-mgroup{margin-top:22px}
+.kium-mgroup-head{position:sticky;top:var(--kium-sticky,72px);z-index:2;background:var(--bg);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 0 8px;border-bottom:1px solid var(--line)}
+.kium-mgroup-t{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.kium-mgroup-t .cnt{font-size:12.5px;font-weight:700;color:var(--muted);margin-left:8px}
+.kium-srows{list-style:none;margin-top:10px;display:grid;gap:10px}
+.kium-srow{display:grid;grid-template-columns:210px minmax(0,1fr) 190px auto;align-items:center;gap:16px;
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 18px;
   box-shadow:var(--shadow-1)}
-.kium-scard[data-status="closed"]{opacity:.55}
-.kium-scard-date{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.02em;
+/* 마감 회차는 흐림으로만 후퇴시킨다. 취소선은 쓰지 않는다(가독성 훼손) */
+.kium-srow[data-status="closed"]{opacity:.72;background:var(--surface)}
+.kium-srow-date{display:flex;align-items:center;gap:7px;color:var(--p1)}
+.kium-srow-date b{font-size:16.5px;font-weight:800;color:var(--ink);letter-spacing:-.02em;
   font-variant-numeric:tabular-nums}
-.kium-scard-days{font-size:12.5px;font-weight:700;color:var(--muted);margin-left:8px}
-.kium-scard-title{font-size:15px;font-weight:800;color:var(--ink);margin-top:6px;word-break:keep-all}
-.kium-scard-meta{font-size:13px;color:var(--muted);margin-top:4px}
-.kium-scard-meta .num{font-weight:800;color:var(--p1)}
-.kium-scard-meta i{font-style:normal;font-size:11.5px;margin-left:2px}
-.kium-scard-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
-.kium-scard-cta{min-height:44px;padding:0 18px}
+.kium-srow-date .d{font-size:12.5px;font-weight:700;color:var(--muted)}
+.kium-srow-main{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.kium-srow-title{font-size:15px;font-weight:800;color:var(--ink);word-break:keep-all;line-height:1.4}
+.kium-srow-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.kium-srow-meta span{display:inline-flex;align-items:center;gap:5px}
+.kium-srow-meta .num{font-weight:800;color:var(--p1);font-variant-numeric:tabular-nums}
+.kium-srow-meta i{font-style:normal;font-size:11.5px}
+.kium-srow-act{display:flex;align-items:center;gap:10px;justify-content:flex-end}
 
-/* ── 신청 요약 배너 ───────────────────────────────────────────── */
+@media(max-width:1023px){
+  .kium-srow{grid-template-columns:1fr;gap:10px}
+  .kium-srow-act{justify-content:space-between}
+}
+@media(max-width:479px){
+  .kium-srow{padding:14px 16px}
+  .kium-srow-act{flex-wrap:wrap}
+  .kium-srow-act .kium-cta-ses,.kium-srow-act .kium-cta-next{width:100%}
+}
+
+/* ── 과정별 뷰 ────────────────────────────────────────────────── */
+.kium-clist{list-style:none;margin-top:12px;display:grid;gap:12px}
+.kium-crow{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+  box-shadow:var(--shadow-1)}
+.kium-crow-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}
+.kium-crow-main{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.kium-crow-title{font-size:16px;font-weight:800;color:var(--ink);word-break:keep-all;line-height:1.4}
+.kium-crow-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.kium-crow-meta span{display:inline-flex;align-items:center;gap:5px}
+.kium-crow-meta .num{font-weight:800;color:var(--p1);font-variant-numeric:tabular-nums}
+.kium-crow-meta i{font-style:normal;font-size:11.5px}
+.kium-crow-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kium-pills{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;
+  padding-top:12px;border-top:1px solid var(--line)}
+.kium-noses{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--muted)}
+.kium-clist-panel{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+@media(max-width:479px){
+  .kium-crow-acts{width:100%}
+  .kium-crow-acts>*{flex:1 1 auto}
+}
+
+/* 회차 pill — 배지와 같은 4톤 축. 마감은 span이라 커서·hover가 없다 */
+.kium-pill-ses{display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 14px;
+  border-radius:999px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;
+  border:1px solid transparent;
+  transition:box-shadow .18s var(--ease),border-color .18s var(--ease)}
+.kium-pill-ses[data-tone="amber"]{background:#FEF3C7;color:#92400E}
+.kium-pill-ses[data-tone="green"]{background:#DCFCE7;color:#166534}
+.kium-pill-ses[data-tone="red"]  {background:#FEE2E2;color:#B91C1C}
+.kium-pill-ses[data-tone="gray"] {background:#F3F4F6;color:#4B5563;opacity:.72}
+button.kium-pill-ses:hover,button.kium-pill-ses:focus-visible{border-color:currentColor;box-shadow:var(--shadow-1)}
+
+/* ── 상세 패널 회차 스트립 ────────────────────────────────────── */
+.kium-strip-wrap{margin-top:16px}
+.kium-strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(210px,1fr);gap:10px;
+  margin-top:10px}
+.kium-strip.is-single{grid-auto-columns:minmax(210px,320px)}
+.kium-scard2{display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+  box-shadow:var(--shadow-1)}
+.kium-scard2[data-status="closed"]{opacity:.72;background:var(--surface)}
+.kium-scard2-date{display:flex;align-items:center;gap:6px;color:var(--p1)}
+.kium-scard2-date b{font-size:15.5px;font-weight:800;color:var(--ink);letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.kium-scard2-days{font-size:12.5px;color:var(--muted);font-weight:700}
+.kium-scard2 .kium-cta-ses,.kium-scard2 .kium-cta-next{width:100%;margin-top:2px}
+/* 모바일: 가로 스크롤 + snap. 마지막 카드가 일부 잘려 보이는 peek로 '뒤에 더 있다'를 알린다 */
+@media(max-width:767px){
+  .kium-strip{grid-auto-flow:column;grid-auto-columns:82%;overflow-x:auto;
+    scroll-snap-type:x mandatory;scroll-padding-left:0;padding-bottom:6px;
+    -webkit-overflow-scrolling:touch}
+  .kium-strip.is-single{grid-auto-columns:100%;overflow-x:visible}
+  .kium-scard2{scroll-snap-align:start}
+}
+
+/* ── 과정 카드 — 공개교육 변형만 (과정안내 탭 무영향) ────────────
+   높이 통일은 텍스트 블록별 min-height로만 한다. 카드 전체 min-height 고정은
+   모바일 1열에서 하단 여백 결함을 되살리므로 쓰지 않는다. */
+.kium-card.is-openvar .kium-card-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;min-height:calc(2 * 1.4em)}
+.kium-card.is-openvar .kium-card-summary{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;min-height:calc(2 * 1.6em)}
+.kium-card-next{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;
+  padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--p1)}
+.kium-card-next b{font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.kium-card-next .soft{color:var(--muted);font-weight:600}
+
+/* ── 신청 확인 배너 ───────────────────────────────────────────── */
 .kium-apply-sum{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
   margin:0 0 16px;padding:14px 18px;background:color-mix(in srgb,var(--p1) 6%,#fff);
   border:1px solid color-mix(in srgb,var(--p1) 20%,#fff);border-radius:14px;font-size:14px}
+.kium-apply-line{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;color:var(--p1)}
 .kium-apply-sum b{color:var(--p1);font-weight:800}
+.kium-apply-sum .t{color:var(--muted)}
+.kium-apply-guard{width:100%;font-size:13px;font-weight:700;color:#B91C1C}
 .kium-apply-sum .chg{margin-left:auto;font-weight:700;text-decoration:underline;min-height:44px;
   display:inline-flex;align-items:center}
 
-/* ── 보기 전환 페이드 ─────────────────────────────────────────── */
-.kium-sched-body{transition:opacity 120ms var(--ease)}
-.kium-sched-body.fading{opacity:0}
+/* ── FAQ 태그 칩 ──────────────────────────────────────────────── */
+.faq-tag{margin-right:8px;vertical-align:middle}
+.kium-badge.open{background:color-mix(in srgb,var(--p3) 12%,#fff);color:var(--p3);
+  border:1px solid color-mix(in srgb,var(--p3) 28%,#fff)}
+
+/* 교육비 pill 각주 */
+.kium-pill-note{font-style:normal;font-size:11.5px;font-weight:600;color:var(--muted)}
+
+/* ── 상태 쇼케이스 (?preview=badges 전용) ─────────────────────── */
+.kium-showcase{margin-top:40px;padding:22px;border:2px dashed color-mix(in srgb,var(--p1) 30%,#fff);
+  border-radius:var(--r);background:var(--surface)}
+.kium-showcase-head{font-size:13px;font-weight:700;color:var(--p1);margin-bottom:6px}
+.kium-showcase-head code{font-family:inherit;background:#fff;padding:1px 6px;border-radius:6px;
+  border:1px solid var(--line)}
+.kium-showcase h4{margin-top:20px;font-size:13px;font-weight:800;color:var(--ink)}
+.kium-showcase-row{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;align-items:flex-start}
+.kium-showcase-cell{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.kium-showcase-cell em{font-style:normal;font-size:11.5px;color:var(--muted)}
+.kium-showcase .kium-strip{margin-top:10px}
 
 /* ── 모션 저감 ────────────────────────────────────────────────── */
 @media(prefers-reduced-motion:reduce){
   .kium-sched-body{transition:none}
-  .kium-ses:hover,.kium-ses:focus-visible{transform:none}
+  .kium-cta-quiet svg{transition:none}
+  .kium-strip{scroll-snap-type:none}
 }
-
-/* ── 320px 하한 안전장치 ──────────────────────────────────────── */
-@media(max-width:479px){
-  .kium-scard{padding:14px 16px}
-  .kium-scard-date{font-size:16px}
-  .kium-scard-foot{flex-wrap:wrap}
-  .kium-scard-cta{width:100%}
-}
-
-/* =========================================================================
-   § 명세 §6-2에 규칙이 없으나 §5·§7이 마크업으로 참조하는 클래스 보충.
-   신규 색·라운드·그림자 값은 만들지 않고 기존 토큰·color-mix 파생만 쓴다.
-   ========================================================================= */
-
-/* FAQ 태그 칩 — 명세 §5-7-1 "CSS 1줄 추가" */
-.faq-tag{margin-right:8px;vertical-align:middle}
-
-/* 교육비 pill 각주(§5-11 `.kium-pill-note`) — 기존 .kium-mtx-price i 와 동일 규격 */
-.kium-pill-note{font-style:normal;font-size:11.5px;font-weight:600;color:var(--muted)}
-
-/* 딥링크 하이라이트(§7-4) — 2.4초 후 클래스 제거. 상태 배지와 같은 --p1 파생만 사용 */
-.kium-ses.is-hl,.kium-scard.is-hl{border-color:var(--p1);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--p1) 18%,#fff)}
-
-/* 일정 영역 헤더 — 보기 전환 세그먼트와 결과 건수를 한 줄에 둔다 */
-.kium-sched-head{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;
-  justify-content:space-between;gap:12px}
-.kium-sched-head .kium-count{margin-top:0}
-
-/* 매트릭스 tbd 셀은 버튼이 아니라 span이므로 폭·정렬만 맞춘다 */
-span.kium-ses{align-items:center;justify-content:center}

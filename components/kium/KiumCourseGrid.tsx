@@ -6,6 +6,7 @@ import KiumCourseCard from './KiumCourseCard';
 import KiumCoursePanel from './KiumCoursePanel';
 import { useModal } from '@/lib/useModal';
 import type { KiumCategory, KiumCourse } from '@/lib/kium/data';
+import type { KiumSession } from '@/lib/kium/sessions';
 
 /** K6 — 필터 교체 out fade 120ms(FLIP 금지) */
 const OUT_MS = 120;
@@ -42,6 +43,16 @@ interface Props {
    * — getElementById가 숨겨진 다른 탭의 패널을 잡아 스크롤 계산이 어긋나는 것을 방지한다.
    */
   idPrefix?: string;
+  /**
+   * 'open'이면 공개교육 탭 렌더(칩 축소·실사 썸네일·최근접 회차 배지·상세 회차 스트립).
+   * 미지정이면 과정안내 탭 기존 렌더 그대로다.
+   */
+  variant?: 'default' | 'open';
+  /** 공개교육 탭 전용 썸네일 맵 (data.ts 무변경) */
+  thumbs?: Record<string, string>;
+  now?: Date | null;
+  onConsultSession?: (s: KiumSession) => void;
+  onConsultCourse?: (c: KiumCourse) => void;
 }
 
 /**
@@ -52,7 +63,10 @@ interface Props {
  * - 모바일(<768px): 바텀시트(포커스 트랩·ESC·스와이프 다운 닫기·dim 40%)
  * - 정렬 옵션·검색 없음(§1-2). 카테고리당 최소 1과정이라 0건은 방어 문구만 유지
  */
-export default function KiumCourseGrid({ courses, categories, idPrefix = '' }: Props) {
+export default function KiumCourseGrid({
+  courses, categories, idPrefix = '', variant = 'default', thumbs, now = null,
+  onConsultSession, onConsultCourse,
+}: Props) {
   const [cat, setCat] = useState<Filter>('all');
   const [openId, setOpenId] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'leaving' | 'entering'>('idle');
@@ -199,6 +213,9 @@ export default function KiumCourseGrid({ courses, categories, idPrefix = '' }: P
                   open={openCourse?.id === course.id}
                   panelId={panelId(course.id)}
                   onToggle={() => setOpenId(openCourse?.id === course.id ? null : course.id)}
+                  variant={variant}
+                  thumbSrc={thumbs?.[course.id]}
+                  now={now}
                 />
               </div>
               {/* 인라인 확장(데스크톱·태블릿) — 행의 마지막 카드 뒤 전폭 슬롯 */}
@@ -210,7 +227,14 @@ export default function KiumCourseGrid({ courses, categories, idPrefix = '' }: P
                   aria-labelledby={panelTitleId(openCourse.id)}
                 >
                   <div className="kium-panel-clip">
-                    <KiumCoursePanel course={openCourse} titleId={panelTitleId(openCourse.id)} />
+                    <KiumCoursePanel
+                      course={openCourse}
+                      titleId={panelTitleId(openCourse.id)}
+                      variant={variant}
+                      now={now}
+                      onConsultSession={onConsultSession}
+                      onConsultCourse={onConsultCourse}
+                    />
                   </div>
                 </div>
               )}
@@ -250,7 +274,16 @@ export default function KiumCourseGrid({ courses, categories, idPrefix = '' }: P
               </svg>
             </button>
             <div className="kium-sheet-body">
-              {openCourse && <KiumCoursePanel course={openCourse} titleId={panelTitleId(openCourse.id)} />}
+              {openCourse && (
+                <KiumCoursePanel
+                  course={openCourse}
+                  titleId={panelTitleId(openCourse.id)}
+                  variant={variant}
+                  now={now}
+                  onConsultSession={onConsultSession}
+                  onConsultCourse={onConsultCourse}
+                />
+              )}
             </div>
           </div>
         </>,

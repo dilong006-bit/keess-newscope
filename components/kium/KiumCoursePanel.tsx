@@ -1,9 +1,11 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
+import SessionStrip from './SessionCard';
+import { IconArrowRight } from './kiumIcons';
 import { KIUM_CATEGORY_META, type KiumCourse } from '@/lib/kium/data';
 import { requestKiumInquiry } from '@/lib/kium/inquiryBridge';
-import { fmtRange, getSessionsByDate, isOpenCourse } from '@/lib/kium/sessions';
+import { fmtRange, getSessionsByDate, getSessionsOfCourse, isOpenCourse, type KiumSession } from '@/lib/kium/sessions';
 import { fmtPrice, KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
 
 /** 회차 나열 상한 — 3건까지 나열하고 나머지는 '외 n건'으로 접는다(§5-11) */
@@ -21,14 +23,27 @@ const SCHEDULE_MAX = 3;
  * 교육 단가는 원칙적으로 데이터에도 화면에도 없다. 단 공개교육 9과정은 예외로,
  * 1인 단가(lib/kium/pricing.ts N열)와 개강 일정을 메타 pill 2종으로 노출한다
  * (공개교육 탭 명세 §1-1 · §5-11). 위탁 10과정은 종전대로 두 pill 자체를 렌더하지 않는다.
+ *
+ * [고도화 §4-2] `variant="open"`은 공개교육 탭 전용 배치다. 회차 카드 스트립을
+ *   헤더 바로 아래(정보 순서 ①)로 올려 "언제 열리는지"를 첫 화면에 둔다.
+ *   과정안내 탭(`variant` 미지정) 렌더는 한 픽셀도 바뀌지 않는다.
  */
 export default function KiumCoursePanel({
   course,
   titleId,
+  variant = 'default',
+  now = null,
+  onConsultSession,
+  onConsultCourse,
 }: {
   course: KiumCourse;
   titleId: string;
+  variant?: 'default' | 'open';
+  now?: Date | null;
+  onConsultSession?: (s: KiumSession) => void;
+  onConsultCourse?: (c: KiumCourse) => void;
 }) {
+  const isOpenVar = variant === 'open';
   const totalHours = course.modules.reduce((sum, m) => sum + m.hours, 0);
   const hasSlogan = !!course.slogan?.trim();
 
@@ -50,6 +65,16 @@ export default function KiumCoursePanel({
           고객 고지가 필요하다고 확인되면 FAQ 또는 패널 하단 각주로 복원한다.
         */}
       </div>
+
+      {/* ① 교육일정 — open 변형에서만, 정보 순서 최상단(§4-2) */}
+      {isOpenVar && (
+        <SessionStrip
+          course={course}
+          sessions={getSessionsOfCourse(course.id)}
+          now={now}
+          onConsult={(s) => onConsultSession?.(s)}
+        />
+      )}
 
       {/* ② 슬로건 밴드 — slogan이 비어 있으면 밴드 자체를 렌더하지 않는다 */}
       {hasSlogan && (
@@ -76,8 +101,9 @@ export default function KiumCoursePanel({
           <b>정원</b>
           <span className="num">{course.capacity}명</span>
         </span>
-        {/* 공개교육 9과정 한정 — 위탁 10과정은 미렌더('-' 표기 금지) */}
-        {isOpenCourse(course.id) && (
+        {/* 공개교육 9과정 한정 — 위탁 10과정은 미렌더('-' 표기 금지).
+            open 변형은 스트립이 일정을 이미 보여주므로 '교육 일정' pill을 중복 렌더하지 않는다. */}
+        {isOpenCourse(course.id) && !isOpenVar && (
           <>
             <span className="kium-pill">
               <b>교육 일정</b>
@@ -93,6 +119,13 @@ export default function KiumCoursePanel({
               <i className="kium-pill-note">{KIUM_PRICE_NOTE}</i>
             </span>
           </>
+        )}
+        {isOpenCourse(course.id) && isOpenVar && (
+          <span className="kium-pill">
+            <b>교육비</b>
+            <span className="num">{fmtPrice(course.id)}</span>
+            <i className="kium-pill-note">{KIUM_PRICE_NOTE}</i>
+          </span>
         )}
       </div>
 
@@ -158,15 +191,27 @@ export default function KiumCoursePanel({
         </div>
       </div>
 
-      {/* ⑦ CTA */}
+      {/* ⑦ CTA — open 변형은 일정 미정 상담(경로 B)으로 보낸다 */}
       <div className="kium-detail-cta">
-        <button
-          type="button"
-          className="btn btn-ink"
-          onClick={() => requestKiumInquiry(course.titleMarketing)}
-        >
-          {'이 과정으로 신청\u00A0문의'}
-        </button>
+        {isOpenVar ? (
+          <button
+            type="button"
+            className="kium-cta-ses"
+            onClick={() => onConsultCourse?.(course)}
+            aria-label={`${course.titleMarketing} 이 과정으로 상담하기`}
+          >
+            <span>이 과정으로 상담하기</span>
+            <IconArrowRight size={16} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-ink"
+            onClick={() => requestKiumInquiry(course.titleMarketing)}
+          >
+            {'이 과정으로 신청\u00A0문의'}
+          </button>
+        )}
       </div>
     </div>
   );
