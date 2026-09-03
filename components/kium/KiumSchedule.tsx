@@ -3,8 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import SessionListView from './SessionListView';
 import CourseListView, { coursesWithSessions } from './CourseListView';
-import SessionBadge from './SessionBadge';
-import { IconCalendarDays } from './kiumIcons';
+import {
+  IconAlarmClock,
+  IconCalendarDays,
+  IconCircleCheck,
+  IconCircleDashed,
+  IconCircleSlash,
+} from './kiumIcons';
 import { KIUM_CONTENT } from '@/lib/kium/content';
 import type { KiumCategory, KiumCourse } from '@/lib/kium/data';
 import {
@@ -19,6 +24,14 @@ import {
 } from '@/lib/kium/sessions';
 
 const MONTHS = [10, 11, 12] as const;
+
+/** 상태 필터 칩 아이콘 — SessionBadge와 같은 Lucide 심볼. 색은 CSS(data-st)가 준다 */
+const STATUS_ICON: Record<KiumSessionStatus, (p: { size?: 14 }) => JSX.Element> = {
+  recruiting: IconCircleDashed,
+  confirmed: IconCircleCheck,
+  closing: IconAlarmClock,
+  closed: IconCircleSlash,
+};
 /** 보기 전환 크로스페이드 — reduced-motion 시 0ms */
 const FADE_MS = 120;
 
@@ -97,47 +110,66 @@ export default function KiumSchedule({
 
   return (
     <div className="kium-schedule">
-      {/* ── 필터 바 ── */}
-      <div className="kium-filters" role="group" aria-label="개강 월 필터">
-        <button type="button" className="kium-chip" aria-pressed={month === 'all'} onClick={() => onMonth('all')}>
-          전체 <span className="cnt">{countByMonth(10) + countByMonth(11) + countByMonth(12)}</span>
-        </button>
-        {MONTHS.map((m) => (
-          <button key={m} type="button" className="kium-chip" aria-pressed={month === m} onClick={() => onMonth(m)}>
-            {m}월 <span className="cnt">{countByMonth(m)}</span>
+      {/* ── 필터 바 — 3줄 모두 [행 라벨] + [칩 목록] 동일 구조 ── */}
+      <div className="kium-frow">
+        <span className="kium-frow-lb" id="kium-fl-month">기간</span>
+        <div className="kium-filters" role="group" aria-labelledby="kium-fl-month">
+          <button type="button" className="kium-chip" aria-pressed={month === 'all'} onClick={() => onMonth('all')}>
+            전체 <span className="cnt">{countByMonth(10) + countByMonth(11) + countByMonth(12)}</span>
           </button>
-        ))}
+          {MONTHS.map((m) => (
+            <button key={m} type="button" className="kium-chip" aria-pressed={month === m} onClick={() => onMonth(m)}>
+              {m}월 <span className="cnt">{countByMonth(m)}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="kium-filters" role="group" aria-label="일정 과정 카테고리 필터">
-        <button type="button" className="kium-chip" aria-pressed={cat === 'all'} onClick={() => onCat('all')}>
-          전체 <span className="cnt">{cats.reduce((n, c) => n + c.count, 0)}</span>
-        </button>
-        {cats.map((c) => (
-          <button key={c.key} type="button" className="kium-chip" aria-pressed={cat === c.key} onClick={() => onCat(c.key)}>
-            {c.label} <span className="cnt">{c.count}</span>
+      <div className="kium-frow">
+        <span className="kium-frow-lb" id="kium-fl-cat">분야</span>
+        <div className="kium-filters" role="group" aria-labelledby="kium-fl-cat">
+          <button type="button" className="kium-chip" aria-pressed={cat === 'all'} onClick={() => onCat('all')}>
+            전체 <span className="cnt">{cats.reduce((n, c) => n + c.count, 0)}</span>
           </button>
-        ))}
+          {cats.map((c) => (
+            <button key={c.key} type="button" className="kium-chip" aria-pressed={cat === c.key} onClick={() => onCat(c.key)}>
+              {c.label} <span className="cnt">{c.count}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ── 모집 상태 칩 4종 (명세 §3-2) — 배지와 같은 아이콘·색 축을 그대로 쓴다 ── */}
-      <div className="kium-filters kium-filters-st" role="group" aria-label="모집 상태 필터">
-        <button type="button" className="kium-chip" aria-pressed={status === 'all'} onClick={() => onStatus('all')}>
-          전체 <span className="cnt">{scoped.length}</span>
-        </button>
-        {KIUM_STATUS_ORDER.map((st) => (
-          <button
-            key={st}
-            type="button"
-            className="kium-chip kium-chip-st"
-            data-tone={KIUM_SESSION_META[st].tone}
-            aria-pressed={status === st}
-            onClick={() => onStatus(st)}
-          >
-            <SessionBadge status={st} />
-            <span className="cnt">{stCount[st]}</span>
+      {/*
+        모집 상태 칩 — 월·분야 칩과 **완전히 같은 플레인 칩**이다.
+        컬러 배경 pill(SessionBadge)을 필터에 쓰면 세 줄의 시각 무게가 어긋나고,
+        "선택됨"과 "상태색"이 같은 축(배경색)을 다투게 된다.
+        상태 구분은 아이콘 stroke 색 한 축으로만 하고(배경·보더에 상태색 금지),
+        선택 표시는 다른 두 줄과 동일한 네이비 반전이 전담한다.
+        SessionBadge는 일정 행·회차 pill·회차 카드·카드 최근접 배지에서 종전 그대로 쓰인다.
+      */}
+      <div className="kium-frow">
+        <span className="kium-frow-lb" id="kium-fl-st">모집 상태</span>
+        <div className="kium-filters" role="group" aria-labelledby="kium-fl-st">
+          <button type="button" className="kium-chip" aria-pressed={status === 'all'} onClick={() => onStatus('all')}>
+            전체 <span className="cnt">{scoped.length}</span>
           </button>
-        ))}
+          {KIUM_STATUS_ORDER.map((st) => {
+            const Icon = STATUS_ICON[st];
+            return (
+              <button
+                key={st}
+                type="button"
+                className="kium-chip kium-chip-st"
+                data-st={st}
+                aria-pressed={status === st}
+                onClick={() => onStatus(st)}
+              >
+                <Icon size={14} />
+                {KIUM_SESSION_META[st].label} <span className="cnt">{stCount[st]}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── 결과 건수 + 보기 전환 ── */}
