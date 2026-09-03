@@ -300,6 +300,8 @@ export const INQ = {
   // 예상 교육인원 — 선택 · A안 정본 1:1 (회사 규모와 별도 필드)
   trainees: [
     { value: 'none', label: '해당없음' },
+    // 공개교육(1명부터 신청) 대응으로 추가된 옵션 값 1개 — 폼 필드 수·페이로드 스키마·동의 문구 무변경
+    { value: 'lte9', label: '1~9명' },
     { value: 'lte50', label: '~ 50명' },
     { value: 'lte100', label: '~ 100명' },
     { value: 'lte500', label: '~ 500명' },

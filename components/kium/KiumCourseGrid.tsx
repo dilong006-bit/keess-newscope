@@ -36,6 +36,12 @@ type Filter = 'all' | KiumCategory;
 interface Props {
   courses: KiumCourse[];
   categories: { key: KiumCategory; label: string; count: number }[];
+  /**
+   * 상세 패널 DOM id 접두어. 기본 ''(기존 동작 그대로).
+   * 공개교육 탭이 같은 과정으로 두 번째 그리드를 렌더하므로 id 충돌을 막기 위해 붙인다
+   * — getElementById가 숨겨진 다른 탭의 패널을 잡아 스크롤 계산이 어긋나는 것을 방지한다.
+   */
+  idPrefix?: string;
 }
 
 /**
@@ -46,7 +52,7 @@ interface Props {
  * - 모바일(<768px): 바텀시트(포커스 트랩·ESC·스와이프 다운 닫기·dim 40%)
  * - 정렬 옵션·검색 없음(§1-2). 카테고리당 최소 1과정이라 0건은 방어 문구만 유지
  */
-export default function KiumCourseGrid({ courses, categories }: Props) {
+export default function KiumCourseGrid({ courses, categories, idPrefix = '' }: Props) {
   const [cat, setCat] = useState<Filter>('all');
   const [openId, setOpenId] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'leaving' | 'entering'>('idle');
@@ -97,7 +103,7 @@ export default function KiumCourseGrid({ courses, categories }: Props) {
     const raf = requestAnimationFrame(() => setSlotOpen(true));
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const timer = setTimeout(() => {
-      const panel = document.getElementById(`kium-panel-${openId}`);
+      const panel = document.getElementById(`${idPrefix}kium-panel-${openId}`);
       if (!panel) return;
       const chrome = stickyBottom();
       const { top } = panel.getBoundingClientRect();
@@ -111,7 +117,7 @@ export default function KiumCourseGrid({ courses, categories }: Props) {
       cancelAnimationFrame(raf);
       clearTimeout(timer);
     };
-  }, [openId, sheet]);
+  }, [openId, sheet, idPrefix]);
 
   /** 필터 교체 — out fade 120ms → in stagger */
   const changeCat = (next: Filter) => {
@@ -149,8 +155,8 @@ export default function KiumCourseGrid({ courses, categories }: Props) {
   const openIndex = openCourse ? visible.findIndex((c) => c.id === openCourse.id) : -1;
   const insertAfter = openIndex < 0 ? -1 : Math.min(Math.floor(openIndex / cols) * cols + cols - 1, visible.length - 1);
 
-  const panelId = (id: string) => `kium-panel-${id}`;
-  const panelTitleId = (id: string) => `kium-panel-title-${id}`;
+  const panelId = (id: string) => `${idPrefix}kium-panel-${id}`;
+  const panelTitleId = (id: string) => `${idPrefix}kium-panel-title-${id}`;
 
   return (
     <>

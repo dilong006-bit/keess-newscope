@@ -6,20 +6,31 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
  * F2 탭 — 기술명세서 v1.0 §4 · 전략 §4-3
  *
  * - role=tablist/tab/tabpanel, 좌우 화살표 이동, aria-selected
- * - URL 해시 동기화(#intro 기본 / #courses) — 잘못된 해시는 #intro 폴백
+ * - URL 해시 동기화(#intro 기본 / #courses / #open) — 미등록 해시(#inq 등)는 현재 탭 유지
  * - 전환 시 포커스는 패널 첫 헤딩으로 이동
  * - K1: 인디케이터 translateX+width morph 300ms / 패널 out 120ms → in 300ms(+8px)
- * - 두 패널 모두 DOM에 렌더하고 비활성 패널은 hidden — 정적 HTML에 전 콘텐츠 포함
+ * - 세 패널 모두 DOM에 렌더하고 비활성 패널은 hidden — 정적 HTML에 전 콘텐츠 포함
  */
 
 const TABS = [
   { id: 'intro', label: '사업소개' },
   { id: 'courses', label: '과정안내' },
+  { id: 'open', label: '공개교육' },
 ] as const;
 
 const OUT_MS = 120;
 
-export default function KiumTabs({ intro, courses }: { intro: ReactNode; courses: ReactNode }) {
+export default function KiumTabs({
+  intro,
+  courses,
+  open,
+}: {
+  intro: ReactNode;
+  courses: ReactNode;
+  open: ReactNode;
+}) {
+  // 패널은 TABS와 같은 순서로 배열 참조한다 — 탭이 늘어도 인덱스 분기를 고치지 않는다
+  const panes = [intro, courses, open];
   const [active, setActive] = useState(0);
   const [fading, setFading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -35,15 +46,24 @@ export default function KiumTabs({ intro, courses }: { intro: ReactNode; courses
    */
   const moveFocus = useRef(false);
 
-  const indexFromHash = () => {
+  /**
+   * 미등록 해시(#inq 등)는 탭 전환 신호가 아니다 — null을 돌려 현재 탭을 유지한다.
+   * 기존 0 폴백은 #inq 앵커 클릭 시 탭이 사업소개로 튀게 만들었다(공개교육 명세 §5-8 ②).
+   * 최초 마운트에서 해시가 없거나 미등록이면 active 초기값 0이 그대로 유지되므로
+   * 기존 기본 동작(사업소개)은 변하지 않는다.
+   */
+  const indexFromHash = (): number | null => {
     const id = window.location.hash.replace(/^#/, '');
     const i = TABS.findIndex((t) => t.id === id);
-    return i < 0 ? 0 : i; // 잘못된 해시 → #intro 폴백
+    return i < 0 ? null : i;
   };
 
   // 해시 → 탭 (초기 딥링크 + 뒤로/앞으로 가기)
   useEffect(() => {
-    const sync = () => setActive(indexFromHash());
+    const sync = () => {
+      const i = indexFromHash();
+      if (i !== null) setActive(i); // 미등록 해시면 현재 탭 유지
+    };
     sync();
     window.addEventListener('hashchange', sync);
     return () => window.removeEventListener('hashchange', sync);
@@ -153,7 +173,7 @@ export default function KiumTabs({ intro, courses }: { intro: ReactNode; courses
               panelRefs.current[i] = el;
             }}
           >
-            {i === 0 ? intro : courses}
+            {panes[i]}
           </div>
         ))}
       </div>

@@ -1,4 +1,8 @@
 import { KIUM_COURSES, KIUM_CATEGORY_META, type KiumCategory, type KiumCourse } from './data';
+import { KIUM_CONTENT } from './content';
+
+/** FAQ 1문항 — content.ts faq 배열의 원소 타입(태그 유무가 섞인 유니온) */
+export type KiumFaqItem = (typeof KIUM_CONTENT.faq)[number];
 
 /**
  * 인재키움프리미엄 조회 계층 — 기술명세서 v1.0 §3
@@ -46,4 +50,12 @@ export function getCategoryCounts(): { key: KiumCategory; label: string; count: 
       label: KIUM_CATEGORY_META[key].label,
       count: KIUM_COURSES.filter((c) => c.category === key).length,
     }));
+}
+
+/**
+ * 공개교육 태그가 붙은 문항만. 배열을 복제하지 않고 참조만 거른다.
+ * 문안은 KIUM_CONTENT.faq 한 곳에만 존재하므로 사업소개 탭과 답이 어긋나지 않는다(§4-3 ③).
+ */
+export function getOpenFaq(): readonly KiumFaqItem[] {
+  return KIUM_CONTENT.faq.filter((f) => 'tag' in f && f.tag === KIUM_CONTENT.open.faqTag);
 }

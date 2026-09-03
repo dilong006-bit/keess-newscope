@@ -3,6 +3,7 @@
 import { ChevronDown } from 'lucide-react';
 import KiumThumb from './KiumThumb';
 import { KIUM_CATEGORY_META, type KiumCourse } from '@/lib/kium/data';
+import { isOpenCourse } from '@/lib/kium/sessions';
 
 /**
  * F7/F8 과정 카드 — 기술명세서 v1.0 §4
@@ -65,6 +66,8 @@ export default function KiumCourseCard({
               data.ts의 `type` 필드·값은 보존한다(고용24 신청 실무·검증 대조용 — titleOfficial과 동일 취급). */}
           {/* 정부지원 환급 배지 — 단가(원) 미노출을 갈음하는 B2B 환급 구조 표기 */}
           <span className="kium-badge gov">정부지원 환급</span>
+          {/* 공개교육 개설 배지 — 회차가 열린 9과정에만 노출(KIUM_SESSIONS 파생) */}
+          {isOpenCourse(course.id) && <span className="kium-badge open">공개교육 개설</span>}
           {/* 펼침 방향 인디케이터 — .kium-elig-chev(KiumEligibility)와 동일 패턴 재사용 */}
           <ChevronDown className="kium-card-chev" size={16} aria-hidden="true" />
         </span>

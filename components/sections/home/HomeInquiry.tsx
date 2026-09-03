@@ -260,11 +260,16 @@ export default function HomeInquiry({
   useEffect(() => {
     if (!prefillEventName) return;
     const onPrefill = (e: Event) => {
-      const text = (e as CustomEvent<{ text?: string }>).detail?.text;
-      if (!text) return;
+      const d = (e as CustomEvent<{ text?: string; trainees?: string; strip?: RegExp[] }>).detail;
+      if (!d) return;
       setV((s) => {
-        const rest = s.message.replace(/^\[관심 과정: [^\]]*\]\s*/, '');
-        return { ...s, message: (text + rest).slice(0, INQ_MAX.message) };
+        let message = s.message;
+        if (d.text) {
+          // 기존 프리필 토큰(관심 과정 / 공개교육 신청)을 제거해 재클릭 시 누적을 막는다
+          for (const re of d.strip ?? [/^\[관심 과정: [^\]]*\]\s*/]) message = message.replace(re, '');
+          message = (d.text + message).slice(0, INQ_MAX.message);
+        }
+        return { ...s, message, ...(d.trainees ? { trainees: d.trainees } : {}) };
       });
     };
     window.addEventListener(prefillEventName, onPrefill);

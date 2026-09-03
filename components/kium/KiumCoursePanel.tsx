@@ -3,6 +3,11 @@
 import { ChevronRight } from 'lucide-react';
 import { KIUM_CATEGORY_META, type KiumCourse } from '@/lib/kium/data';
 import { requestKiumInquiry } from '@/lib/kium/inquiryBridge';
+import { fmtRange, getSessionsByDate, isOpenCourse } from '@/lib/kium/sessions';
+import { fmtPrice, KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
+
+/** 회차 나열 상한 — 3건까지 나열하고 나머지는 '외 n건'으로 접는다(§5-11) */
+const SCHEDULE_MAX = 3;
 
 /**
  * F9 상세 패널 — 3차 개정 [수정 10]
@@ -13,7 +18,9 @@ import { requestKiumInquiry } from '@/lib/kium/inquiryBridge';
  *
  * 데이터는 data.ts 기존 필드만 사용한다. 개요서에 있던 '특장점 섹션 헤드라인'에 해당하는
  * 필드는 data.ts에 존재하지 않으므로 표기를 생략했다(완료 보고 명시).
- * 교육 단가는 데이터에도 화면에도 없다(기존 원칙 유지).
+ * 교육 단가는 원칙적으로 데이터에도 화면에도 없다. 단 공개교육 9과정은 예외로,
+ * 1인 단가(lib/kium/pricing.ts N열)와 개강 일정을 메타 pill 2종으로 노출한다
+ * (공개교육 탭 명세 §1-1 · §5-11). 위탁 10과정은 종전대로 두 pill 자체를 렌더하지 않는다.
  */
 export default function KiumCoursePanel({
   course,
@@ -69,6 +76,24 @@ export default function KiumCoursePanel({
           <b>정원</b>
           <span className="num">{course.capacity}명</span>
         </span>
+        {/* 공개교육 9과정 한정 — 위탁 10과정은 미렌더('-' 표기 금지) */}
+        {isOpenCourse(course.id) && (
+          <>
+            <span className="kium-pill">
+              <b>교육 일정</b>
+              {(() => {
+                const list = getSessionsByDate().filter((s) => s.courseId === course.id);
+                const head = list.slice(0, SCHEDULE_MAX).map(fmtRange).join(', ');
+                return list.length > SCHEDULE_MAX ? `${head} 외 ${list.length - SCHEDULE_MAX}건` : head;
+              })()}
+            </span>
+            <span className="kium-pill">
+              <b>교육비</b>
+              <span className="num">{fmtPrice(course.id)}</span>
+              <i className="kium-pill-note">{KIUM_PRICE_NOTE}</i>
+            </span>
+          </>
+        )}
       </div>
 
       {/* ④ 과정목표 — 인용 블록 */}

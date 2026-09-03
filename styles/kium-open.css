@@ -1,0 +1,141 @@
+/* =========================================================================
+   KEESS 공개교육 탭 — 기존 토큰만 사용. 신규 색·라운드·그림자 값 발명 금지.
+   ========================================================================= */
+
+/* ── 히어로 지표 ─────────────────────────────────────────────── */
+.kium-open-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 0}
+.kium-open-stats>div{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:16px 18px;text-align:center}
+.kium-open-stats b{display:block;font-size:18px;font-weight:800;color:var(--p1);letter-spacing:-.02em}
+.kium-open-stats span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+@media(max-width:560px){.kium-open-stats{grid-template-columns:1fr;gap:8px}
+  .kium-open-stats>div{display:flex;align-items:baseline;gap:8px;text-align:left;padding:12px 16px}
+  .kium-open-stats b{font-size:16px}.kium-open-stats span{margin-top:0}}
+
+/* ── 가장 빠른 개강 ───────────────────────────────────────────── */
+.kium-open-next{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;
+  padding:12px 16px;background:#fff;border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow-1);font-size:14px}
+.kium-open-next .lb{font-weight:800;color:var(--p1)}
+.kium-open-next button{min-height:44px}
+
+/* ── 보기 전환 세그먼트 ───────────────────────────────────────── */
+.kium-viewseg{display:inline-flex;background:var(--surface);border:1px solid var(--line);
+  border-radius:999px;padding:3px}
+.kium-viewseg-btn{border:0;background:transparent;border-radius:999px;padding:9px 16px;
+  min-height:44px;font-size:13.5px;font-weight:700;color:var(--muted);
+  transition:background .18s var(--ease),color .18s var(--ease)}
+.kium-viewseg-btn[aria-checked="true"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-1)}
+
+/* ── 상태 배지 (기존 .kium-badge 상속 + data-st 변주) ─────────── */
+.kium-badge.st[data-st="open"]{background:transparent;color:var(--p1);
+  border:1px solid color-mix(in srgb,var(--p1) 32%,#fff)}
+.kium-badge.st[data-st="confirmed"]{background:color-mix(in srgb,var(--p1) 10%,#fff);
+  color:var(--p1);border:1px solid color-mix(in srgb,var(--p1) 26%,#fff);font-weight:800}
+.kium-badge.st[data-st="closing"]{background:color-mix(in srgb,var(--p4) 16%,#fff);
+  color:#8a4a05;border:1px solid color-mix(in srgb,var(--p4) 40%,#fff);font-weight:800}
+.kium-badge.st[data-st="closed"]{background:var(--surface);color:var(--muted);
+  border:1px solid var(--line)}
+.kium-badge.open{background:color-mix(in srgb,var(--p3) 12%,#fff);color:var(--p3);
+  border:1px solid color-mix(in srgb,var(--p3) 28%,#fff)}
+
+/* ── 매트릭스 (≥1024) ─────────────────────────────────────────── */
+.kium-mtx-wrap{overflow:visible}
+.kium-mtx{width:100%;border-collapse:separate;border-spacing:0;
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kium-mtx thead th{position:sticky;top:var(--kium-sticky,72px);z-index:2;
+  background:var(--p1);color:#fff;font-size:13.5px;font-weight:800;padding:13px 14px;text-align:center}
+.kium-mtx thead th:first-child{text-align:left}
+.kium-mtx tbody tr+tr th,.kium-mtx tbody tr+tr td{border-top:1px solid var(--line)}
+.kium-mtx tbody tr:hover th,.kium-mtx tbody tr:hover td{background:var(--surface)}
+.kium-mtx-course{width:240px;text-align:left;vertical-align:top;padding:14px;font-weight:400}
+@media(max-width:1279px){.kium-mtx-course{width:200px;padding:12px}}
+.kium-mtx-title{display:block;font-size:15px;font-weight:800;color:var(--ink);
+  line-height:1.4;letter-spacing:-.01em;word-break:keep-all;margin-top:6px}
+.kium-mtx-meta{display:block;font-size:12.5px;color:var(--muted);margin-top:4px}
+.kium-mtx-price{display:block;font-size:13.5px;font-weight:800;color:var(--p1);margin-top:6px}
+.kium-mtx-price i{font-style:normal;font-size:11.5px;font-weight:600;color:var(--muted);margin-left:4px}
+.kium-mtx-cell{padding:10px;text-align:center;vertical-align:middle;min-height:72px}
+.kium-mtx-cell.is-empty{background:var(--surface)}
+.kium-mtx-cell.is-empty:hover{background:var(--surface)}
+
+/* 회차 버튼 */
+.kium-ses{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;
+  min-height:72px;justify-content:center;padding:10px 8px;border:1px solid var(--line);
+  border-radius:12px;background:#fff;
+  transition:border-color .18s var(--ease),box-shadow .18s var(--ease),transform .18s var(--ease)}
+.kium-ses+.kium-ses{margin-top:8px}
+.kium-ses:hover,.kium-ses:focus-visible{border-color:var(--p1);box-shadow:var(--shadow-1);transform:translateY(-1px)}
+.kium-ses[data-status="closed"]{opacity:.5}
+.kium-ses[data-status="closed"]:hover{transform:none;box-shadow:none;border-color:var(--line)}
+.kium-ses-date{font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.kium-ses.is-tbd{color:var(--muted);font-size:13px;background:var(--surface);cursor:default}
+
+/* ── 리스트 (<1024) ───────────────────────────────────────────── */
+.kium-list-mh{position:sticky;top:var(--kium-sticky,72px);z-index:2;
+  background:var(--bg);padding:12px 0 8px;margin-top:8px;
+  font-size:15px;font-weight:800;letter-spacing:-.01em}
+.kium-list-mh .cnt{font-size:12.5px;font-weight:700;color:var(--muted);margin-left:8px}
+.kium-list-ul{list-style:none;display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:768px) and (max-width:1023px){.kium-list-ul{grid-template-columns:repeat(2,1fr)}}
+.kium-scard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+  box-shadow:var(--shadow-1)}
+.kium-scard[data-status="closed"]{opacity:.55}
+.kium-scard-date{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.kium-scard-days{font-size:12.5px;font-weight:700;color:var(--muted);margin-left:8px}
+.kium-scard-title{font-size:15px;font-weight:800;color:var(--ink);margin-top:6px;word-break:keep-all}
+.kium-scard-meta{font-size:13px;color:var(--muted);margin-top:4px}
+.kium-scard-meta .num{font-weight:800;color:var(--p1)}
+.kium-scard-meta i{font-style:normal;font-size:11.5px;margin-left:2px}
+.kium-scard-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.kium-scard-cta{min-height:44px;padding:0 18px}
+
+/* ── 신청 요약 배너 ───────────────────────────────────────────── */
+.kium-apply-sum{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  margin:0 0 16px;padding:14px 18px;background:color-mix(in srgb,var(--p1) 6%,#fff);
+  border:1px solid color-mix(in srgb,var(--p1) 20%,#fff);border-radius:14px;font-size:14px}
+.kium-apply-sum b{color:var(--p1);font-weight:800}
+.kium-apply-sum .chg{margin-left:auto;font-weight:700;text-decoration:underline;min-height:44px;
+  display:inline-flex;align-items:center}
+
+/* ── 보기 전환 페이드 ─────────────────────────────────────────── */
+.kium-sched-body{transition:opacity 120ms var(--ease)}
+.kium-sched-body.fading{opacity:0}
+
+/* ── 모션 저감 ────────────────────────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  .kium-sched-body{transition:none}
+  .kium-ses:hover,.kium-ses:focus-visible{transform:none}
+}
+
+/* ── 320px 하한 안전장치 ──────────────────────────────────────── */
+@media(max-width:479px){
+  .kium-scard{padding:14px 16px}
+  .kium-scard-date{font-size:16px}
+  .kium-scard-foot{flex-wrap:wrap}
+  .kium-scard-cta{width:100%}
+}
+
+/* =========================================================================
+   § 명세 §6-2에 규칙이 없으나 §5·§7이 마크업으로 참조하는 클래스 보충.
+   신규 색·라운드·그림자 값은 만들지 않고 기존 토큰·color-mix 파생만 쓴다.
+   ========================================================================= */
+
+/* FAQ 태그 칩 — 명세 §5-7-1 "CSS 1줄 추가" */
+.faq-tag{margin-right:8px;vertical-align:middle}
+
+/* 교육비 pill 각주(§5-11 `.kium-pill-note`) — 기존 .kium-mtx-price i 와 동일 규격 */
+.kium-pill-note{font-style:normal;font-size:11.5px;font-weight:600;color:var(--muted)}
+
+/* 딥링크 하이라이트(§7-4) — 2.4초 후 클래스 제거. 상태 배지와 같은 --p1 파생만 사용 */
+.kium-ses.is-hl,.kium-scard.is-hl{border-color:var(--p1);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--p1) 18%,#fff)}
+
+/* 일정 영역 헤더 — 보기 전환 세그먼트와 결과 건수를 한 줄에 둔다 */
+.kium-sched-head{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;
+  justify-content:space-between;gap:12px}
+.kium-sched-head .kium-count{margin-top:0}
+
+/* 매트릭스 tbd 셀은 버튼이 아니라 span이므로 폭·정렬만 맞춘다 */
+span.kium-ses{align-items:center;justify-content:center}

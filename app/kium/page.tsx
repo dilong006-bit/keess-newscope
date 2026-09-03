@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import '@/styles/home.css';
 import '@/styles/kium.css';
+import '@/styles/kium-open.css';
 import Nav from '@/components/common/Nav';
 import RevealInit from '@/components/common/RevealInit';
 import HomeInquiry from '@/components/sections/home/HomeInquiry';
@@ -13,6 +14,8 @@ import KiumProcess from '@/components/kium/KiumProcess';
 import KiumCautions from '@/components/kium/KiumCautions';
 import KiumFaq from '@/components/kium/KiumFaq';
 import KiumCourseGrid from '@/components/kium/KiumCourseGrid';
+import KiumOpenTab from '@/components/kium/KiumOpenTab';
+import KiumApplySummary from '@/components/kium/KiumApplySummary';
 import { KIUM_CONTENT } from '@/lib/kium/content';
 import { getAllCourses, getCategoryCounts } from '@/lib/kium/queries';
 
@@ -107,6 +110,19 @@ export default function KiumPage() {
     </section>
   );
 
+  // 탭3 — 공개교육 (§5-12). 데이터·상태는 전부 KiumOpenTab이 lib에서 조회한다
+  const openPanel = (
+    <section className="kium-sec" id="kium-open">
+      <div className="wrap">
+        <p className="eyebrow r">{KIUM_CONTENT.open.eyebrow}</p>
+        <h2 className="kium-sec-title r" tabIndex={-1} data-panel-heading>
+          {KIUM_CONTENT.open.title}
+        </h2>
+        <KiumOpenTab />
+      </div>
+    </section>
+  );
+
   return (
     <main id="main" className="kium-page" tabIndex={-1}>
       {/* GNB 정식 메뉴는 추가하지 않는다(§6-8) — 진입은 홈 히어로 슬라이드·Nav 이벤트 칩 */}
@@ -114,12 +130,15 @@ export default function KiumPage() {
       <RevealInit />
 
       <KiumHero />
-      <KiumTabs intro={intro} courses={coursesPanel} />
+      <KiumTabs intro={intro} courses={coursesPanel} open={openPanel} />
 
       {/* CTA 밴드 — 양 탭 하단 공통. 기존 도입문의 폼 그대로 재사용(필드·동의 구조 무변경).
           /kium 경유 진입이므로 '정부 지원' 칩을 선택된 상태로 시작하고(해제 가능),
           제출 페이로드에는 lead_source를 비노출 필드로 싣는다. */}
       <div className="kium-cta-band">
+        {/* 신청 요약 배너 — 공유 폼을 건드리지 않고 프리필 상태를 시각화한다(§7-2).
+            회차 선택 전에는 아예 렌더되지 않는다. */}
+        <KiumApplySummary />
         <HomeInquiry
           presetInterests={['gov']}
           presetInterestSubs={['인재키움']}
